@@ -21,8 +21,8 @@ $routes->group('rendicion', ['namespace' => 'App\Controllers'], function($routes
     $routes->post('/asociar-ejes', 'RendicionController::asociarEjes');
 
     // Ejes
-    $routes->get('ejes', 'EjeController::listarEjes');
-    $routes->post('ejes', 'EjeController::crearEje');
+    $routes->get('eje', 'EjeController::listarEjes');
+    $routes->post('eje', 'EjeController::crearEje');
 
     // Usuarios
     $routes->post('usuarios', 'UsuarioController::registrarUsuario');
