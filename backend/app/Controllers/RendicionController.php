@@ -10,10 +10,7 @@ class RendicionController extends ResourceController
 {
     protected $format = 'json';
 
-    /**
-     * listarRendiciones
-     * Devuelve todas las rendiciones.
-     */
+    // Listar todas las rendiciones
     public function listarRendiciones()
     {
         try {
@@ -47,27 +44,24 @@ class RendicionController extends ResourceController
      * crearRendicion
      * Crea una rendición y registra la acción en historial.
      * Acepta JSON o form-data (campo file: banner).
-     * form-data keys: admin_id (text), fecha (text), hora (text), banner (file), motivo (text)
      */
     public function crearRendicion()
     {
-        // Detectar tipo de contenido y obtener input de forma segura
-        $contentType = $this->request->getHeaderLine('Content-Type') ?? '';
-        $input = [];
-
-        if (stripos($contentType, 'application/json') !== false || $this->request->is('json')) {
-            try {
+        // Soportar JSON y form-data
+        $input = null;
+        try {
+            $contentType = $this->request->getHeaderLine('Content-Type') ?? '';
+            if (stripos($contentType, 'application/json') !== false || $this->request->is('json')) {
                 $input = $this->request->getJSON(true);
-            } catch (\Throwable $e) {
-                log_message('error', 'JSON parse error en crearRendicion: ' . $e->getMessage());
-                return $this->respond(['status' => 'error', 'message' => 'JSON inválido'], 400);
+            } else {
+                $input = $this->request->getPost() ?? [];
             }
-        } else {
-            // form-data / x-www-form-urlencoded
-            $input = $this->request->getPost() ?? [];
+        } catch (\Throwable $e) {
+            log_message('error', 'Error parsing input en crearRendicion: ' . $e->getMessage());
+            return $this->respond(['status'=>'error','message'=>'Payload inválido'], 400);
         }
 
-        if (!$input) return $this->respond(['status' => 'error', 'message' => 'Payload inválido'], 400);
+        if (empty($input)) return $this->respond(['status' => 'error', 'message' => 'Payload inválido'], 400);
 
         $adminId = $input['admin_id'] ?? null;
         if (!$adminId) return $this->respond(['status' => 'error', 'message' => 'admin_id requerido'], 400);
@@ -75,7 +69,8 @@ class RendicionController extends ResourceController
         $payload = [
             'fecha' => $input['fecha'] ?? date('Y-m-d'),
             'hora'  => $input['hora'] ?? date('H:i:s'),
-            'banner'=> $input['banner'] ?? ''
+            'banner'=> $input['banner'] ?? '',
+            'motivo' => $input['motivo'] ?? null
         ];
 
         // Manejo de archivo si viene por form-data
@@ -83,9 +78,7 @@ class RendicionController extends ResourceController
             $file = $this->request->getFile('banner');
             if ($file && $file->isValid() && !$file->hasMoved()) {
                 $uploadPath = WRITEPATH . 'uploads/';
-                if (!is_dir($uploadPath)) {
-                    mkdir($uploadPath, 0755, true);
-                }
+                if (!is_dir($uploadPath)) mkdir($uploadPath, 0755, true);
                 $newName = $file->getRandomName();
                 if ($file->move($uploadPath, $newName)) {
                     $payload['banner'] = $newName;
@@ -106,24 +99,35 @@ class RendicionController extends ResourceController
         $db->transStart();
         try {
             $id = $rendModel->insert($payload);
-            if (!$id) throw new \Exception('No se insertó rendición');
+            if ($id === false) {
+                $db->transRollback();
+                $errors = $rendModel->errors();
+                log_message('error', 'Validación Rendicion: ' . json_encode($errors));
+                return $this->respond(['status'=>'error','message'=>'Validación fallida','errors'=>$errors], 422);
+            }
 
-            $histModel->insert([
+            $histInsert = $histModel->insert([
                 'id_admin' => $adminId,
                 'accion' => 'crear',
                 'motivo' => $input['motivo'] ?? null,
                 'realizado_por' => $adminId
             ]);
+            if ($histInsert === false) {
+                $db->transRollback();
+                $errors = $histModel->errors();
+                log_message('error', 'Validación Historial: ' . json_encode($errors));
+                return $this->respond(['status'=>'error','message'=>'Error registrando historial','errors'=>$errors], 422);
+            }
 
             $db->transComplete();
             if ($db->transStatus() === false) throw new \Exception('Transacción fallida');
 
-            $created = $rendModel->find($id);
-            return $this->respondCreated(['status' => 'success', 'message' => 'Rendición creada', 'data' => $created]);
+            $created = $rendModel->find($rendModel->getInsertID() ?: $id);
+            return $this->respondCreated(['status'=>'success','message'=>'Rendición creada','data'=>$created]);
         } catch (\Throwable $e) {
             $db->transRollback();
             log_message('error', $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error creando rendición', 'error' => $e->getMessage()], 500);
+            return $this->respond(['status'=>'error','message'=>'Error creando rendición','error'=>$e->getMessage()], 500);
         }
     }
 
