@@ -1,73 +1,24 @@
-# React + TypeScript + Vite
+# Rendición de Cuentas — Frontend (refactor)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Resumen
+- Este repositorio es una refactorización de un proyecto anterior. Antes el backend estaba embebido en las plantillas HTML y el frontend usaba Bootstrap y CSS poco mantenible.  
+- Objetivo: separar frontend/ backend, modernizar tecnologías y mejorar mantenibilidad, rendimiento y experiencia de desarrollo.
 
-Currently, two official plugins are available:
+Arquitectura propuesta
+- Backend: API REST (PHP/CodeIgniter) que expone endpoints JSON.
+- Frontend: SPA moderna (React + Vite + TypeScript), con Tailwind CSS para estilos y Axios/Fetch para llamadas a la API.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## React Compiler
+Tecnologías 
+- Frontend: React | Vite | TypeScript | Tailwind CSS | ESLint + Prettier | Vitest/Jest
+- Backend: PHP 8.x + CodeIgniter (API) 
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
 
-## Expanding the ESLint configuration
+Estructura 
+- /backend — API
+- /frontend — SPA
+- /SQL — DB
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Requisitos
+- node >= 18, npm/yarn
+- php >= 8.0, composer 
