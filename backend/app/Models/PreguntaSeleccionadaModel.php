@@ -8,21 +8,36 @@ class PreguntaSeleccionadaModel extends Model
     protected $table      = 'pregunta_seleccionada';
     protected $primaryKey = 'id';
     protected $returnType = 'array';
+
     protected $allowedFields = [
         'id_eje_seleccionado',
         'id_pregunta'
     ];
 
     // Dates
-    protected $useTimestamps = false;
+    protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
-    protected $createdField  = '';
-    protected $updatedField  = '';
-    protected $deletedField  = '';
+    protected $createdField  = 'created_at';
+    protected $updatedField  = 'updated_at';
+    protected $deletedField  = 'deleted_at';
 
     // Validation
-    protected $validationRules      = [];
-    protected $validationMessages   = [];
+    protected $validationRules = [
+        'id_eje_seleccionado' => 'required|integer',
+        'id_pregunta'         => 'required|integer'
+    ];
+
+    protected $validationMessages = [
+        'id_eje_seleccionado' => [
+            'required' => 'El campo {field} es obligatorio.',
+            'integer'  => 'El campo {field} debe ser un número entero.'
+        ],
+        'id_pregunta' => [
+            'required' => 'El campo {field} es obligatorio.',
+            'integer'  => 'El campo {field} debe ser un número entero.'
+        ]
+    ];
+
     protected $skipValidation       = false;
     protected $cleanValidationRules = true;
 }
