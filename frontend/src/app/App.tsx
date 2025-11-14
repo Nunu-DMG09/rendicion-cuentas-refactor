@@ -1,7 +1,7 @@
 function App() {
   return (
     <>
-      <h1 className='text-2xl text-blue-700'>Hello world</h1>
+      <h1 className='text-2xl text-blue-700'>Commit de Petusotwo owo</h1>
     </>
   )
 }
