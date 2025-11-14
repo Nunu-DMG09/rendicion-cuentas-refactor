@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.40, for Win64 (x86_64)
 --
--- Host: localhost    Database: rendicion_cuentas
+-- Host: localhost    Database: rendicion_cuenta
 -- ------------------------------------------------------
 -- Server version	8.0.40
 
@@ -16,18 +16,18 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `administradores`
+-- Table structure for table `administrador`
 --
 
-DROP TABLE IF EXISTS `administradores`;
+DROP TABLE IF EXISTS `administrador`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `administradores` (
+CREATE TABLE `administrador` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `dni_admin` varchar(8) COLLATE utf8mb4_general_ci NOT NULL,
-  `nombres_admin` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `dni` varchar(8) COLLATE utf8mb4_general_ci NOT NULL,
+  `nombre` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `password` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `categoria_admin` enum('admin','super_admin') COLLATE utf8mb4_general_ci NOT NULL,
+  `categoria` enum('admin','super_admin') COLLATE utf8mb4_general_ci NOT NULL,
   `estado` enum('habilitado','deshabilitado') COLLATE utf8mb4_general_ci DEFAULT 'habilitado',
   `creado_en` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `actualizado_en` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -36,13 +36,13 @@ CREATE TABLE `administradores` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `administradores`
+-- Dumping data for table `administrador`
 --
 
-LOCK TABLES `administradores` WRITE;
-/*!40000 ALTER TABLE `administradores` DISABLE KEYS */;
-INSERT INTO `administradores` VALUES (1,'40346175','MARTHA LUZ TUÑOQUE JULCAS','$2y$10$n7ZurrZsQR/Ha6liA4SoGun3jEggeie2hxBA09wXeVP8mOplHWT8e','super_admin','habilitado','2025-11-11 17:35:54','2025-11-11 17:35:54');
-/*!40000 ALTER TABLE `administradores` ENABLE KEYS */;
+LOCK TABLES `administrador` WRITE;
+/*!40000 ALTER TABLE `administrador` DISABLE KEYS */;
+INSERT INTO `administrador` VALUES (1,'40346175','MARTHA LUZ TUÑOQUE JULCAS','$2y$10$n7ZurrZsQR/Ha6liA4SoGun3jEggeie2hxBA09wXeVP8mOplHWT8e','super_admin','habilitado','2025-11-14 15:09:43','2025-11-14 15:09:43');
+/*!40000 ALTER TABLE `administrador` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -70,32 +70,32 @@ LOCK TABLES `eje` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `ejes_seleccionados`
+-- Table structure for table `eje_seleccionado`
 --
 
-DROP TABLE IF EXISTS `ejes_seleccionados`;
+DROP TABLE IF EXISTS `eje_seleccionado`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `ejes_seleccionados` (
+CREATE TABLE `eje_seleccionado` (
   `id` int NOT NULL AUTO_INCREMENT,
   `id_rendicion` int DEFAULT NULL,
   `id_eje` int DEFAULT NULL,
-  `cantidad_preguntas` int NOT NULL,
+  `cantidad_pregunta` int NOT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_rendicion` (`id_rendicion`),
   KEY `fk_eje` (`id_eje`),
-  CONSTRAINT `fk_ejes_eje` FOREIGN KEY (`id_eje`) REFERENCES `eje` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_ejes_rendicion` FOREIGN KEY (`id_rendicion`) REFERENCES `rendicion` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `fk_es_eje` FOREIGN KEY (`id_eje`) REFERENCES `eje` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_es_rendicion` FOREIGN KEY (`id_rendicion`) REFERENCES `rendicion` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `ejes_seleccionados`
+-- Dumping data for table `eje_seleccionado`
 --
 
-LOCK TABLES `ejes_seleccionados` WRITE;
-/*!40000 ALTER TABLE `ejes_seleccionados` DISABLE KEYS */;
-/*!40000 ALTER TABLE `ejes_seleccionados` ENABLE KEYS */;
+LOCK TABLES `eje_seleccionado` WRITE;
+/*!40000 ALTER TABLE `eje_seleccionado` DISABLE KEYS */;
+/*!40000 ALTER TABLE `eje_seleccionado` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -113,10 +113,10 @@ CREATE TABLE `historial_admin` (
   `realizado_por` int NOT NULL,
   `fecha_accion` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `fk_admin` (`id_admin`),
-  KEY `fk_realizado_por` (`realizado_por`),
-  CONSTRAINT `historial_admin_ibfk_1` FOREIGN KEY (`id_admin`) REFERENCES `administradores` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `historial_admin_ibfk_2` FOREIGN KEY (`realizado_por`) REFERENCES `administradores` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `fk_ha_admin` (`id_admin`),
+  KEY `fk_ha_realizado` (`realizado_por`),
+  CONSTRAINT `fk_ha_admin` FOREIGN KEY (`id_admin`) REFERENCES `administrador` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_ha_realizado` FOREIGN KEY (`realizado_por`) REFERENCES `administrador` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -143,10 +143,10 @@ CREATE TABLE `pregunta` (
   `id_eje` int DEFAULT NULL,
   `fecha_registro` date NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `fk_pregunta_usuario` (`id_usuario`),
-  KEY `fk_pregunta_eje` (`id_eje`),
-  CONSTRAINT `pregunta_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `pregunta_ibfk_2` FOREIGN KEY (`id_eje`) REFERENCES `eje` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `fk_p_usuario` (`id_usuario`),
+  KEY `fk_p_eje` (`id_eje`),
+  CONSTRAINT `fk_pregunta_eje` FOREIGN KEY (`id_eje`) REFERENCES `eje` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_pregunta_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -160,31 +160,31 @@ LOCK TABLES `pregunta` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `preguntas_seleccionadas`
+-- Table structure for table `pregunta_seleccionada`
 --
 
-DROP TABLE IF EXISTS `preguntas_seleccionadas`;
+DROP TABLE IF EXISTS `pregunta_seleccionada`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `preguntas_seleccionadas` (
+CREATE TABLE `pregunta_seleccionada` (
   `id` int NOT NULL AUTO_INCREMENT,
   `id_eje_seleccionado` int DEFAULT NULL,
   `id_pregunta` int DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `fk_eje_seleccionado` (`id_eje_seleccionado`),
-  KEY `fk_pregunta` (`id_pregunta`),
-  CONSTRAINT `preguntas_seleccionadas_ibfk_1` FOREIGN KEY (`id_eje_seleccionado`) REFERENCES `ejes_seleccionados` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `preguntas_seleccionadas_ibfk_2` FOREIGN KEY (`id_pregunta`) REFERENCES `pregunta` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `fk_ps_eje` (`id_eje_seleccionado`),
+  KEY `fk_ps_pregunta` (`id_pregunta`),
+  CONSTRAINT `fk_ps_es` FOREIGN KEY (`id_eje_seleccionado`) REFERENCES `eje_seleccionado` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_ps_pregunta` FOREIGN KEY (`id_pregunta`) REFERENCES `pregunta` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `preguntas_seleccionadas`
+-- Dumping data for table `pregunta_seleccionada`
 --
 
-LOCK TABLES `preguntas_seleccionadas` WRITE;
-/*!40000 ALTER TABLE `preguntas_seleccionadas` DISABLE KEYS */;
-/*!40000 ALTER TABLE `preguntas_seleccionadas` ENABLE KEYS */;
+LOCK TABLES `pregunta_seleccionada` WRITE;
+/*!40000 ALTER TABLE `pregunta_seleccionada` DISABLE KEYS */;
+/*!40000 ALTER TABLE `pregunta_seleccionada` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -197,8 +197,8 @@ DROP TABLE IF EXISTS `rendicion`;
 CREATE TABLE `rendicion` (
   `id` int NOT NULL AUTO_INCREMENT,
   `fecha` date NOT NULL,
-  `hora_rendicion` time NOT NULL,
-  `banner_rendicion` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `hora` time NOT NULL,
+  `banner` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -221,7 +221,7 @@ DROP TABLE IF EXISTS `usuario`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `usuario` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `nombres` varchar(60) COLLATE utf8mb4_general_ci NOT NULL,
+  `nombre` varchar(60) COLLATE utf8mb4_general_ci NOT NULL,
   `sexo` enum('M','F') COLLATE utf8mb4_general_ci NOT NULL,
   `tipo_participacion` enum('asistente','orador') COLLATE utf8mb4_general_ci NOT NULL,
   `titulo` enum('PERSONAL','ORGANIZACION') COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -231,8 +231,8 @@ CREATE TABLE `usuario` (
   `id_rendicion` int DEFAULT NULL,
   `asistencia` enum('si','no') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'no',
   PRIMARY KEY (`id`),
-  KEY `fk_rendicion_usuario` (`id_rendicion`),
-  CONSTRAINT `usuario_ibfk_1` FOREIGN KEY (`id_rendicion`) REFERENCES `rendicion` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  KEY `fk_usuario_rendicion` (`id_rendicion`),
+  CONSTRAINT `fk_usuario_r` FOREIGN KEY (`id_rendicion`) REFERENCES `rendicion` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -254,4 +254,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-11 12:38:33
+-- Dump completed on 2025-11-14 10:13:28
