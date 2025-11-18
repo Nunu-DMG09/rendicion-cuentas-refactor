@@ -15,8 +15,9 @@ class EjeSeleccionadoModel extends Model
         'cantidad_pregunta'
     ];
 
-    // Dates
+    // Dates 
     protected $useTimestamps = true;
+    protected $useSoftDeletes = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';

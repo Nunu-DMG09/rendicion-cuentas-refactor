@@ -16,8 +16,9 @@ class HistorialAdminModel extends Model
         'realizado_por'
     ];
 
-    // Dates
-    protected $useTimestamps = false;
+    // Dates 
+    protected $useTimestamps = true;
+    protected $useSoftDeletes = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
