@@ -5,6 +5,7 @@ use CodeIgniter\RESTful\ResourceController;
 use App\Models\RendicionModel;
 use App\Models\HistorialAdminModel;
 use App\Models\EjeSeleccionadoModel;
+use App\Models\BanerRendicionModel;
 
 class RendicionController extends ResourceController
 {
@@ -23,10 +24,6 @@ class RendicionController extends ResourceController
         }
     }
 
-    /**
-     * obtenerRendicion
-     * Retorna una rendición por id.
-     */
     public function obtenerRendicion($id = null)
     {
         try {
@@ -40,14 +37,8 @@ class RendicionController extends ResourceController
         }
     }
 
-    /**
-     * crearRendicion
-     * Crea una rendición y registra la acción en historial.
-     * Acepta JSON o form-data (campo file: banner).
-     */
     public function crearRendicion()
     {
-        // Soportar JSON y form-data
         $input = null;
         try {
             $contentType = $this->request->getHeaderLine('Content-Type') ?? '';
@@ -73,27 +64,56 @@ class RendicionController extends ResourceController
             'motivo' => $input['motivo'] ?? null
         ];
 
-        // Manejo de archivo si viene por form-data
+       
+        $savedFiles = [];
         try {
-            $file = $this->request->getFile('banner');
-            if ($file && $file->isValid() && !$file->hasMoved()) {
-                $uploadPath = WRITEPATH . 'uploads/';
-                if (!is_dir($uploadPath)) mkdir($uploadPath, 0755, true);
-                $newName = $file->getRandomName();
-                if ($file->move($uploadPath, $newName)) {
-                    $payload['banner'] = $newName;
-                } else {
-                    log_message('error', 'Error moviendo archivo banner para admin: ' . $adminId);
-                    return $this->respond(['status' => 'error', 'message' => 'Error subiendo banner'], 500);
+            $files = $this->request->getFiles();
+            $uploadPath = WRITEPATH . 'uploads/rendicion/';
+            if (!is_dir($uploadPath)) mkdir($uploadPath, 0755, true);
+
+            foreach ($files as $key => $fileEntry) {
+                if (strpos($key, 'banner') !== 0 && stripos($key, 'banner') === false) {
+                    continue;
+                }
+
+                $entries = is_array($fileEntry) ? $fileEntry : [$fileEntry];
+                foreach ($entries as $file) {
+                    if ($file instanceof \CodeIgniter\HTTP\Files\UploadedFile && $file->isValid() && !$file->hasMoved()) {
+                        $newName = $file->getRandomName();
+                        if ($file->move($uploadPath, $newName)) {
+                            $savedFiles[] = $newName;
+                        } else {
+                            log_message('error', 'Error moviendo archivo banner para admin: ' . $adminId . ' key:' . $key);
+                            return $this->respond(['status' => 'error', 'message' => 'Error subiendo banner'], 500);
+                        }
+                    }
+                }
+            }
+
+            if (empty($savedFiles)) {
+                $file = $this->request->getFile('banner');
+                if ($file && $file->isValid() && !$file->hasMoved()) {
+                    $newName = $file->getRandomName();
+                    if ($file->move($uploadPath, $newName)) {
+                        $savedFiles[] = $newName;
+                    } else {
+                        log_message('error', 'Error moviendo archivo banner (fallback) para admin: ' . $adminId);
+                        return $this->respond(['status' => 'error', 'message' => 'Error subiendo banner'], 500);
+                    }
                 }
             }
         } catch (\Throwable $e) {
             log_message('error', 'Error al procesar archivo banner: ' . $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error procesando archivo'], 500);
+            return $this->respond(['status'=>'error','message'=>'Error procesando archivo'], 500);
+        }
+
+        if (!empty($savedFiles)) {
+            $payload['banner'] = $savedFiles[0];
         }
 
         $rendModel = new RendicionModel();
         $histModel = new HistorialAdminModel();
+        $banerModel = new BanerRendicionModel();
 
         $db = \Config\Database::connect();
         $db->transStart();
@@ -104,6 +124,22 @@ class RendicionController extends ResourceController
                 $errors = $rendModel->errors();
                 log_message('error', 'Validación Rendicion: ' . json_encode($errors));
                 return $this->respond(['status'=>'error','message'=>'Validación fallida','errors'=>$errors], 422);
+            }
+
+            $insertId = $rendModel->getInsertID() ?: $id;
+
+            $banerIds = [];
+            foreach ($savedFiles as $_fn) {
+                $res = $banerModel->insert([
+                    'id_rendicion' => $insertId
+                ]);
+                if ($res === false) {
+                    $db->transRollback();
+                    $errors = $banerModel->errors();
+                    log_message('error', 'Validación BanerRendicion: ' . json_encode($errors));
+                    return $this->respond(['status'=>'error','message'=>'Error registrando banner','errors'=>$errors], 422);
+                }
+                $banerIds[] = $banerModel->getInsertID() ?: $res;
             }
 
             $histInsert = $histModel->insert([
@@ -122,20 +158,16 @@ class RendicionController extends ResourceController
             $db->transComplete();
             if ($db->transStatus() === false) throw new \Exception('Transacción fallida');
 
-            $created = $rendModel->find($rendModel->getInsertID() ?: $id);
-            return $this->respondCreated(['status'=>'success','message'=>'Rendición creada','data'=>$created]);
+            $created = $rendModel->find($insertId);
+            return $this->respondCreated(['status'=>'success','message'=>'Rendición creada','data'=>$created,'baners_created'=>$banerIds]);
         } catch (\Throwable $e) {
             $db->transRollback();
             log_message('error', $e->getMessage());
             return $this->respond(['status'=>'error','message'=>'Error creando rendición','error'=>$e->getMessage()], 500);
         }
     }
+    
 
-    /**
-     * asociarEjes
-     * Asocia múltiples ejes a una rendición en una transacción.
-     * Payload JSON: { admin_id, id_rendicion, ejes: [{ id_eje, cantidad_pregunta }, ...] }
-     */
     public function asociarEjes()
     {
         $input = $this->request->getJSON(true);
