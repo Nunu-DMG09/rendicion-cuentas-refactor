@@ -12,10 +12,10 @@ class RendicionModel extends Model
     protected $allowedFields = [
         'fecha',
         'hora',
-        'banner' 
+        'path' 
     ];
 
-
+    // Dates & Soft Deletes
     protected $useTimestamps = true;
     protected $useSoftDeletes = true;
     protected $dateFormat    = 'datetime';
@@ -23,23 +23,19 @@ class RendicionModel extends Model
     protected $updatedField  = 'updated_at';
     protected $deletedField  = 'deleted_at';
 
-
+    // Validation
     protected $validationRules = [
-        'fecha'  => 'required|valid_date[Y-m-d]',
-        'hora'   => 'required',
-        'banner' => 'permit_empty|string|max_length[255]'
+        'fecha' => 'required|valid_date[Y-m-d]',
+        'hora'  => 'required'
     ];
 
     protected $validationMessages = [
         'fecha' => [
-            'required' => 'El campo {field} es obligatorio.',
+            'required'   => 'El campo {field} es obligatorio.',
             'valid_date' => 'El campo {field} debe tener formato {param}.'
         ],
         'hora' => [
             'required' => 'El campo {field} es obligatorio.'
-        ],
-        'banner' => [
-            'max_length' => 'El campo {field} no puede exceder {param} caracteres.'
         ]
     ];
 
