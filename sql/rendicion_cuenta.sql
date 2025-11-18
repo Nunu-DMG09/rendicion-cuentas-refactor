@@ -51,7 +51,6 @@ INSERT INTO `administrador` (`id`, `dni`, `nombre`, `password`, `categoria`, `es
 --
 -- Estructura de tabla para la tabla `baner_rendicion`
 --
-
 CREATE TABLE `baner_rendicion` (
   `id` int(11) NOT NULL,
   `id_rendicion` int(11) NOT NULL,
