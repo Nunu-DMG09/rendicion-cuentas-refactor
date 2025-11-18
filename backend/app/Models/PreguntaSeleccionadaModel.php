@@ -14,8 +14,9 @@ class PreguntaSeleccionadaModel extends Model
         'id_pregunta'
     ];
 
-    // Dates
+    // Dates & Soft Deletes
     protected $useTimestamps = true;
+    protected $useSoftDeletes = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
