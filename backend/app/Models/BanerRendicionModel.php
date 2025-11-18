@@ -10,7 +10,8 @@ class BanerRendicionModel extends Model
     protected $returnType = 'array';
 
     protected $allowedFields = [
-        'id_rendicion'
+        'id_rendicion',
+        'file_path'
     ];
 
     // Dates 
