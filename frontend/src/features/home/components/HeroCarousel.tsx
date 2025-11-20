@@ -1,95 +1,128 @@
-import React, { useEffect } from 'react'
-import { IoChevronBack, IoChevronForward } from 'react-icons/io5'
-import banner1 from '/banners/bannerstatic.png'
-import banner2 from '/banners/bannerstatic.png'
-import banner3 from '/banners/bannerstatic.png'
-import useCarousel from '../hooks/useCarousel'
+import React, { useEffect, useRef } from "react";
+import useSlides from "../hooks/useSlides";
+import useCarouselLoop from "../hooks/useCarouselLoop";
+import CarouselTrack from "./CarouselTrack";
+import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
+import type { Slide } from "../types/slide";
 
 type Props = {
-  autoplay?: boolean
-  intervalMs?: number
-}
+  slides?: Slide[];
+  className?: string;
+  height?: string;
+};
 
-const IMAGES: { src: string; alt: string }[] = [
-  { src: banner1, alt: 'Banner institucional' },
-  { src: banner2, alt: 'Plaza principal' },
-  { src: banner3, alt: 'Actividad municipal' },
-]
+export default function HeroCarousel({
+  slides,
+  className = "",
+  height = "h-[720px] md:h-[640px] lg:h-[720px]",
+}: Props) {
+  // prioridad a slides prop; si no hay, usar 3 banners de prueba
+  const defaultSlides = useSlides(3, "/banners/bannerstatic.png");
+  const realSlides = slides && slides.length > 0 ? slides : defaultSlides;
 
-export default function HeroCarousel({ autoplay = true, intervalMs = 5000 }: Props) {
-  const { index, prev, next, goTo, preload, stop, start, isPreloaded } = useCarousel({
-    length: IMAGES.length,
-    autoplay,
-    intervalMs,
-  })
+  const {
+    augmented,
+    position,
+    withTransition,
+    next,
+    prev,
+    goTo,
+    onTransitionEnd,
+    setPaused,
+  } = useCarouselLoop(realSlides, { autoplay: true, interval: 5000 });
 
-  // preload to avoid white flash between slides
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // swipe táctil (me lo hizo gpt)
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+  const minSwipeDistance = 40;
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchEndX.current = null;
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+  const onTouchEnd = () => {
+    if (touchStartX.current === null || touchEndX.current === null) return;
+    const distance = touchStartX.current - touchEndX.current;
+    if (Math.abs(distance) > minSwipeDistance) {
+      if (distance > 0) next();
+      else prev();
+    }
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
+
+  // navegación por teclado dentro del contenedor
   useEffect(() => {
-    preload(IMAGES.map((i) => i.src))
-  }, [preload])
+    const el = containerRef.current;
+    if (!el) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") next();
+      if (e.key === "ArrowLeft") prev();
+    };
+    el.addEventListener("keydown", onKey);
+    return () => el.removeEventListener("keydown", onKey);
+  }, [next, prev]);
 
   return (
-    <section
-      className="w-screen relative left-1/2 -translate-x-1/2 mt-0 sm:-mt-2 lg:-mt-4"
-      onMouseEnter={() => stop()}
-      onMouseLeave={() => start()}
-      aria-roledescription="carousel"
-    >
-      <div className="relative overflow-hidden bg-gray-100">
-        <div className="relative h-56 sm:h-80 lg:h-[520px]">
-          {IMAGES.map((img, i) => (
-            <div
-              key={i}
-              className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out will-change-opacity ${
-                i === index ? 'opacity-100 z-20' : 'opacity-0 z-10 pointer-events-none'
-              }`}
-              aria-hidden={i !== index}
-            >
-              <img
-                src={img.src}
-                alt={img.alt}
-                loading="lazy"
-                className="w-full h-full object-contain object-center block mx-auto"
-                decoding="async"
-              />
-            </div>
-          ))}
+    <div className="w-full">
+      <div
+        ref={containerRef}
+        tabIndex={0}
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        className={`relative ${height} cursor-grab w-screen left-1/2 -translate-x-1/2 overflow-hidden ${className} bg-gray-100`}
+        aria-roledescription="carousel"
+        aria-label="Galería principal"
+      >
+        {/* Track - componente */}
+        <CarouselTrack
+          slides={augmented}
+          index={position}
+          withTransition={withTransition}
+          duration={600}
+          onTransitionEnd={onTransitionEnd}
+        />
 
-          <div className="absolute inset-0 bg-gradient-to-b from-black/6 via-transparent to-black/10 pointer-events-none z-10" />
+        {/* Controles */}
+        <button
+          onClick={prev}
+          aria-label="Anterior"
+          className="cursor-pointer absolute left-4 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-12 h-12 rounded-full bg-white/95 shadow hover:scale-105 transition"
+        >
+          <HiChevronLeft className="w-6 h-6 text-[#002f59]" />
+        </button>
 
-          <button
-            onClick={prev}
-            aria-label="Anterior"
-            className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 bg-white/95 text-gray-800 rounded-full p-2 sm:p-3 shadow-md hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white z-40"
-            type="button"
-          >
-            <IoChevronBack className="w-5 h-5 sm:w-6 sm:h-6" />
-          </button>
+        <button
+          onClick={next}
+          aria-label="Siguiente"
+          className="cursor-pointer absolute right-4 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-12 h-12 rounded-full bg-white/95 shadow hover:scale-105 transition"
+        >
+          <HiChevronRight className="w-6 h-6 text-[#002f59]" />
+        </button>
 
-          <button
-            onClick={next}
-            aria-label="Siguiente"
-            className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 bg-white/95 text-gray-800 rounded-full p-2 sm:p-3 shadow-md hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white z-40"
-            type="button"
-          >
-            <IoChevronForward className="w-5 h-5 sm:w-6 sm:h-6" />
-          </button>
-        </div>
-
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3 z-40">
-          {IMAGES.map((_, i) => (
+        {/* Indicadores - los dots */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex gap-2">
+          {realSlides.map((_, i) => (
             <button
               key={i}
               onClick={() => goTo(i)}
               aria-label={`Ir a la diapositiva ${i + 1}`}
-              className={`w-3 md:w-4 h-3 md:h-4 rounded-full transition-transform ${
-                i === index ? 'bg-white scale-110' : 'bg-white/60'
-              }`}
-              type="button"
+              className={`w-3 h-3 rounded-full transition-all ${
+                position === i + 1 ? "bg-[#002f59] scale-110" : "bg-white/80"
+              } shadow`}
             />
           ))}
         </div>
       </div>
-    </section>
-  )
+    </div>
+  );
 }

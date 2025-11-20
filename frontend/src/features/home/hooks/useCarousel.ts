@@ -1,74 +1,55 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState } from "react";
 
-type UseCarouselProps = {
-  length: number
-  autoplay?: boolean
-  intervalMs?: number
-}
+type Options = {
+  autoplay?: boolean;
+  interval?: number;
+  preload?: boolean;
+};
 
-export default function useCarousel({ length, autoplay = true, intervalMs = 5000 }: UseCarouselProps) {
-  const [index, setIndex] = useState(0)
-  const intervalRef = useRef<number | null>(null)
-  const preloadedRef = useRef<boolean[]>(new Array(length).fill(false))
-
-  const start = useCallback(() => {
-    if (!autoplay) return
-    stop()
-    intervalRef.current = window.setInterval(() => {
-      setIndex((i) => (i + 1) % length)
-    }, intervalMs)
-  }, [autoplay, intervalMs, length])
-
-  const stop = useCallback(() => {
-    if (intervalRef.current) {
-      window.clearInterval(intervalRef.current)
-      intervalRef.current = null
-    }
-  }, [])
-
-  const goTo = useCallback(
-    (i: number) => {
-      setIndex(i % length)
-      if (autoplay) start()
-    },
-    [autoplay, length, start],
-  )
-
-  const next = useCallback(() => {
-    setIndex((i) => (i + 1) % length)
-    if (autoplay) start()
-  }, [autoplay, length, start])
-
-  const prev = useCallback(() => {
-    setIndex((i) => (i - 1 + length) % length)
-    if (autoplay) start()
-  }, [autoplay, length, start])
-
-  // preload images (call with an array of srcs by the component)
-  const preload = useCallback((srcs: string[]) => {
-    srcs.forEach((src, i) => {
-      if (preloadedRef.current[i]) return
-      const img = new Image()
-      img.src = src
-      img.onload = () => {
-        preloadedRef.current[i] = true
-      }
-    })
-  }, [])
+export default function useCarousel(length: number, options: Options = {}) {
+  const { autoplay = true, interval = 5000, preload = true } = options;
+  const [index, setIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const intervalRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (autoplay) start()
-    return () => stop()
-  }, [autoplay, start, stop])
+    if (!autoplay || isPaused || length <= 1) return;
+    intervalRef.current = window.setInterval(() => {
+      setIndex((i) => (i + 1) % length);
+    }, interval);
+    return () => {
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
+    };
+  }, [autoplay, isPaused, interval, length]);
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
+    };
+  }, []);
+
+  const next = () => setIndex((i) => (i + 1) % length);
+  const prev = () => setIndex((i) => (i - 1 + length) % length);
+  const goTo = (i: number) => setIndex(((i % length) + length) % length);
+
+  useEffect(() => {
+    if (!preload) return;
+    const imgs: HTMLImageElement[] = [];
+    for (let i = 0; i < length; i++) {
+      const img = new Image();
+      imgs.push(img);
+    }
+    return () => {
+    };
+  }, [length, preload]);
 
   return {
     index,
-    prev,
+    setIndex,
     next,
+    prev,
     goTo,
-    start,
-    stop,
-    preload,
-    isPreloaded: preloadedRef.current,
-  }
+    isPaused,
+    setIsPaused,
+  };
 }
