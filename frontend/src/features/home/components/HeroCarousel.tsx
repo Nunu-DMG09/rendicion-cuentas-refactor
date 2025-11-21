@@ -14,7 +14,7 @@ type Props = {
 export default function HeroCarousel({
   slides,
   className = "",
-  height = "h-[720px] md:h-[640px] lg:h-[720px]", // altura ajustable del carousel oño
+  height = "h-[720px] md:h-[640px] lg:h-[700px]", // altura ajustable del carousel oño
 }: Props) {
   // prioridad a slides prop; si no hay, usar 3 banners de prueba
   const defaultSlides = useSlides(3, "/banners/bannerstatic.png");
