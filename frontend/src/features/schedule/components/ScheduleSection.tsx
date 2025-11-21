@@ -23,7 +23,7 @@ export default function ScheduleSection() {
                     ))}
                 </div>
                 <div className="text-center">
-                    <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4">
+                    <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4 font-titles">
                         Sé parte del cambio
                     </h3>
                     <p className="text-base lg:text-lg text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
