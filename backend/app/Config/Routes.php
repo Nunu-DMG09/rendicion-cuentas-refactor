@@ -21,7 +21,7 @@ $routes->group('rendicion', ['namespace' => 'App\Controllers'], function($routes
     $routes->post('/asociar-ejes', 'RendicionController::asociarEjes');
 
     // Ejes
-    $routes->get('eje', 'EjeController::listarEjes');
+    $routes->get('eje/', 'EjeController::listarEjes');
     $routes->post('eje', 'EjeController::crearEje');
 
     // Usuarios
@@ -36,9 +36,22 @@ $routes->group('rendicion', ['namespace' => 'App\Controllers'], function($routes
 
     // Selección de preguntas
     $routes->post('selecciones', 'SeleccionController::seleccionarPregunta');
-    $routes->get('eje-seleccionado/(:num)/preguntas', 'SeleccionController::preguntasSeleccionadasPorEjeSeleccionado/$1');
+    $routes->get('eje-seleccionado/(:num)', 'SeleccionController::preguntasSeleccionadasPorEjeSeleccionado/$1');
 
     // Historial admin
     $routes->get('historial', 'HistorialAdminController::listarHistorial');
     $routes->get('historial/admin/(:num)', 'HistorialAdminController::historialPorAdministrador/$1');
+
+    // Administradores
+    $routes->get('admin', 'AdministradorController::listarAdministradores');
+    $routes->get('admin/dni/(:segment)', 'AdministradorController::buscarPorDNI/$1');
+    $routes->post('admin', 'AdministradorController::crearAdministrador');
+    $routes->put('admin/(:num)', 'AdministradorController::ActualizarAdministrador/$1');
+    $routes->delete('admin/(:num)', 'AdministradorController::eliminarAdministrador/$1');
+
+    // Autenticación
+    $routes->post('auth/login', 'AuthController::login');
+    $routes->post('auth/logout', 'AuthController::logout');
+    $routes->get('auth/refresh', 'AuthController::refresh');
+    $routes->get('auth/test', 'AuthController::testFilter');
 });
