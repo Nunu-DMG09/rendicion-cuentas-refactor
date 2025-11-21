@@ -1,3 +1,4 @@
+import { motion } from 'motion/react'
 import Card from './Card'
 import type { CardData } from '../types/card'
 
@@ -52,7 +53,13 @@ export default function CardGrid() {
     return (
         <section className="w-full bg-linear-to-b from-gray-50 via-white to-gray-50 py-24">
             <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-                <header className="mb-16 text-center">
+                <motion.header
+                    className="mb-16 text-center"
+                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: -30 }}
+                    transition={{ duration: 0.6, ease: 'easeOut' }}
+                    viewport={{ once: true, amount: 0.5 }}
+                >
                     <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 font-titles">
                         Conferencia de
                         <span className="text-gray-900 bg-clip-text"> Rendición de Cuentas</span>
@@ -69,14 +76,34 @@ export default function CardGrid() {
                             Próxima sesión: Diciembre 2025
                         </div>
                     </div>
-                </header>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
+                </motion.header>
+                <motion.div
+                    className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10"
+                    whileInView="visible"
+                    initial="hidden"
+                    variants={{
+                        hidden: {},
+                        visible: {
+                            transition: {
+                                staggerChildren: 0.2,
+                            },
+                        },
+                    }}
+                    viewport={{ once: true, amount: 0.2 }}
+                >
                     {cards.map((card) => (
-                        <div key={card.id} className="flex">
+                        <motion.div
+                            key={card.id}
+                            variants={{
+                                hidden: { opacity: 0, y: 50 },
+                                visible: { opacity: 1, y: 0 },
+                            }}
+                            transition={{ duration: 0.6, ease: 'easeOut' }}
+                        >
                             <Card data={card} />
-                        </div>
+                        </motion.div>
                     ))}
-                </div>
+                </motion.div>
             </div>
         </section>
     )

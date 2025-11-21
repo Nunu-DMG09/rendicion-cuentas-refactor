@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { motion } from 'motion/react'
 import ScheduleCard from './ScheduleCard'
 import { useSchedule } from '../hooks/useSchedule'
 
@@ -8,7 +9,13 @@ export default function ScheduleSection() {
     return (
         <section className="w-full py-20">
             <div className="max-w-4xl mx-auto px-6 lg:px-8">
-                <header className="text-center mb-16">
+                <motion.header
+                    className="text-center mb-16"
+                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: -30 }}
+                    transition={{ duration: 0.6, ease: 'easeOut' }}
+                    viewport={{ once: true, amount: 0.3 }}
+                >
                     <div className="inline-flex items-center justify-center w-20 h-1 mb-8"></div>
                     <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 font-titles">
                         {scheduleData.title}
@@ -16,14 +23,42 @@ export default function ScheduleSection() {
                     <p className="text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto font-body">
                         {scheduleData.subtitle}
                     </p>
-                </header>
-                <div className="space-y-6 mb-16">
+                </motion.header>
+                <motion.div
+                    className="space-y-6 mb-16"
+                    whileInView="visible"
+                    initial="hidden"
+                    variants={{
+                        hidden: {},
+                        visible: {
+                            transition: {
+                                staggerChildren: 0.15,
+                            },
+                        },
+                    }}
+                    viewport={{ once: true, amount: 0.2 }}
+                >
                     {scheduleData.events.map((event, index) => (
-                        <ScheduleCard key={event.id} event={event} index={index} />
+                        <motion.div
+                            key={event.id}
+                            variants={{
+                                hidden: { opacity: 0, y: 50 },
+                                visible: { opacity: 1, y: 0 },
+                            }}
+                            transition={{ duration: 0.6, ease: 'easeOut' }}
+                        >
+                            <ScheduleCard event={event} index={index} />
+                        </motion.div>
                     ))}
-                </div>
-                <div className="text-center">
-                    <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4">
+                </motion.div>
+                <motion.div
+                    className="text-center"
+                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 30 }}
+                    transition={{ duration: 0.6, ease: 'easeOut' }}
+                    viewport={{ once: true, amount: 0.3 }}
+                >
+                    <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4 font-titles">
                         Sé parte del cambio
                     </h3>
                     <p className="text-base lg:text-lg text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
@@ -48,7 +83,7 @@ export default function ScheduleSection() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                     </Link>
-                </div>
+                </motion.div>
             </div>
         </section>
     )
