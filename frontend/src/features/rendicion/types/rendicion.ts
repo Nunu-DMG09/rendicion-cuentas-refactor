@@ -3,6 +3,14 @@ export type RendicionAxis = {
   name: string
   description: string
   questionsCount: number
+  questions: Question[]
+}
+
+export type Question = {
+  id: string
+  personName: string
+  question: string
+  createdAt: string
 }
 
 export type RendicionData = {
@@ -16,4 +24,10 @@ export type RendicionData = {
 
 export type RendicionDetailProps = {
   rendicionId: string
+}
+
+export type QuestionsModalProps = {
+  isOpen: boolean
+  onClose: () => void
+  axis: RendicionAxis | null
 }
