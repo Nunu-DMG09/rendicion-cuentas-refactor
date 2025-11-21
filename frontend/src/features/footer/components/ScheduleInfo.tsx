@@ -1,4 +1,3 @@
-import React from 'react'
 import type { Schedule } from '../types/footer'
 
 type Props = {
