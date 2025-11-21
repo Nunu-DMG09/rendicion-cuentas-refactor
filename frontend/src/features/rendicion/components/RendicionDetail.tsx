@@ -58,7 +58,7 @@ export default function RendicionDetail({ rendicionId }: RendicionDetailProps) {
                     <div className="mb-8">
                         <button
                             className="
-                inline-flex items-center gap-2 px-4 py-2 
+                cursor-pointer inline-flex items-center gap-2 px-4 py-2 
                 text-[#002f59] hover:bg-[#002f59] hover:text-white
                 border border-[#002f59] rounded-lg font-medium
                 transition-all duration-200 transform hover:scale-105
