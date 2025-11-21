@@ -50,23 +50,19 @@ const cards: CardData[] = [
 
 export default function CardGrid() {
     return (
-        <section className="w-full bg-gradient-to-b from-gray-50 via-white to-gray-50 py-24">
+        <section className="w-full bg-linear-to-b from-gray-50 via-white to-gray-50 py-24">
             <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-                {/* Header Section */}
                 <header className="mb-16 text-center">
-
-                    <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+                    <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 font-titles">
                         Conferencia de
                         <span className="text-gray-900 bg-clip-text"> Rendición de Cuentas</span>
                     </h2>
-
-                    <p className="text-lg lg:text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+                    <p className="text-lg lg:text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed font-body">
                         La Municipalidad Distrital de José Leonardo Ortiz te invita a nuestras Audiencias Públicas de Rendición de Cuentas.
                         <span className="font-semibold text-gray-800"> Un espacio de diálogo abierto donde la transparencia y la participación ciudadana son protagonistas.</span>
                     </p>
-
                     <div className="mt-8">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-full text-blue-600 text-sm font-medium">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/15 rounded-full text-primary text-sm font-medium">
                             <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                             </svg>
@@ -74,8 +70,6 @@ export default function CardGrid() {
                         </div>
                     </div>
                 </header>
-
-                {/* Cards Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
                     {cards.map((card) => (
                         <div key={card.id} className="flex">
@@ -83,7 +77,6 @@ export default function CardGrid() {
                         </div>
                     ))}
                 </div>
-
             </div>
         </section>
     )
