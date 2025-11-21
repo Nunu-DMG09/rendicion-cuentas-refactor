@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import ScheduleCard from './ScheduleCard'
 import { useSchedule } from '../hooks/useSchedule'
 
@@ -20,7 +21,7 @@ export default function ScheduleSection() {
                     </p>
                 </header>
 
-                {/* Schedule Cards - tarjetas de horario */}
+                {/* Schedule Cards */}
                 <div className="space-y-6 mb-16">
                     {scheduleData.events.map((event, index) => (
                         <ScheduleCard key={event.id} event={event} index={index} />
@@ -37,13 +38,16 @@ export default function ScheduleSection() {
                         {scheduleData.ctaSubtext}
                     </p>
 
-                    <button className="
-            cursor-pointer group relative inline-flex items-center gap-3 px-8 py-4 
-            bg-[#002f59] text-white font-semibold rounded-2xl 
-            shadow-xl hover:shadow-2xl hover:shadow-blue-200
-            transform hover:-translate-y-1 hover:scale-105
-            transition-all duration-300 overflow-hidden
-          ">
+                    <Link
+                        to="/register/2"
+                        className="
+              cursor-pointer group relative inline-flex items-center gap-3 px-8 py-4 
+              bg-[#002f59] text-white font-semibold rounded-2xl 
+              shadow-xl hover:shadow-2xl hover:shadow-blue-200
+              transform hover:-translate-y-1 hover:scale-105
+              transition-all duration-300 overflow-hidden
+            "
+                    >
                         {/* Background animation */}
                         <div className="absolute inset-0 bg-[#002f59] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
 
@@ -58,7 +62,7 @@ export default function ScheduleSection() {
                         <svg className="relative h-5 w-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
-                    </button>
+                    </Link>
                 </div>
             </div>
         </section>
