@@ -20,21 +20,33 @@ class UsuarioController extends ResourceController
         if (!$input) return $this->respond(['status' => 'error', 'message' => 'Payload inválido'], 400);
 
         $required = ['nombre', 'sexo', 'tipo_participacion'];
-        foreach ($required as $r) if (empty($input[$r])) return $this->respond(['status' => 'error', 'message' => "$r es requerido"], 400);
+        foreach ($required as $r) {
+            if (empty($input[$r])) {
+                return $this->respond(['status' => 'error', 'message' => "$r es requerido"], 400);
+            }
+        }
 
         $model = new UsuarioModel();
         try {
-            $id = $model->insert([
-                'nombres' => $input['nombre'],
+            $data = [
+                'nombre' => $input['nombre'],
                 'sexo' => $input['sexo'],
                 'tipo_participacion' => $input['tipo_participacion'],
                 'titulo' => $input['titulo'] ?? null,
                 'ruc_empresa' => $input['ruc_empresa'] ?? null,
                 'nombre_empresa' => $input['nombre_empresa'] ?? null,
                 'dni' => $input['dni'] ?? null,
-                'id_rendicion' => $input['id_rendicion'] ?? null,
+                'id_rendicion' => isset($input['id_rendicion']) ? (int)$input['id_rendicion'] : null,
                 'asistencia' => $input['asistencia'] ?? 'no'
-            ]);
+            ];
+
+            $id = $model->insert($data);
+            if ($id === false) {
+                // validar errores de validación del modelo
+                $errors = $model->errors();
+                return $this->respond(['status' => 'error', 'message' => 'Validación fallida', 'errors' => $errors], 422);
+            }
+
             $created = $model->find($id);
             return $this->respondCreated(['status' => 'success', 'message' => 'Usuario registrado', 'data' => $created]);
         } catch (\Throwable $e) {
