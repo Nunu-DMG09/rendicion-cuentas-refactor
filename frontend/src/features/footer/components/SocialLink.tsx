@@ -16,7 +16,7 @@ export default function SocialLink({ social }: Props) {
       <div className="flex items-center justify-center w-10 h-10 transition-colors duration-300">
         {social.icon}
       </div>
-      <div className="hidden sm:block">
+      <div className="">
         <p className="text-sm font-medium">{social.platform}</p>
         <p className="text-xs opacity-80">{social.username}</p>
       </div>

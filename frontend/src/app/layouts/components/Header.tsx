@@ -10,7 +10,7 @@ export default function Header() {
           <Link to="/" className="flex items-center gap-3 cursor-pointer hover:scale-105 transition-all">
             <img src={logo} alt="Logo Municipalidad José Leonardo Ortiz" className="h-20 w-auto" />
             <div className="leading-tight">
-              <div className="text-2xl font-semibold text-[#002f59]">Municipalidad José Leonardo Ortiz</div>
+              <div className="text-2xl font-semibold text-primary-dark">Municipalidad José Leonardo Ortiz</div>
               <div className="text-lg text-gray-500">Rendición de Cuentas</div>
             </div>
           </Link>
@@ -18,7 +18,7 @@ export default function Header() {
           <div className="flex items-center gap-3">
             <Link
               to="/register/2"
-              className="inline-flex items-center px-4 py-3 text-sm font-medium rounded-md bg-[#002f59] text-white hover:bg-[#003366] hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="inline-flex items-center px-4 py-3 text-sm font-medium rounded-md bg-primary-dark text-white hover:bg-primary-dark/90 hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-label="Registrarse"
             >
               Registra tu asistencia
