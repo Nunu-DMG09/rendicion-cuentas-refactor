@@ -1,1 +1,17 @@
+:root {
+    --primary-color: #2e8acb;
+    --primary-color-dark: #002f59;
+    --primary-color-light: #0dc1f2;
+    --titles: "Rosario", sans-serif;
+    --body: "Alegreya Sans", sans-serif;
+}
+
 @import "tailwindcss";
+
+@theme {
+    --color-primary: var(--primary-color);
+    --color-primary-dark: var(--primary-color-dark);
+    --color-primary-light: var(--primary-color-light);
+    --font-titles: var(--titles);
+    --font-body: var(--body);
+}
