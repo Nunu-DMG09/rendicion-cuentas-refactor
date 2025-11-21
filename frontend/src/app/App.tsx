@@ -1,15 +1,18 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Layout from './layouts/Layout'
-import HeroCarousel from '../features/home/components/HeroCarousel'
-import { CardGrid } from '../features/cards/components/CardGrid'
-import { ScheduleSection } from '../features/schedule/components/ScheduleSection'
+import HomePage from './pages/HomePage'
+import RendicionPage from './pages/RendicionPage'
 
 function App() {
   return (
-    <Layout>
-      <HeroCarousel />
-      <CardGrid />
-      <ScheduleSection />
-    </Layout>
+    <Router>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/rendicion/:rendicionId" element={<RendicionPage />} />
+        </Routes>
+      </Layout>
+    </Router>
   )
 }
 
