@@ -23,7 +23,7 @@ export default function Header() {
                 transition={{ duration: 0.6, ease: 'easeOut' }}
               />
               <motion.div
-                className="leading-tight"
+                className="leading-tight hidden sm:block"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
