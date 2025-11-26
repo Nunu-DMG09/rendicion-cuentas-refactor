@@ -3,6 +3,9 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "@/assets/logo.png"
 import { GoSidebarCollapse, GoSidebarExpand } from "react-icons/go";
+import { SIDEBAR_ITEMS } from "./constants/sidebarItems";
+import { SidebarSubmenu } from "./SidebarSubmenu";
+import { SidebarItem } from "./SidebarItem";
 
 export const Sidebar = () => {
     const { isOpen, toggleSidebar, closeSidebar } = useSidebar();
@@ -58,6 +61,36 @@ export const Sidebar = () => {
 								<GoSidebarExpand className="text-primary-dark text-2xl transition-all duration-300 ease-in-out" />
 							</button>
 						)}
+                    </div>
+                    <div className="flex-1 pr-1 overflow-y-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-primary/50">
+                        <nav className="flex flex-col gap-3 mt-2 justify-center">
+                            {SIDEBAR_ITEMS.map(item => {
+                                const showItem = !item.restricted; // TODO: || isAdmin(user?.role || "")
+                                if (!showItem) return null;
+                                const Icon = item.icon;
+                                if (item.subItems) {
+                                    return (
+                                        <SidebarSubmenu
+                                            key={item.text}
+                                            parentTo={item.to}
+                                            icon={<Icon />}
+                                            text={item.text}
+                                            subItems={item.subItems}
+                                            isCompact={!isOpen}
+                                        />
+                                    )
+                                }
+                                return (
+                                    <SidebarItem
+                                        key={item.text}
+                                        text={item.text}
+                                        icon={<Icon />}
+                                        to={item.to}
+                                        isCompact={!isOpen}
+                                    />
+                                )
+                            })}
+                        </nav>
                     </div>
                 </div>
             </aside>
