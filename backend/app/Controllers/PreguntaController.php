@@ -72,4 +72,30 @@ class PreguntaController extends ResourceController
             return $this->respond(['status' => 'error', 'message' => 'Error obteniendo preguntas por rendición'], 500);
         }
     }
+
+    /**
+     * Obtener preguntas agrupadas por eje filtrando por fecha de rendición.
+     * URL ejemplo: GET /rendicion/preguntas-por-fecha/2025-11-25
+     */
+    public function preguntasPorFechaRendicion($fecha = null)
+    {
+        if (empty($fecha)) {
+            return $this->respond(['status' => 'error', 'message' => 'fecha es requerida. Formato Y-m-d'], 400);
+        }
+
+        // Validar formato fecha
+        $d = \DateTime::createFromFormat('Y-m-d', $fecha);
+        if (!($d && $d->format('Y-m-d') === $fecha)) {
+            return $this->respond(['status' => 'error', 'message' => 'Formato de fecha inválido, use Y-m-d'], 400);
+        }
+
+        try {
+            $model = new PreguntaModel();
+            $data = $model->getPreguntasPorFechaRendicion($fecha);
+            return $this->respond(['status' => 'success', 'message' => 'Preguntas por fecha de rendición', 'data' => $data], 200);
+        } catch (\Throwable $e) {
+            log_message('error', $e->getMessage());
+            return $this->respond(['status' => 'error', 'message' => 'Error obteniendo preguntas por fecha'], 500);
+        }
+    }
 }
