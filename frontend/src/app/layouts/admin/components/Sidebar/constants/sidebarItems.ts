@@ -47,7 +47,7 @@ export const SIDEBAR_ITEMS: SidebarItemRestricted[] = [
         icon: MdQuestionAnswer,
         subItems: [
             {
-                text: "Seleccionar preguntas",
+                text: "Seleccionar",
                 to: "/seleccionar",
                 icon: MdChecklist
             },
