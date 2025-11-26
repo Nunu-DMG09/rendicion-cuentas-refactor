@@ -17,6 +17,7 @@ function App() {
             </Route>
             <Route path='/admin' element={<AdminLayout />}>
               <Route index element={<h1>hola:v</h1>} />
+              {/* Aqui van a renderizar todas las paginas que esten debajo de admin */}
             </Route>
           </Routes>
       </SidebarProvider>
