@@ -9,16 +9,16 @@ function App() {
   return (
     <Router>
       <SidebarProvider>
-        <Layout>
           <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/rendicion/:rendicionId" element={<RendicionPage />} />
-            <Route path="/register/:rendicionId" element={<RegistrationPage />} />
+            <Route path="/" element={<Layout />}>
+              <Route index element={<HomePage />} />
+              <Route path="/rendicion/:rendicionId" element={<RendicionPage />} />
+              <Route path="/register/:rendicionId" element={<RegistrationPage />} />
+            </Route>
             <Route path='/admin' element={<AdminLayout />}>
               <Route index element={<h1>hola:v</h1>} />
             </Route>
           </Routes>
-        </Layout>
       </SidebarProvider>
     </Router>
   )
