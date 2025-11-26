@@ -33,6 +33,7 @@ $routes->group('rendicion', ['namespace' => 'App\Controllers'], function($routes
     $routes->post('preguntas', 'PreguntaController::crearPregunta');
     $routes->get('ejes/(:num)/preguntas', 'PreguntaController::preguntasPorEje/$1');
     $routes->get('rendiciones/(:num)/preguntas', 'PreguntaController::preguntasPorRendicion/$1');
+    $routes->get('preguntas/fecha/(:segment)', 'PreguntaController::preguntasPorFechaRendicion/$1');
 
     // Selección de preguntas
     $routes->post('selecciones', 'SeleccionController::seleccionarPregunta');
