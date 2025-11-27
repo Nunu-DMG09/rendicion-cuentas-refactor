@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { FaUser, FaIdCard } from 'react-icons/fa'
 import type { RegistrationFormData, Gender, Role, RegistrationFormComponentProps } from '../types/registration'
 import { useFormAnimations } from '../hooks/useFormAnimations'

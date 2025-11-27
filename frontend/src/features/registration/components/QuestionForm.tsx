@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import type { QuestionFormData, ParticipationType, QuestionFormComponentProps } from '../types/registration'
 import { useFormAnimations } from '../hooks/useFormAnimations'
 import { THEMATIC_AXES, PARTICIPATION_TYPES } from '../constants/formData'
