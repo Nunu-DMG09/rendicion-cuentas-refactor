@@ -1,5 +1,6 @@
 import RegistrationForm from './RegistrationForm'
 import QuestionForm from './QuestionForm'
+import RegistrationModal from './RegistrationModal'
 import { useRegistration } from '../hooks/useRegistration'
 import { useRendicion } from '../../rendicion/hooks/useRendicion'
 import type { RegistrationFormProps } from '../types/registration'
@@ -9,10 +10,12 @@ export default function RegistrationWizard({ rendicionId }: RegistrationFormProp
     const {
         currentStep,
         isLoading,
+        modalState,
         goToQuestion,
         goBackToRegistration,
         submitAttendeeOnly,
-        submitSpeakerWithQuestion
+        submitSpeakerWithQuestion,
+        closeModal
     } = useRegistration(rendicionId)
 
     if (!rendicionData) {
@@ -34,27 +37,39 @@ export default function RegistrationWizard({ rendicionId }: RegistrationFormProp
     })} del 2025`
 
     return (
-        <section className="w-full py-20 bg-gray-50 min-h-screen">
-            <div className="max-w-4xl mx-auto px-6 lg:px-8">
-                {currentStep === 'registration' ? (
-                    <RegistrationForm
-                        onSubmitAttendee={submitAttendeeOnly}
-                        onSubmitSpeaker={goToQuestion}
-                        isLoading={isLoading}
-                        rendicionTitle={renditionTitle}
-                        rendicionDate={renditionDate}
-                    />
-                ) : (
-                    <QuestionForm
-                        onSubmit={submitSpeakerWithQuestion}
-                        onBack={goBackToRegistration}
-                        isLoading={isLoading}
-                        rendicionTitle={renditionTitle}
-                        rendicionDate={renditionDate}
-                    />
-                )}
-            </div>
-        </section>
+        <>
+            <section className="w-full py-20 bg-gray-50 min-h-screen">
+                <div className="max-w-4xl mx-auto px-6 lg:px-8">
+                    {currentStep === 'registration' ? (
+                        <RegistrationForm
+                            onSubmitAttendee={submitAttendeeOnly}
+                            onSubmitSpeaker={goToQuestion}
+                            isLoading={isLoading}
+                            rendicionTitle={renditionTitle}
+                            rendicionDate={renditionDate}
+                        />
+                    ) : (
+                        <QuestionForm
+                            onSubmit={submitSpeakerWithQuestion}
+                            onBack={goBackToRegistration}
+                            isLoading={isLoading}
+                            rendicionTitle={renditionTitle}
+                            rendicionDate={renditionDate}
+                        />
+                    )}
+                </div>
+            </section>
+
+            {/* Modal */}
+            <RegistrationModal
+                isOpen={modalState.isOpen}
+                onClose={closeModal}
+                type={modalState.type}
+                title={modalState.title}
+                message={modalState.message}
+                isAttendee={modalState.isAttendee}
+            />
+        </>
     )
 }
 

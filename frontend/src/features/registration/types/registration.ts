@@ -26,3 +26,22 @@ export type RegistrationData = {
 export type RegistrationFormProps = {
   rendicionId: string
 }
+
+export type RegistrationFormComponentProps = {
+  onSubmitAttendee: (data: RegistrationFormData) => void
+  onSubmitSpeaker: (data: RegistrationFormData) => void
+  isLoading: boolean
+  rendicionTitle: string
+  rendicionDate: string
+}
+
+export type QuestionFormComponentProps = {
+  onSubmit: (data: QuestionFormData) => void
+  onBack: () => void
+  isLoading: boolean
+  rendicionTitle: string
+  rendicionDate: string
+}
+
+// Re-export modal types
+export type { ModalType, RegistrationModalProps, ModalState } from './modal'
