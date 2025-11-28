@@ -7,6 +7,7 @@ import RegistrationPage from './pages/RegistrationPage'
 import DashboardPage from '../features/dashboard/pages/DashboardPage'
 import NuevaRendicionPage from '../features/rendicion-admin/pages/NuevaRendicionPage'
 import VerRendicionesPage from '../features/rendicion-admin/pages/VerRendicionesPage'
+import EjesTematicosPage from '../features/ejes-tematicos/pages/EjesTematicosPage'
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             <Route index element={<DashboardPage />} />
             <Route path="rendiciones/nueva-rendicion" element={<NuevaRendicionPage />} />
             <Route path="rendiciones/ver-rendiciones" element={<VerRendicionesPage />} />
+            <Route path="ejes" element={<EjesTematicosPage />} />
           </Route>
         </Routes>
       </SidebarProvider>
