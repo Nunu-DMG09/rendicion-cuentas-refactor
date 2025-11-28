@@ -37,7 +37,7 @@ export const SIDEBAR_ITEMS: SidebarItemRestricted[] = [
         ]
     },
     {
-        text: "Ejes Tematicos",
+        text: "Ejes Temáticos",
         to: "/admin/ejes",
         icon: MdCategory,
     },
