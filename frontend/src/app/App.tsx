@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage'
 import RendicionPage from './pages/RendicionPage'
 import RegistrationPage from './pages/RegistrationPage'
 import DashboardPage from '../features/dashboard/pages/DashboardPage'
+import  NuevaRendicionPage  from '../features/rendicion-admin/pages/NuevaRendicionPage'
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           </Route>
           <Route path='/admin' element={<AdminLayout />}>
             <Route index element={<DashboardPage />} />
+            <Route path="rendiciones/nueva-rendicion" element={<NuevaRendicionPage />} />
             {/* Aqui van a renderizar todas las paginas que esten debajo de admin */}
           </Route>
         </Routes>
