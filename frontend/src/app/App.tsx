@@ -9,6 +9,7 @@ import NuevaRendicionPage from '../features/rendicion-admin/pages/NuevaRendicion
 import VerRendicionesPage from '../features/rendicion-admin/pages/VerRendicionesPage'
 import EjesTematicosPage from '../features/ejes-tematicos/pages/EjesTematicosPage'
 import ReportesPage from '../features/reportes/pages/ReportesPage'
+import VerPreguntasPage from '../features/preguntas/pages/VerPreguntasPage'
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path="rendiciones/ver-rendiciones" element={<VerRendicionesPage />} />
             <Route path="ejes" element={<EjesTematicosPage />} />
             <Route path="reportes" element={<ReportesPage />} />
+            <Route path="preguntas/ver" element={<VerPreguntasPage />} />
           </Route>
         </Routes>
       </SidebarProvider>
