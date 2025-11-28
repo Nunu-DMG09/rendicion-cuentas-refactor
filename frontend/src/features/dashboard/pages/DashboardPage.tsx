@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { FaSyncAlt } from 'react-icons/fa'
 import StatCard from '../components/StatCard'
 import DashboardChart from '../components/DashboardChart'

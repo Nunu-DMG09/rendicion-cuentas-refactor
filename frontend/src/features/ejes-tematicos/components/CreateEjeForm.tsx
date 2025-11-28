@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { FaPlus, FaTags } from 'react-icons/fa'
 import type { CreateEjeFormProps } from '../types/ejesTematicos'
 

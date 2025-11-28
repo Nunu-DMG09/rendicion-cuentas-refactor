@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import type { StatCardProps } from '../types/dashboard'
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa'
 

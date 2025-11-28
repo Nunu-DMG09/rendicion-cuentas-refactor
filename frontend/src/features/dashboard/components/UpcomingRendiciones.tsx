@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { FaCalendarAlt, FaUsers, FaQuestionCircle } from 'react-icons/fa'
 import type { UpcomingRendicion } from '../types/dashboard'
 

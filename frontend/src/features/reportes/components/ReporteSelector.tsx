@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { FaCalendarAlt, FaSearch } from 'react-icons/fa'
 import type { RendicionOption } from '../types/reportes'
 

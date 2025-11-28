@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { FaEye, FaTable, FaFileExcel } from 'react-icons/fa'
 import type { Participante } from '../types/reportes'
 import ReportePagination from './ReportePagination'

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { FaTags, FaCheckCircle, FaBan } from 'react-icons/fa'
 
 type Props = {

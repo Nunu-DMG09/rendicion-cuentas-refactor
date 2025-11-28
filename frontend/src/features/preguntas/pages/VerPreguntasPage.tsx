@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import PreguntasSelector from '../components/PreguntasSelector'
 import PreguntasStats from '../components/PreguntasStats'
 import PreguntasPorEjeList from '../components/PreguntasPorEjeList'

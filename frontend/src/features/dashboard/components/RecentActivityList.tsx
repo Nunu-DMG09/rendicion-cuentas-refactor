@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { FaUser, FaQuestionCircle, FaCalendarAlt } from 'react-icons/fa'
 import type { RecentActivity } from '../types/dashboard'
 

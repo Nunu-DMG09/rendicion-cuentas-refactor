@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { FaCloudUploadAlt, FaTimes, FaImage } from 'react-icons/fa'
 import type { BannerSelectorProps } from '../types/rendicionAdmin'
 import { ACCEPTED_IMAGE_FORMATS, MAX_FILE_SIZE_MB, MAX_FILES } from '../constants/rendicionAdminData'

@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { FaTimes, FaQuestionCircle, FaUser } from 'react-icons/fa'
 import type { ReporteModalState } from '../types/reportes'
 

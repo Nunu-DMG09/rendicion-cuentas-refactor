@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import ReporteSelector from '../components/ReporteSelector'
 import ReporteStats from '../components/ReporteStats'
 import ReporteTable from '../components/ReporteTable'

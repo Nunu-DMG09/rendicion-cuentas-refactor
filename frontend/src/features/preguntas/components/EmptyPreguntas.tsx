@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { FaQuestionCircle } from 'react-icons/fa'
 
 export default function EmptyPreguntas() {

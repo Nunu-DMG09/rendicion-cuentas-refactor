@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { FaCalendarAlt, FaExclamationCircle } from 'react-icons/fa'
 import RendicionCard from '../components/RendicionCard'
 import YearSelector from '../components/YearSelector'

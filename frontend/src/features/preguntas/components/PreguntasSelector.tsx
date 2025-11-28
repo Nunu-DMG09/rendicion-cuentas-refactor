@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { FaCalendarAlt, FaSearch, FaDesktop } from 'react-icons/fa'
 import type { RendicionOptionPreguntas } from '../types/preguntas'
 

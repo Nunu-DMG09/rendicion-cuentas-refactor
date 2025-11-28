@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import CreateEjeForm from '../components/CreateEjeForm'
 import EjesTable from '../components/EjesTable'
 import EjesModal from '../components/EjesModal'

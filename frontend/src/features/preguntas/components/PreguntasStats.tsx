@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { FaQuestionCircle, FaCheckCircle, FaClock, FaTags } from 'react-icons/fa'
 
 type Props = {

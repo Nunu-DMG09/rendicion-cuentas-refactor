@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { FaBan, FaCheckCircle, FaTags, FaList } from 'react-icons/fa'
 import type { EjesTableProps } from '../types/ejesTematicos'
 import Pagination from './Pagination'
