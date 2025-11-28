@@ -53,7 +53,7 @@ export default function RendicionForm({ onSubmit, isLoading }: RendicionFormProp
                 return
             }
 
-            // Crear preview
+            // Crear preview del bannrer
             const preview = URL.createObjectURL(file)
             const bannerFile: BannerFile = {
                 id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
