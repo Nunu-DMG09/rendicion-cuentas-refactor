@@ -231,4 +231,24 @@ class RendicionController extends ResourceController
             return $this->respond(['status' => 'error', 'message' => 'Error asociando ejes', 'error' => $e->getMessage()], 500);
         }
     }
+
+    /**
+     * Listar participantes de una rendición con sus preguntas y ejes
+     */
+    public function participantes($id = null)
+    {
+        if (empty($id) || !is_numeric($id)) {
+            return $this->respond(['status' => 'error', 'message' => 'id rendicion inválido'], 400);
+        }
+
+        try {
+            $userModel = new \App\Models\UsuarioModel();
+            $data = $userModel->getUsuariosPorRendicionConPreguntas((int)$id);
+
+            return $this->respond(['status' => 'success', 'message' => 'Participantes obtenidos', 'data' => $data], 200);
+        } catch (\Throwable $e) {
+            log_message('error', 'Error obteniendo participantes: ' . $e->getMessage());
+            return $this->respond(['status' => 'error', 'message' => 'Error obteniendo participantes'], 500);
+        }
+    }
 }
