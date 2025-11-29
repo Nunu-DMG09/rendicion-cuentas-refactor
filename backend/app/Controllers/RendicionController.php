@@ -39,7 +39,8 @@ class RendicionController extends ResourceController
 
     public function crearRendicion()
     {
-        // Obtener input (form-data principalmente)
+       
+        $input = [];
         try {
             $contentType = $this->request->getHeaderLine('Content-Type') ?? '';
             if (stripos($contentType, 'application/json') !== false || $this->request->is('json')) {
@@ -52,14 +53,7 @@ class RendicionController extends ResourceController
             return $this->respond(['status' => 'error', 'message' => 'Payload inválido'], 400);
         }
 
-        // permitir crear rendición sin datos de input si solo se suben archivos
-        if (empty($input)) {
-            $input = []; // continuar con array vacío
-        }
-
-        // obtener admin logeado desde cookie JWT; si no, usar admin_id del payload
-        helper('cookie');
-        helper('jwt');
+        helper('cookie'); helper('jwt');
         $loggedAdminId = null;
         try {
             $token = get_cookie('access_token') ?: null;
@@ -68,121 +62,187 @@ class RendicionController extends ResourceController
                 $loggedAdminId = isset($decoded->data->id) ? (int)$decoded->data->id : null;
             }
         } catch (\Throwable $e) {
-            log_message('debug', 'No se pudo obtener admin logeado desde token: ' . $e->getMessage());
+            log_message('debug', 'No se pudo obtener admin desde token: ' . $e->getMessage());
         }
 
         $adminId = $input['admin_id'] ?? $loggedAdminId;
-        if (!$adminId) return $this->respond(['status' => 'error', 'message' => 'admin_id requerido (o iniciar sesión)'], 400);
+        if (!$adminId) return $this->respond(['status' => 'error', 'message' => 'admin_id requerido'], 400);
 
-        // recolectar archivos subidos (form-data)
+        
         $uploadedFiles = [];
-        try {
-            $files = $this->request->getFiles();
-            foreach ($files as $key => $fileEntry) {
-                if (is_array($fileEntry)) {
-                    // múltiples archivos con la misma key (ej: banner[])
-                    foreach ($fileEntry as $file) {
-                        if ($file instanceof \CodeIgniter\HTTP\Files\UploadedFile && $file->isValid() && !$file->hasMoved()) {
-                            $uploadedFiles[] = $file;
+        $normalize = function ($filesArray) {
+            $out = [];
+            foreach ($filesArray as $field => $file) {
+                if (!isset($file['name'])) continue;
+                if (is_array($file['name'])) {
+                    $count = count($file['name']);
+                    for ($i = 0; $i < $count; $i++) {
+                        if (isset($file['error'][$i]) && $file['error'][$i] === UPLOAD_ERR_OK && !empty($file['tmp_name'][$i])) {
+                            $out[] = [
+                                'tmp_name' => $file['tmp_name'][$i],
+                                'name'     => $file['name'][$i],
+                                'type'     => $file['type'][$i] ?? null,
+                                'size'     => $file['size'][$i] ?? 0,
+                            ];
                         }
                     }
                 } else {
-                    // archivo único
-                    if ($fileEntry instanceof \CodeIgniter\HTTP\Files\UploadedFile && $fileEntry->isValid() && !$fileEntry->hasMoved()) {
-                        $uploadedFiles[] = $fileEntry;
+                    if (isset($file['error']) && $file['error'] === UPLOAD_ERR_OK && !empty($file['tmp_name'])) {
+                        $out[] = [
+                            'tmp_name' => $file['tmp_name'],
+                            'name'     => $file['name'],
+                            'type'     => $file['type'] ?? null,
+                            'size'     => $file['size'] ?? 0,
+                        ];
                     }
                 }
             }
-        } catch (\Throwable $e) {
-            log_message('error', 'Error leyendo archivos en crearRendicion: ' . $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error procesando archivos'], 500);
+            return $out;
+        };
+
+       
+        $uploadedFiles = $normalize($_FILES);
+      
+        $uploadedFiles = array_slice($uploadedFiles, 0, 10);
+      
+
+        $rendicionData = [
+            'fecha' => $input['fecha'] ?? date('Y-m-d'),
+            'hora'  => $input['hora'] ?? date('H:i:s'),
+            'admin_id' => $adminId
+        ];
+
+       
+        $ejesSeleccionados = [];
+        if (!empty($input['ejes'])) {
+            $ejesRaw = $input['ejes'];
+            if (is_string($ejesRaw)) {
+                $decoded = json_decode($ejesRaw, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $ejesRaw = $decoded;
+                } else {
+                    $parts = array_filter(array_map('trim', explode(',', trim($ejesRaw, "[] \t\n\r\0\x0B"))));
+                    $ejesRaw = array_map(function ($v) { return ['id_eje' => (int)$v, 'cantidad_pregunta' => 0]; }, $parts);
+                }
+            }
+            if (is_array($ejesRaw)) {
+                foreach ($ejesRaw as $eje) {
+                    if (is_array($eje) && isset($eje['id_eje'])) {
+                        $ejesSeleccionados[] = [
+                            'id_eje' => (int)$eje['id_eje'],
+                            'cantidad_pregunta' => isset($eje['cantidad_pregunta']) ? (int)$eje['cantidad_pregunta'] : 0
+                        ];
+                    } elseif (is_numeric($eje)) {
+                        $ejesSeleccionados[] = ['id_eje' => (int)$eje, 'cantidad_pregunta' => 0];
+                    }
+                }
+            }
+        } elseif (!empty($input['id_eje'])) {
+            $ids = $input['id_eje'];
+            if (is_string($ids)) {
+                $ids = trim($ids);
+                $decoded = json_decode($ids, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $ids = $decoded;
+                } else {
+                    $ids = array_filter(array_map('trim', explode(',', trim($ids, "[] \t\n\r\0\x0B"))));
+                }
+            }
+            if (is_array($ids)) {
+                foreach ($ids as $id) $ejesSeleccionados[] = ['id_eje' => (int)$id, 'cantidad_pregunta' => 0];
+            }
         }
 
-        // limitar máximo 3 archivos
-        if (count($uploadedFiles) > 3) {
-            $uploadedFiles = array_slice($uploadedFiles, 0, 3);
-        }
+        $rendModel = new RendicionModel();
+        $banerModel = new BanerRendicionModel();
+        $ejeSelModel = new EjeSeleccionadoModel();
+        $histModel = new HistorialAdminModel();
 
-        $rendModel  = new RendicionModel();
-        $db         = \Config\Database::connect();
-        $banerTable = $db->table('baner_rendicion');
-
-        $createdRendiciones = [];
-        $createdBaners = [];
-
+        $db = \Config\Database::connect();
         $db->transStart();
         try {
-            // crear rendición (sin campo path - eliminado)
-            $payload = [
-                'fecha'    => $input['fecha'] ?? date('Y-m-d'),
-                'hora'     => $input['hora'] ?? date('H:i:s'),
-                'admin_id' => $adminId,
-            ];
-
-            $insertResult = $rendModel->insert($payload);
+            $insertResult = $rendModel->insert($rendicionData);
             if ($insertResult === false) {
-                $db->transRollback();
                 $errors = $rendModel->errors();
-                $dbError = $db->error();
-                log_message('error', 'Insert rendicion falló: ' . json_encode($errors) . ' | DB: ' . json_encode($dbError));
-                return $this->respond(['status' => 'error', 'message' => 'Error creando rendición', 'errors' => $errors, 'db_error' => $dbError], 422);
+                $db->transRollback();
+                return $this->respond(['status' => 'error', 'message' => 'Error creando rendición', 'errors' => $errors], 422);
             }
             $rendicionId = $rendModel->getInsertID() ?: $insertResult;
 
-            // mover cada archivo y crear fila propia en baner_rendicion
+            $bannersGuardados = [];
+            $failedFiles = [];
             if (!empty($uploadedFiles)) {
-                // crear carpeta física: C:\xampp\htdocs\...\public\uploads\rendicion\{ID}
                 $destFolder = FCPATH . 'uploads/rendicion/' . $rendicionId . '/';
                 if (!is_dir($destFolder) && !mkdir($destFolder, 0755, true) && !is_dir($destFolder)) {
                     throw new \RuntimeException('No se pudo crear carpeta uploads para la rendición ' . $rendicionId);
                 }
 
                 foreach ($uploadedFiles as $index => $file) {
-                    $newName = $file->getRandomName();
-                    $fullPath = $destFolder . $newName;
-                    
-                    if (!$file->move($destFolder, $newName)) {
-                        $db->transRollback();
-                        log_message('error', 'Fallo moviendo archivo ' . ($index + 1) . ' a carpeta rendicion ' . $rendicionId);
-                        return $this->respond(['status' => 'error', 'message' => 'Error moviendo archivo ' . ($index + 1)], 500);
+                    $originalName = $file['name'] ?? 'upload';
+                    $ext = pathinfo($originalName, PATHINFO_EXTENSION);
+                    $newName = 'banner_' . $rendicionId . '_' . ($index + 1) . '_' . uniqid() . ($ext ? '.' . $ext : '');
+                    $tmp = $file['tmp_name'];
+
+                    $moved = false;
+                  
+                    if (is_uploaded_file($tmp) && @move_uploaded_file($tmp, $destFolder . $newName)) {
+                        $moved = true;
+                    } else {
+                       
+                        if (!empty($tmp) && file_exists($tmp)) {
+                            if (@rename($tmp, $destFolder . $newName) || @copy($tmp, $destFolder . $newName)) {
+                                $moved = true;
+                            }
+                        }
                     }
 
-                    // ruta completa para almacenar en BD según tu ejemplo
-                    $fullStoragePath = 'C:\\xampp\\htdocs\\repositorios-github\\rendicion-cuentas-refactor\\backend\\public\\uploads\\rendicion\\' . $rendicionId . '\\' . $newName;
-
-                    // insertar UNA fila por cada archivo subido
-                    $insertData = [
-                        'id_rendicion' => $rendicionId,
-                        'file_path'    => $fullStoragePath,
-                        'created_at'   => date('Y-m-d H:i:s')
-                    ];
-                    
-                    $insertBanerResult = $banerTable->insert($insertData);
-                    if ($insertBanerResult) {
-                        $createdBaners[] = $db->insertID();
-                        log_message('info', 'Archivo ' . ($index + 1) . ' guardado: ' . $fullStoragePath);
+                    if ($moved) {
+                        @chmod($destFolder . $newName, 0644);
+                        $relativePath = 'uploads/rendicion/' . $rendicionId . '/' . $newName;
+                        $bannerData = ['id_rendicion' => $rendicionId, 'file_path' => $relativePath];
+                        $banInsert = $banerModel->insert($bannerData);
+                        if ($banInsert === false) {
+                            $failedFiles[] = ['index' => $index + 1, 'name' => $originalName, 'error' => $banerModel->errors()];
+                            log_message('error', 'Error insertando baner en BD: ' . json_encode($banerModel->errors()));
+                        } else {
+                            $bannerId = $banerModel->getInsertID() ?: $banInsert;
+                            $bannersGuardados[] = ['id' => $bannerId, 'file_path' => $relativePath, 'original_name' => $originalName, 'index' => $index + 1];
+                        }
                     } else {
-                        log_message('error', 'Error insertando baner_rendicion para archivo ' . ($index + 1));
+                        $failedFiles[] = ['index' => $index + 1, 'name' => $originalName, 'reason' => 'no se pudo mover archivo'];
+                        log_message('error', 'No se pudo mover archivo index ' . ($index + 1) . ' tmp: ' . ($tmp ?? 'n/a'));
                     }
                 }
             }
 
-            $createdRendiciones[] = $rendModel->find($rendicionId);
+           
+            $ejesAsociados = [];
+            foreach ($ejesSeleccionados as $eje) {
+                $row = ['id_rendicion' => $rendicionId, 'id_eje' => $eje['id_eje'], 'cantidad_pregunta' => $eje['cantidad_pregunta']];
+                $esInsert = $ejeSelModel->insert($row);
+                if ($esInsert === false) {
+                    log_message('error', 'Error asociando eje: ' . json_encode($ejeSelModel->errors()));
+                    $db->transRollback();
+                    return $this->respond(['status' => 'error', 'message' => 'Error asociando ejes', 'errors' => $ejeSelModel->errors()], 422);
+                }
+                $ejesAsociados[] = array_merge($row, ['id' => $ejeSelModel->getInsertID() ?: $esInsert]);
+            }
+
+         
+            $histModel->insert(['id_admin' => $adminId, 'accion' => 'crear', 'motivo' => 'Creó rendición ' . $rendicionId, 'realizado_por' => $adminId]);
 
             $db->transComplete();
             if ($db->transStatus() === false) throw new \Exception('Transacción fallida');
 
-            return $this->respondCreated([
-                'status' => 'success',
-                'message' => 'Rendición creada con ' . count($uploadedFiles) . ' archivo(s)',
-                'rendicion_id' => $rendicionId,
-                'rendiciones' => $createdRendiciones,
-                'baners_created' => count($createdBaners),
-                'baner_ids' => $createdBaners
-            ]);
+            $rendicionCreada = $rendModel->find($rendicionId);
+
+            $response = ['status' => 'success', 'message' => 'Rendición creada exitosamente', 'data' => ['rendicion' => $rendicionCreada, 'banners' => $bannersGuardados, 'ejes_asociados' => $ejesAsociados]];
+            if (!empty($failedFiles)) $response['warnings'] = ['failed_files' => $failedFiles];
+
+            return $this->respondCreated($response);
         } catch (\Throwable $e) {
             $db->transRollback();
-            log_message('error', $e->getMessage());
+            log_message('error', 'Error en crearRendicion: ' . $e->getMessage());
             return $this->respond(['status' => 'error', 'message' => 'Error creando rendición', 'error' => $e->getMessage()], 500);
         }
     }
