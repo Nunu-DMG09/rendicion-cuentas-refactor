@@ -7,16 +7,15 @@ import { useEjesTematicos } from '../hooks/useEjesTematicos'
 
 export default function EjesTematicosPage() {
     const {
-        ejes,
-        isLoading,
-        isCreating,
-        isToggling,
         createEje,
         showConfirmToggle,
         modal,
         closeModal,
         confirmModalAction,
-        stats
+        stats,
+        ejesQuery,
+        toggleEstadoMutation,
+        createEjeMutation
     } = useEjesTematicos()
 
     return (
@@ -25,45 +24,35 @@ export default function EjesTematicosPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
         >
-            {/* Header */}
-            <div className="mb-6">
+            <header className="mb-6">
                 <h1 className="text-3xl font-bold text-gray-900">Ejes Temáticos</h1>
                 <p className="text-gray-600 mt-1">Gestiona los ejes temáticos para las rendiciones de cuentas</p>
-            </div>
-
-            {/* Stats */}
+            </header>
             <EjesStats 
-                total={stats.total}
-                activos={stats.activos}
-                inactivos={stats.inactivos}
+                total={stats.total || 0}
+                activos={stats.activos || 0}
+                inactivos={stats.inactivos || 0}
             />
-
-            {/* Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Create Form */}
                 <div className="lg:col-span-1">
                     <CreateEjeForm 
                         onSubmit={createEje}
-                        isLoading={isCreating}
+                        isLoading={createEjeMutation.isPending}
                     />
                 </div>
-
-                {/* Table */}
                 <div className="lg:col-span-2">
                     <EjesTable 
-                        ejes={ejes}
+                        ejes={ejesQuery.data || []}
                         onToggleEstado={showConfirmToggle}
-                        isLoading={isLoading}
+                        isLoading={ejesQuery.isFetching}
                     />
                 </div>
             </div>
-
-            {/* Modal */}
             <EjesModal 
                 modal={modal}
                 onClose={closeModal}
                 onConfirm={confirmModalAction}
-                isLoading={isToggling}
+                isLoading={toggleEstadoMutation.isPending}
             />
         </motion.div>
     )
