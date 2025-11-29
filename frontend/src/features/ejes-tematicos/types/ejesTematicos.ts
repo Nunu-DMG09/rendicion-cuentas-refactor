@@ -1,8 +1,10 @@
 export type EjeTematico = {
     id: string
     tematica: string
-    estado: 'activo' | 'inactivo'
-    fechaCreacion: string
+    estado: '1' | '0'
+    created_at: string
+    updated_at: string
+    deleted_at: string | null
 }
 
 export type CreateEjeFormData = {
