@@ -10,53 +10,52 @@ $routes->get('/', 'Home::index');
 $routes->group('rendicion', ['namespace' => 'App\Controllers'], function($routes) {
 
     // Buscar documento
-
-    $routes->get('dni/(:segment)', 'Api::buscarDNI/$1');
-    $routes->get('ruc/(:segment)', 'Api::buscarRUC/$1');
+    $routes->get('dni/(:segment)', 'Api::buscarDNI/$1'); // Busca datos por DNI
+    $routes->get('ruc/(:segment)', 'Api::buscarRUC/$1'); // Busca datos por RUC
 
     // Rendición
-    $routes->get('/', 'RendicionController::listarRendiciones');
-    $routes->get('/(:num)', 'RendicionController::obtenerRendicion/$1');
-    $routes->post('/', 'RendicionController::crearRendicion');
-    $routes->post('/asociar-ejes', 'RendicionController::asociarEjes');
-    $routes->get('(:num)/participantes', 'RendicionController::participantes/$1');
+    $routes->get('/', 'RendicionController::listarRendiciones'); // Lista todas las rendiciones
+    $routes->get('/(:num)', 'RendicionController::obtenerRendicion/$1'); // Obtiene rendición por id
+    $routes->post('/', 'RendicionController::crearRendicion'); // Crea nueva rendición (acepta archivos)
+    $routes->post('/asociar-ejes', 'RendicionController::asociarEjes'); // Asocia ejes a una rendición
+    $routes->get('(:num)/participantes', 'RendicionController::participantes/$1'); // Participantes de una rendición
 
     // Ejes
-    $routes->get('eje/', 'EjeController::listarEjes');
-    $routes->post('eje', 'EjeController::crearEje');
+    $routes->get('eje/', 'EjeController::listarEjes'); // Lista ejes temáticos
+    $routes->post('eje', 'EjeController::crearEje'); // Crea un nuevo eje
 
     // Usuarios
-    $routes->post('usuarios', 'UsuarioController::registrarUsuario');
-    $routes->put('usuarios/(:num)/asistencia', 'UsuarioController::marcarAsistencia/$1');
-    $routes->get('rendiciones/(:num)/usuarios', 'UsuarioController::usuariosPorRendicion/$1');
-    $routes->get('usuarios/asistentes', 'UsuarioController::listarAsistentes');
-    $routes->get('usuarios/oradores', 'UsuarioController::listarOradores');
-    $routes->post('usuarios/asignar', 'UsuarioController::asignarARendicion');
+    $routes->post('usuarios', 'UsuarioController::registrarUsuario'); // Registra usuario
+    $routes->put('usuarios/(:num)/asistencia', 'UsuarioController::marcarAsistencia/$1'); // Marcar asistencia
+    $routes->get('rendiciones/(:num)/usuarios', 'UsuarioController::usuariosPorRendicion/$1'); // Usuarios por rendición
+    $routes->get('usuarios/asistentes', 'UsuarioController::listarAsistentes'); // Lista asistentes
+    $routes->get('usuarios/oradores', 'UsuarioController::listarOradores'); // Lista oradores
+    $routes->post('usuarios/asignar', 'UsuarioController::asignarARendicion'); // Asignar usuario a rendición
 
     // Preguntas
-    $routes->post('preguntas', 'PreguntaController::crearPregunta');
-    $routes->get('ejes/(:num)/preguntas', 'PreguntaController::preguntasPorEje/$1');
-    $routes->get('rendiciones/(:num)/preguntas', 'PreguntaController::preguntasPorRendicion/$1');
-    $routes->get('preguntas/fecha/(:segment)', 'PreguntaController::preguntasPorFechaRendicion/$1');
+    $routes->post('preguntas', 'PreguntaController::crearPregunta'); // Crear pregunta
+    $routes->get('ejes/(:num)/preguntas', 'PreguntaController::preguntasPorEje/$1'); // Preguntas por eje
+    $routes->get('rendiciones/(:num)/preguntas', 'PreguntaController::preguntasPorRendicion/$1'); // Preguntas por rendición
+    $routes->get('preguntas/fecha/(:segment)', 'PreguntaController::preguntasPorFechaRendicion/$1'); // Preguntas por fecha
 
     // Selección de preguntas
-    $routes->post('selecciones', 'SeleccionController::seleccionarPregunta');
-    $routes->get('eje-seleccionado/(:num)', 'SeleccionController::preguntasSeleccionadasPorEjeSeleccionado/$1');
+    $routes->post('selecciones', 'SeleccionController::seleccionarPregunta'); // Seleccionar pregunta
+    $routes->get('eje-seleccionado/(:num)', 'SeleccionController::preguntasSeleccionadasPorEjeSeleccionado/$1'); // Preguntas seleccionadas por eje_seleccionado
 
     // Historial admin
-    $routes->get('historial', 'HistorialAdminController::listarHistorial');
-    $routes->get('historial/admin/(:num)', 'HistorialAdminController::historialPorAdministrador/$1');
+    $routes->get('historial', 'HistorialAdminController::listarHistorial'); // Lista historial de acciones admin
+    $routes->get('historial/admin/(:num)', 'HistorialAdminController::historialPorAdministrador/$1'); // Historial por administrador
 
     // Administradores
-    $routes->get('admin', 'AdministradorController::listarAdministradores');
-    $routes->get('admin/dni/(:segment)', 'AdministradorController::buscarPorDNI/$1');
-    $routes->post('admin', 'AdministradorController::crearAdministrador');
-    $routes->put('admin/(:num)', 'AdministradorController::ActualizarAdministrador/$1');
-    $routes->delete('admin/(:num)', 'AdministradorController::eliminarAdministrador/$1');
+    $routes->get('admin', 'AdministradorController::listarAdministradores'); // Lista administradores
+    $routes->get('admin/dni/(:segment)', 'AdministradorController::buscarPorDNI/$1'); // Buscar admin por DNI
+    $routes->post('admin', 'AdministradorController::crearAdministrador'); // Crear administrador
+    $routes->put('admin/(:num)', 'AdministradorController::ActualizarAdministrador/$1'); // Actualizar administrador
+    $routes->delete('admin/(:num)', 'AdministradorController::eliminarAdministrador/$1'); // Eliminar administrador
 
     // Autenticación
-    $routes->post('auth/login', 'AuthController::login');
-    $routes->post('auth/logout', 'AuthController::logout');
-    $routes->get('auth/refresh', 'AuthController::refresh');
-    $routes->get('auth/test', 'AuthController::testFilter');
+    $routes->post('auth/login', 'AuthController::login'); // Login (obtener token)
+    $routes->post('auth/logout', 'AuthController::logout'); // Logout (invalidar token)
+    $routes->get('auth/refresh', 'AuthController::refresh'); // Refrescar token
+    $routes->get('auth/test', 'AuthController::testFilter'); // Ruta de prueba con filtro auth
 });
