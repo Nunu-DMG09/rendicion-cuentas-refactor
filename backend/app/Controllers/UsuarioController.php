@@ -4,21 +4,21 @@ namespace App\Controllers;
 
 use CodeIgniter\RESTful\ResourceController;
 use App\Models\UsuarioModel;
+use App\Models\PreguntaModel;
 
 class UsuarioController extends ResourceController
 {
     protected $format = 'json';
 
-    /**
-     * registrarUsuario
-     * Registra un usuario/participante.
-     * Payload JSON: { nombre, sexo, tipo_participacion, ... }
-     */
+    /*=======================================
+    REGISTRAR USUARIOS
+    =======================================*/
     public function registrarUsuario()
     {
         $input = $this->request->getJSON(true);
         if (!$input) return $this->respond(['status' => 'error', 'message' => 'Payload inválido'], 400);
 
+        // Validaciones básicas siempre requeridas
         $required = ['nombre', 'sexo', 'tipo_participacion'];
         foreach ($required as $r) {
             if (empty($input[$r])) {
@@ -26,7 +26,25 @@ class UsuarioController extends ResourceController
             }
         }
 
-        $model = new UsuarioModel();
+        // Si es orador, exigir campos adicionales
+        $isOrador = (isset($input['tipo_participacion']) && $input['tipo_participacion'] === 'orador');
+        if ($isOrador) {
+            if (empty($input['titulo'])) {
+                return $this->respond(['status' => 'error', 'message' => 'titulo es requerido para orador'], 400);
+            }
+            if (empty($input['id_eje'])) {
+                return $this->respond(['status' => 'error', 'message' => 'id_eje (eje tematico) es requerido para orador'], 400);
+            }
+            if (empty($input['pregunta'])) {
+                return $this->respond(['status' => 'error', 'message' => 'pregunta es requerida para orador'], 400);
+            }
+        }
+
+        $userModel = new UsuarioModel();
+        $pregModel = new PreguntaModel();
+        $db = \Config\Database::connect();
+
+        $db->transStart();
         try {
             $data = [
                 'nombre' => $input['nombre'],
@@ -40,16 +58,43 @@ class UsuarioController extends ResourceController
                 'asistencia' => $input['asistencia'] ?? 'no'
             ];
 
-            $id = $model->insert($data);
-            if ($id === false) {
-                // validar errores de validación del modelo
-                $errors = $model->errors();
-                return $this->respond(['status' => 'error', 'message' => 'Validación fallida', 'errors' => $errors], 422);
+            $userId = $userModel->insert($data);
+            if ($userId === false) {
+                $db->transRollback();
+                $errors = $userModel->errors();
+                return $this->respond(['status' => 'error', 'message' => 'Validación usuario falló', 'errors' => $errors], 422);
             }
 
-            $created = $model->find($id);
-            return $this->respondCreated(['status' => 'success', 'message' => 'Usuario registrado', 'data' => $created]);
+            $createdUser = $userModel->find($userId);
+
+            // Si es orador, crear pregunta y asociarla al usuario y eje
+            $createdQuestion = null;
+            if ($isOrador) {
+                $pregData = [
+                    'contenido' => $input['pregunta'],
+                    'id_usuario' => (int)$userId,
+                    'id_eje' => (int)$input['id_eje']
+                ];
+                $pregId = $pregModel->insert($pregData);
+                if ($pregId === false) {
+                    $db->transRollback();
+                    $errors = $pregModel->errors();
+                    return $this->respond(['status' => 'error', 'message' => 'Error guardando pregunta', 'errors' => $errors], 422);
+                }
+                $createdQuestion = $pregModel->find($pregId);
+            }
+
+            $db->transComplete();
+            if ($db->transStatus() === false) {
+                return $this->respond(['status' => 'error', 'message' => 'Transacción fallida'], 500);
+            }
+
+            $response = ['status' => 'success', 'message' => 'Usuario registrado', 'data' => $createdUser];
+            if ($createdQuestion) $response['pregunta'] = $createdQuestion;
+
+            return $this->respondCreated($response);
         } catch (\Throwable $e) {
+            $db->transRollback();
             log_message('error', $e->getMessage());
             return $this->respond(['status' => 'error', 'message' => 'Error registrando usuario'], 500);
         }
@@ -91,6 +136,69 @@ class UsuarioController extends ResourceController
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
             return $this->respond(['status' => 'error', 'message' => 'Error obteniendo usuarios'], 500);
+        }
+    }
+
+    /*=======================================
+    LISTAR A LOS USUARIOS QUE SON ASISTENTES
+    =======================================*/
+    public function listarAsistentes()
+    {
+        try {
+            $model = new UsuarioModel();
+            $data = $model->getAsistentes();
+            return $this->respond(['status' => 'success', 'message' => 'Asistentes obtenidos', 'data' => $data], 200);
+        } catch (\Throwable $e) {
+            log_message('error', $e->getMessage());
+            return $this->respond(['status' => 'error', 'message' => 'Error obteniendo asistentes'], 500);
+        }
+    }
+
+    /*=======================================
+    LISTAR A LOS USUARIOS QUE SON ORADORES
+    =======================================*/
+    public function listarOradores()
+    {
+        try {
+            $model = new UsuarioModel();
+            $data = $model->getOradores();
+            return $this->respond(['status' => 'success', 'message' => 'Oradores obtenidos', 'data' => $data], 200);
+        } catch (\Throwable $e) {
+            log_message('error', $e->getMessage());
+            return $this->respond(['status' => 'error', 'message' => 'Error obteniendo oradores'], 500);
+        }
+    }
+
+    /**
+     * Asignar uno o varios usuarios a una rendición.
+     * Payload JSON: { "id_rendicion": 5, "user_ids": [10,11,12] }
+     */
+    public function asignarARendicion()
+    {
+        $input = $this->request->getJSON(true);
+        if (!$input || !isset($input['id_rendicion']) || empty($input['user_ids'])) {
+            return $this->respond(['status' => 'error', 'message' => 'id_rendicion y user_ids son requeridos'], 400);
+        }
+
+        $idRend = (int)$input['id_rendicion'];
+        $userIds = is_array($input['user_ids']) ? array_map('intval', $input['user_ids']) : [(int)$input['user_ids']];
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+        try {
+            $builder = $db->table('usuario');
+            $builder->whereIn('id', $userIds)->update(['id_rendicion' => $idRend]);
+
+            $db->transComplete();
+            if ($db->transStatus() === false) {
+                return $this->respond(['status' => 'error', 'message' => 'Transacción fallida'], 500);
+            }
+
+            return $this->respond(['status' => 'success', 'message' => 'Usuarios asignados a rendición', 'id_rendicion' => $idRend, 'user_ids' => $userIds], 200);
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            log_message('error', 'Error asignando usuarios: ' . $e->getMessage());
+            return $this->respond(['status' => 'error', 'message' => 'Error asignando usuarios'], 500);
         }
     }
 }
