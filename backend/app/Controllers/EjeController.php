@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers;
 
 use CodeIgniter\RESTful\ResourceController;
@@ -20,7 +21,7 @@ class EjeController extends ResourceController
             $hasData = count($data) > 0;
             return $this->respond([
                 'success' => $hasData,
-                'message' => $hasData ? 'Ejes encontrados' : 'No se encontraron ejes', 
+                'message' => $hasData ? 'Ejes encontrados' : 'No se encontraron ejes',
                 'data' => $data
             ]);
         } catch (\Throwable $e) {
@@ -43,7 +44,6 @@ class EjeController extends ResourceController
 
         $model = new EjeModel();
         try {
-           
             if (isset($input['estado'])) {
                 if (is_numeric($input['estado'])) {
                     $estado = (int)$input['estado'];
@@ -56,12 +56,10 @@ class EjeController extends ResourceController
             } else {
                 $estado = 1;
             }
-
             $dataToInsert = [
                 'tematica' => $input['tematica'],
                 'estado'   => $estado
             ];
-
             $insertResult = $model->insert($dataToInsert);
 
             if ($insertResult === false) {
@@ -86,10 +84,31 @@ class EjeController extends ResourceController
                 return $this->respond(['status' => 'error', 'message' => 'Registro creado pero no se pudo recuperar', 'id' => $insertId, 'db_error' => $dbErr], 500);
             }
 
-            return $this->respondCreated(['status' => 'success', 'message' => 'Eje creado', 'data' => $created]);
+            return $this->respondCreated(['success' => isset($created), 'message' => 'Eje creado', 'data' => $created]);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
             return $this->respond(['status' => 'error', 'message' => 'Error creando eje'], 500);
+        }
+    }
+
+    /**
+     * toggleEjeEstado
+     * Habilita o deshabilita un eje por id.
+     * @param int $id
+     */
+    public function toggleEjeEstado($id)
+    {
+        $model = new EjeModel();
+        try {
+            $eje = $model->find($id);
+            if (!$eje) return $this->respond(['status' => 'error', 'message' => 'Eje no encontrado'], 404);
+            $newEstado = $eje['estado'] === "1" ? 0 : 1;
+            $model->update($id, ['estado' => $newEstado]);
+            $updatedEje = $model->find($id);
+            return $this->respond(['success' => isset($updatedEje), 'message' => 'Estado del eje actualizado', 'data' => $updatedEje]);
+        } catch (\Throwable $e) {
+            log_message('error', $e->getMessage());
+            return $this->respond(['status' => 'error', 'message' => 'Error actualizando estado del eje'], 500);
         }
     }
 }

@@ -23,6 +23,7 @@ $routes->group('rendicion',  ['namespace' => 'App\Controllers', 'filter' => 'cor
     // Ejes
     $routes->get('ejes', 'EjeController::listarEjes'); // Lista ejes temáticos
     $routes->post('ejes', 'EjeController::crearEje'); // Crea un nuevo eje
+    $routes->put('ejes/(:num)/toggle-estado', 'EjeController::toggleEjeEstado/$1'); // Habilita o deshabilita un eje
 
     // Usuarios
     $routes->post('usuarios', 'UsuarioController::registrarUsuario'); // Registra usuario
