@@ -38,7 +38,7 @@ class EjeController extends ResourceController
 
         $model = new EjeModel();
         try {
-            // Normalizar estado: permitir 'habilitado'|'deshabilitado' o 1|0
+           
             if (isset($input['estado'])) {
                 if (is_numeric($input['estado'])) {
                     $estado = (int)$input['estado'];
