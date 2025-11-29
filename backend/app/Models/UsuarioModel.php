@@ -67,4 +67,137 @@ class UsuarioModel extends Model
 
     protected $skipValidation       = false;
     protected $cleanValidationRules = true;
+
+
+    
+    public function getUsuariosPorTipo(string $tipo): array
+    {
+        $db = \Config\Database::connect();
+        $builder = $db->table($this->table . ' u');
+
+        // Campos base del usuario
+        $builder->select('u.id,u.nombre,u.dni,u.sexo,u.tipo_participacion,u.titulo,u.ruc_empresa,u.nombre_empresa,u.id_rendicion,u.asistencia,u.created_at');
+
+        if ($tipo === 'orador') {
+            
+            $builder->select('p.id AS pregunta_id, p.contenido AS pregunta_contenido, p.id_eje');
+            $builder->join('pregunta p', 'p.id_usuario = u.id', 'left');
+        }
+
+        $builder->where('u.tipo_participacion', $tipo);
+        $builder->orderBy('u.id', 'ASC');
+
+        $rows = $builder->get()->getResultArray();
+
+        if ($tipo !== 'orador') {
+            
+            return $rows;
+        }
+
+        $grouped = [];
+        foreach ($rows as $row) {
+            $uid = (int)$row['id'];
+            if (!isset($grouped[$uid])) {
+                $grouped[$uid] = [
+                    'id' => $uid,
+                    'nombre' => $row['nombre'],
+                    'dni' => $row['dni'],
+                    'sexo' => $row['sexo'],
+                    'titulo' => $row['titulo'],
+                    'ruc_empresa' => $row['ruc_empresa'],
+                    'nombre_empresa' => $row['nombre_empresa'],
+                    'id_rendicion' => $row['id_rendicion'],
+                    'asistencia' => $row['asistencia'],
+                    'created_at' => $row['created_at'] ?? null,
+                    'preguntas' => []
+                ];
+            }
+
+            if (!empty($row['pregunta_id'])) {
+                $grouped[$uid]['preguntas'][] = [
+                    'id' => (int)$row['pregunta_id'],
+                    'contenido' => $row['pregunta_contenido'],
+                    'id_eje' => $row['id_eje'] !== null ? (int)$row['id_eje'] : null
+                ];
+            }
+        }
+
+        return array_values($grouped);
+    }
+
+    public function getAsistentes(): array
+    {
+        return $this->getUsuariosPorTipo('asistente');
+    }
+
+    public function getOradores(): array
+    {
+        return $this->getUsuariosPorTipo('orador');
+    }
+
+    /**
+     * Obtener usuarios (participantes) de una rendición con sus preguntas agrupadas.
+     *
+     * @param int $idRendicion
+     * @return array
+     */
+    public function getUsuariosPorRendicionConPreguntas(int $idRendicion): array
+    {
+        $db = \Config\Database::connect();
+        $sql = "
+            SELECT
+                u.id AS usuario_id,
+                u.dni,
+                u.nombre,
+                u.sexo,
+                u.tipo_participacion,
+                u.titulo,
+                u.ruc_empresa,
+                u.nombre_empresa,
+                u.asistencia,
+                p.id AS pregunta_id,
+                p.contenido AS pregunta_contenido,
+                p.id_eje AS pregunta_id_eje,
+                e.tematica AS eje_tematica
+            FROM usuario u
+            LEFT JOIN pregunta p ON p.id_usuario = u.id
+            LEFT JOIN eje e ON e.id = p.id_eje
+            WHERE u.id_rendicion = ?
+            ORDER BY u.nombre ASC, p.id ASC
+        ";
+
+        $rows = $db->query($sql, [(int)$idRendicion])->getResultArray();
+
+        if (empty($rows)) return [];
+
+        $result = [];
+        foreach ($rows as $row) {
+            $uid = (int)$row['usuario_id'];
+            if (!isset($result[$uid])) {
+                $result[$uid] = [
+                    'id' => $uid,
+                    'dni' => $row['dni'],
+                    'nombre' => $row['nombre'],
+                    'sexo' => $row['sexo'],
+                    'tipo_participacion' => $row['tipo_participacion'],
+                    'titulo' => $row['titulo'],
+                    'ruc_empresa' => $row['ruc_empresa'],
+                    'nombre_empresa' => $row['nombre_empresa'],
+                    'asistencia' => $row['asistencia'],
+                    'preguntas' => []
+                ];
+            }
+
+            if (!empty($row['pregunta_id'])) {
+                $result[$uid]['preguntas'][] = [
+                    'id' => (int)$row['pregunta_id'],
+                    'contenido' => $row['pregunta_contenido'],
+                    'id_eje' => $row['pregunta_id_eje'] !== null ? (int)$row['pregunta_id_eje'] : null,
+                    'eje_tematica' => $row['eje_tematica'] ?? null
+                ];
+            }
+        }
+
+        return array_values($result);
+    }
 }
