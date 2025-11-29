@@ -8,24 +8,18 @@ export default function CreateEjeForm({ onSubmit, isLoading }: CreateEjeFormProp
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        
         if (!tematica.trim()) return
-
         const success = await onSubmit({ tematica: tematica.trim() })
-        
-        if (success) {
-            setTematica('')
-        }
+        if (success) setTematica('')
     }
 
     return (
-        <motion.div
+        <motion.article
             className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
         >
-            {/* Header */}
-            <div className="bg-gradient-to-r from-[#002f59] to-[#003d73] p-5">
+            <header className="bg-linear-to-r from-primary-dark to-primary p-5">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                         <FaPlus className="h-5 w-5 text-white" />
@@ -35,17 +29,16 @@ export default function CreateEjeForm({ onSubmit, isLoading }: CreateEjeFormProp
                         <p className="text-blue-100 text-sm">Agregue una nueva temática</p>
                     </div>
                 </div>
-            </div>
-
-            {/* Form */}
+            </header>
             <form onSubmit={handleSubmit} className="p-5">
                 <div className="mb-4">
                     <label 
                         htmlFor="tematica" 
                         className="block text-sm font-semibold text-gray-900 mb-2"
                     >
-                        <FaTags className="inline-block mr-2 text-[#002f59]" />
-                        Temática del eje *
+                        <FaTags className="inline-block mr-2 text-primary-dark" />
+                        Temática del eje
+                        <span className='text-red-400 font-bold'>*</span>
                     </label>
                     <input
                         type="text"
@@ -53,7 +46,7 @@ export default function CreateEjeForm({ onSubmit, isLoading }: CreateEjeFormProp
                         value={tematica}
                         onChange={(e) => setTematica(e.target.value)}
                         placeholder="Ej: Seguridad Ciudadana"
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#002f59]/20 focus:border-[#002f59] transition-all text-gray-900"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark/60 focus:border-primary-dark/60 transition-all outline-none text-gray-900"
                         required
                         disabled={isLoading}
                     />
@@ -67,7 +60,7 @@ export default function CreateEjeForm({ onSubmit, isLoading }: CreateEjeFormProp
                         flex items-center justify-center gap-2
                         ${isLoading || !tematica.trim()
                             ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            : 'bg-gradient-to-r from-[#002f59] to-[#003d73] text-white hover:from-[#003366] hover:to-[#004080] shadow-lg hover:shadow-xl cursor-pointer'
+                            : 'bg-primary-dark text-white hover:bg-primary shadow-lg hover:shadow-xl cursor-pointer'
                         }
                     `}
                     whileHover={{ scale: isLoading || !tematica.trim() ? 1 : 1.02 }}
@@ -90,6 +83,6 @@ export default function CreateEjeForm({ onSubmit, isLoading }: CreateEjeFormProp
                     )}
                 </motion.button>
             </form>
-        </motion.div>
+        </motion.article>
     )
 }

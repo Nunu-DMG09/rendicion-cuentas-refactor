@@ -13,35 +13,35 @@ export default function EjesStats({ total, activos, inactivos }: Props) {
             label: 'Total Ejes',
             value: total,
             icon: FaTags,
-            bg: 'bg-[#e8f4fc]',
-            border: 'border-[#cce5f5]',
-            iconBg: 'bg-[#3b82f6]',
-            textColor: 'text-[#3b82f6]'
+            bg: 'bg-blue-100',
+            border: 'border-blue-300',
+            iconBg: 'bg-blue-500',
+            textColor: 'text-blue-500'
         },
         {
             label: 'Activos',
             value: activos,
             icon: FaCheckCircle,
-            bg: 'bg-[#e6f7ed]',
-            border: 'border-[#c3ecd3]',
-            iconBg: 'bg-[#22c55e]',
-            textColor: 'text-[#22c55e]'
+            bg: 'bg-green-100',
+            border: 'border-green-300',
+            iconBg: 'bg-green-500',
+            textColor: 'text-green-500'
         },
         {
             label: 'Inactivos',
             value: inactivos,
             icon: FaBan,
-            bg: 'bg-[#fce8e8]',
-            border: 'border-[#f5cccc]',
-            iconBg: 'bg-[#ef4444]',
-            textColor: 'text-[#ef4444]'
+            bg: 'bg-red-100',
+            border: 'border-red-300',
+            iconBg: 'bg-red-500',
+            textColor: 'text-red-500'
         }
     ]
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             {stats.map((stat, index) => (
-                <motion.div
+                <motion.article
                     key={stat.label}
                     className={`${stat.bg} ${stat.border} border rounded-xl p-4`}
                     initial={{ opacity: 0, y: 20 }}
@@ -59,7 +59,7 @@ export default function EjesStats({ total, activos, inactivos }: Props) {
                             <p className="text-xs text-gray-600">{stat.label}</p>
                         </div>
                     </div>
-                </motion.div>
+                </motion.article>
             ))}
         </div>
     )
