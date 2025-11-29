@@ -53,10 +53,7 @@ class PreguntaController extends ResourceController
         }
     }
 
-    /**
-     * preguntasPorRendicion
-     * Obtiene preguntas asociadas a una rendición (vía ejes seleccionados).
-     */
+  
     public function preguntasPorRendicion($idRend = null)
     {
         try {
@@ -73,17 +70,13 @@ class PreguntaController extends ResourceController
         }
     }
 
-    /**
-     * Obtener preguntas agrupadas por eje filtrando por fecha de rendición.
-     * URL ejemplo: GET /rendicion/preguntas-por-fecha/2025-11-25
-     */
     public function preguntasPorFechaRendicion($fecha = null)
     {
         if (empty($fecha)) {
             return $this->respond(['status' => 'error', 'message' => 'fecha es requerida. Formato Y-m-d'], 400);
         }
 
-        // Validar formato fecha
+       
         $d = \DateTime::createFromFormat('Y-m-d', $fecha);
         if (!($d && $d->format('Y-m-d') === $fecha)) {
             return $this->respond(['status' => 'error', 'message' => 'Formato de fecha inválido, use Y-m-d'], 400);
