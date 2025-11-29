@@ -17,7 +17,12 @@ class EjeController extends ResourceController
         try {
             $model = new EjeModel();
             $data = $model->findAll();
-            return $this->respond(['status' => 'success', 'message' => 'Ejes obtenidos', 'data' => $data]);
+            $hasData = count($data) > 0;
+            return $this->respond([
+                'success' => $hasData,
+                'message' => $hasData ? 'Ejes encontrados' : 'No se encontraron ejes', 
+                'data' => $data
+            ]);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
             return $this->respond(['status' => 'error', 'message' => 'Error obteniendo ejes'], 500);

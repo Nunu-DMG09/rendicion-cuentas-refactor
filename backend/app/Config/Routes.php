@@ -21,8 +21,8 @@ $routes->group('rendicion', ['namespace' => 'App\Controllers'], function($routes
     $routes->get('(:num)/participantes', 'RendicionController::participantes/$1'); // Participantes de una rendición
 
     // Ejes
-    $routes->get('eje/', 'EjeController::listarEjes'); // Lista ejes temáticos
-    $routes->post('eje', 'EjeController::crearEje'); // Crea un nuevo eje
+    $routes->get('ejes', 'EjeController::listarEjes'); // Lista ejes temáticos
+    $routes->post('ejes', 'EjeController::crearEje'); // Crea un nuevo eje
 
     // Usuarios
     $routes->post('usuarios', 'UsuarioController::registrarUsuario'); // Registra usuario
