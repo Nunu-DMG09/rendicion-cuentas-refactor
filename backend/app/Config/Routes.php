@@ -19,6 +19,7 @@ $routes->group('rendicion', ['namespace' => 'App\Controllers'], function($routes
     $routes->get('/(:num)', 'RendicionController::obtenerRendicion/$1');
     $routes->post('/', 'RendicionController::crearRendicion');
     $routes->post('/asociar-ejes', 'RendicionController::asociarEjes');
+    $routes->get('(:num)/participantes', 'RendicionController::participantes/$1');
 
     // Ejes
     $routes->get('eje/', 'EjeController::listarEjes');
@@ -28,6 +29,9 @@ $routes->group('rendicion', ['namespace' => 'App\Controllers'], function($routes
     $routes->post('usuarios', 'UsuarioController::registrarUsuario');
     $routes->put('usuarios/(:num)/asistencia', 'UsuarioController::marcarAsistencia/$1');
     $routes->get('rendiciones/(:num)/usuarios', 'UsuarioController::usuariosPorRendicion/$1');
+    $routes->get('usuarios/asistentes', 'UsuarioController::listarAsistentes');
+    $routes->get('usuarios/oradores', 'UsuarioController::listarOradores');
+    $routes->post('usuarios/asignar', 'UsuarioController::asignarARendicion');
 
     // Preguntas
     $routes->post('preguntas', 'PreguntaController::crearPregunta');
