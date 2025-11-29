@@ -12,7 +12,6 @@ class RendicionModel extends Model
     protected $allowedFields = [
         'fecha',
         'hora',
-        'path' 
     ];
 
     // Dates & Soft Deletes
