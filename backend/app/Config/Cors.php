@@ -3,6 +3,12 @@
 namespace Config;
 
 use CodeIgniter\Config\BaseConfig;
+
+/**
+ * Cross-Origin Resource Sharing (CORS) Configuration
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+ */
 class Cors extends BaseConfig
 {
     /**
@@ -22,10 +28,7 @@ class Cors extends BaseConfig
         'allowedOrigins' => [
             'http://localhost:5173',
             'http://localhost:5174',
-            'http://192.168.0.16:5173',
-            'http://localhost:4200',
-            'http://localhost:4201',
-            'http://192.168.0.16:4200',
+            'http://192.168.0.16:5173', 
         ], // Especifica los orígenes permitidos
         'allowedHeaders' => ['Content-Type', 'Authorization', 'X-Requested-With'], // Encabezados permitidos
         'allowedMethods' => ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos

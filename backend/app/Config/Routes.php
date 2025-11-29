@@ -6,8 +6,8 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 $routes->get('/', 'Home::index');
-
-$routes->group('rendicion', ['namespace' => 'App\Controllers'], function($routes) {
+$routes->group('rendicion',  ['namespace' => 'App\Controllers', 'filter' => 'cors'], static function($routes) {
+    $routes->options('(:any)', static function () {});
 
     // Buscar documento
     $routes->get('dni/(:segment)', 'Api::buscarDNI/$1'); // Busca datos por DNI
