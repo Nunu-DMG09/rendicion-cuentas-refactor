@@ -38,6 +38,36 @@ export type BannerSelectorProps = {
     onAdd: (files: FileList) => void
     onRemove: (bannerId: string) => void
 }
+export interface CreatedRendicion {
+    status: 'success' | 'error';
+    message: string;
+    data: {
+        id: number;
+        rendicion: {
+            id: string;
+            fecha: string;
+            hora: string;
+            admin_id: string;
+            created_at: string;
+            updated_at: string;
+            deleted_at: string | null;
+        };
+        banners: {
+            id: string;
+            file_path: string;
+            url: string;
+            original_name: string;
+            file_size: number;
+        }[];
+        ejes_asocidados: {
+            id: string;
+            id_eje: string;
+            cantidad_preguntas: number;
+        }[];
+        total_banners: number;
+        total_ejes: number;
+    }
+}
 
 // Tipos para Ver Rendiciones
 export type RendicionStatus = 'programada' | 'en_curso' | 'finalizada'
