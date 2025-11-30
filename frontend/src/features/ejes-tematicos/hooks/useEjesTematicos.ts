@@ -2,17 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/core/config'
 import type { EjeTematico, CreateEjeFormData, EjesModalState } from '../types/ejesTematicos'
-
-interface ApiError {
-    response?: {
-        data?: {
-            message?: string
-            errors?: Record<string, string[]>
-        }
-        status?: number
-    }
-    message?: string
-}
+import type { ApiError } from '@/core/types'
 
 const QUERY_KEYS = {
     ejes: ['ejes'] as const
