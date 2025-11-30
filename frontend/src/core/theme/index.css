@@ -8,6 +8,7 @@
 
 @import "tailwindcss";
 @plugin "tailwind-scrollbar";
+@import "dialca-ui/styles";
 
 @theme {
     --color-primary: var(--primary-color);
