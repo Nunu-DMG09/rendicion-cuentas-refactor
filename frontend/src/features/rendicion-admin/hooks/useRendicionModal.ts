@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import type { RendicionModalType, RendicionModalState } from '../types/rendicionAdmin'
+import type { RendicionModalState } from '../types/rendicionAdmin'
 
 export const useRendicionModal = () => {
     const [modalState, setModalState] = useState<RendicionModalState>({
