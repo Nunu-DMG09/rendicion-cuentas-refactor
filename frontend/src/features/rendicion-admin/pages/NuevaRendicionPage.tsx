@@ -17,10 +17,7 @@ export default function NuevaRendicionPage() {
 
     const handleModalClose = () => {
         closeModal()
-        if (modalState.type === 'success') {
-            // Redirigir a la lista de rendiciones
-            navigate('/admin/rendiciones/ver-rendiciones')
-        }
+        if (modalState.type === 'success') navigate('/admin/rendiciones/ver-rendiciones')
     }
 
     return (
@@ -29,19 +26,14 @@ export default function NuevaRendicionPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
         >
-            {/* Header */}
-            <div className="mb-8">
+            <header className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900">Nueva Rendición</h1>
                 <p className="text-gray-600 mt-1">Programe una nueva audiencia de rendición de cuentas</p>
-            </div>
-
-            {/* Form */}
+            </header>
             <RendicionForm
                 onSubmit={handleSubmit}
                 isLoading={isLoading}
             />
-
-            {/* Modal */}
             <RendicionAdminModal
                 isOpen={modalState.isOpen}
                 type={modalState.type}
