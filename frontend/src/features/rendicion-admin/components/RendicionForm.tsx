@@ -25,14 +25,12 @@ export default function RendicionForm({ onSubmit, isLoading }: RendicionFormProp
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-
         const formData: RendicionFormData = {
             fecha,
             hora,
             banners: selectedBanners,
             ejesTematicos: selectedEjes
         }
-
         onSubmit(formData)
     }
 
@@ -92,7 +90,6 @@ export default function RendicionForm({ onSubmit, isLoading }: RendicionFormProp
         )
     }
 
-    // Obtener fecha mínima (hoy)
     const today = new Date().toISOString().split('T')[0]
 
     return (
@@ -106,8 +103,7 @@ export default function RendicionForm({ onSubmit, isLoading }: RendicionFormProp
                 className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
                 variants={itemVariants}
             >
-                {/* Header */}
-                <div className="bg-gradient-to-r from-[#002f59] to-[#003366] p-6">
+                <div className="bg-linear-to-r from-primary-dark to-primary p-6">
                     <div className="flex items-center gap-4">
                         <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
                             <FaPlus className="h-7 w-7 text-white" />
@@ -118,10 +114,7 @@ export default function RendicionForm({ onSubmit, isLoading }: RendicionFormProp
                         </div>
                     </div>
                 </div>
-
-                {/* Form Content */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-8">
-                    {/* Errores */}
                     {errors.length > 0 && (
                         <motion.div
                             className="bg-red-50 border border-red-200 rounded-xl p-4"
@@ -136,17 +129,15 @@ export default function RendicionForm({ onSubmit, isLoading }: RendicionFormProp
                             </ul>
                         </motion.div>
                     )}
-
-                    {/* Fecha y Hora */}
                     <motion.div
                         className="grid grid-cols-1 md:grid-cols-2 gap-6"
                         variants={itemVariants}
                     >
-                        {/* Fecha */}
                         <div>
                             <label htmlFor="fecha" className="block text-sm font-semibold text-gray-900 mb-3">
-                                <FaCalendarAlt className="inline-block mr-2 text-[#002f59]" />
-                                Fecha de Rendición *
+                                <FaCalendarAlt className="inline-block mr-2 text-primary-dark" />
+                                Fecha de Rendición{" "}
+                                <span className="text-red-400 font-bold">*</span>
                             </label>
                             <input
                                 type="date"
@@ -154,16 +145,15 @@ export default function RendicionForm({ onSubmit, isLoading }: RendicionFormProp
                                 value={fecha}
                                 onChange={(e) => setFecha(e.target.value)}
                                 min={today}
-                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#002f59]/20 focus:border-[#002f59] transition-all duration-300 text-lg"
+                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark/60 focus:border-primary-dark/60 outline-none transition-all duration-300 text-lg"
                                 required
                             />
                         </div>
-
-                        {/* Hora */}
                         <div>
                             <label className="block text-sm font-semibold text-gray-900 mb-3">
-                                <FaClock className="inline-block mr-2 text-[#002f59]" />
-                                Hora de Rendición *
+                                <FaClock className="inline-block mr-2 text-primary-dark" />
+                                Hora de Rendición{" "}
+                                <span className="text-red-400 font-bold">*</span>
                             </label>
                             <TimePicker
                                 value={hora}
@@ -172,12 +162,11 @@ export default function RendicionForm({ onSubmit, isLoading }: RendicionFormProp
                             />
                         </div>
                     </motion.div>
-
-                    {/* Banners */}
                     <motion.div variants={itemVariants}>
                         <label className="block text-sm font-semibold text-gray-900 mb-4">
-                            <FaImage className="inline-block mr-2 text-[#002f59]" />
-                            Subir Banners *
+                            <FaImage className="inline-block mr-2 text-primary-dark" />
+                            Subir Banners {" "}
+                            <span className="text-red-400 font-bold">*</span>
                             <span className="text-gray-500 font-normal ml-2">
                                 ({selectedBanners.length} seleccionados)
                             </span>
@@ -188,11 +177,9 @@ export default function RendicionForm({ onSubmit, isLoading }: RendicionFormProp
                             onRemove={handleRemoveBanner}
                         />
                     </motion.div>
-
-                    {/* Ejes Temáticos */}
                     <motion.div variants={itemVariants}>
                         <label className="block text-sm font-semibold text-gray-900 mb-4">
-                            <FaTags className="inline-block mr-2 text-[#002f59]" />
+                            <FaTags className="inline-block mr-2 text-primary-dark" />
                             Seleccionar Ejes Temáticos *
                             <span className="text-gray-500 font-normal ml-2">
                                 ({selectedEjes.length} seleccionados)
@@ -203,8 +190,6 @@ export default function RendicionForm({ onSubmit, isLoading }: RendicionFormProp
                             onToggle={handleEjeToggle}
                         />
                     </motion.div>
-
-                    {/* Resumen */}
                     {(fecha || hora || selectedBanners.length > 0 || selectedEjes.length > 0) && (
                         <motion.div
                             className="bg-blue-50 rounded-xl p-4 border border-blue-100"
@@ -212,7 +197,7 @@ export default function RendicionForm({ onSubmit, isLoading }: RendicionFormProp
                             animate={{ opacity: 1, height: 'auto' }}
                             transition={{ duration: 0.3 }}
                         >
-                            <h4 className="font-semibold text-[#002f59] mb-2">Resumen de la Rendición</h4>
+                            <h4 className="font-semibold text-primary-dark mb-2">Resumen de la Rendición</h4>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                 <div>
                                     <span className="text-gray-500">Fecha:</span>
@@ -239,21 +224,17 @@ export default function RendicionForm({ onSubmit, isLoading }: RendicionFormProp
                             </div>
                         </motion.div>
                     )}
-
-                    {/* Submit Button */}
                     <motion.div variants={itemVariants} className="pt-4">
                         <motion.button
                             type="submit"
                             disabled={isLoading}
-                            className={`
-                cursor-pointer w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300
-                ${isLoading
+                            className={`cursor-pointer w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300
+                                ${isLoading
                                     ? 'bg-gray-400 cursor-not-allowed'
-                                    : 'bg-gradient-to-r from-[#002f59] to-[#003366] hover:from-[#003366] hover:to-[#004080] shadow-lg hover:shadow-xl cursor-pointer'
+                                    : 'bg-primary-dark hover:bg-primary shadow-lg hover:shadow-xl cursor-pointer'
                                 }
-                text-white transform hover:-translate-y-1
-                focus:outline-none focus:ring-4 focus:ring-[#002f59]/20
-              `}
+                                text-white transform hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-primary-dark/20
+                            `}
                             whileHover={{ scale: isLoading ? 1 : 1.02 }}
                             whileTap={{ scale: isLoading ? 1 : 0.98 }}
                         >
