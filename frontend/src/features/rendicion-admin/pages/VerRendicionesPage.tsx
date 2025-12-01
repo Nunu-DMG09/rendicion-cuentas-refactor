@@ -11,8 +11,6 @@ export default function VerRendicionesPage() {
     const {
         selectedYear,
         setSelectedYear,
-        rendiciones,
-        isLoading,
         availableYears,
         editModal,
         openEditModal,
@@ -24,7 +22,8 @@ export default function VerRendicionesPage() {
         updateRendicion,
         isUpdating,
         updateSuccess,
-        updateError
+        updateError,
+        rendicionesQuery
     } = useVerRendiciones()
 
     return (
@@ -33,23 +32,19 @@ export default function VerRendicionesPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
         >
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+            <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Ver Rendiciones</h1>
-                    <p className="text-gray-600 mt-1">Gestiona las rendiciones de cuentas programadas</p>
+                    <h1 className="text-3xl font-bold text-gray-900 font-titles">Ver Rendiciones</h1>
+                    <p className="text-gray-600 text-lg mt-1 font-body">Gestiona las rendiciones de cuentas programadas</p>
                 </div>
-
                 <YearSelector
                     selectedYear={selectedYear}
                     years={availableYears}
                     onChange={setSelectedYear}
                 />
-            </div>
-
-            {/*  año*/}
-            <motion.div
-                className="bg-gradient-to-r from-[#002f59] to-[#003366] rounded-xl p-4 mb-8 flex items-center gap-3"
+            </header>
+            <motion.article
+                className="bg-linear-to-r from-primary-dark to-primary rounded-xl p-4 mb-8 flex items-center gap-3"
                 key={selectedYear}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -59,21 +54,19 @@ export default function VerRendicionesPage() {
                     Mostrando rendiciones del año {selectedYear}
                 </span>
                 <span className="ml-auto bg-white/20 px-3 py-1 rounded-full text-white text-sm">
-                    {rendiciones.length} rendicion{rendiciones.length !== 1 ? 'es' : ''}
+                    {(rendicionesQuery.data || []).length} rendicion{(rendicionesQuery.data || []).length !== 1 ? 'es' : ''}
                 </span>
-            </motion.div>
-
-            {/* Content */}
-            {isLoading ? (
+            </motion.article>
+            {rendicionesQuery.isFetching ? (
                 <RendicionesSkeleton />
-            ) : rendiciones.length > 0 ? (
+            ) : rendicionesQuery.data && rendicionesQuery.data.length > 0 ? (
                 <motion.div
                     className="grid grid-cols-1 lg:grid-cols-2 gap-8"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}
                 >
-                    {rendiciones.map((rendicion, index) => (
+                    {rendicionesQuery.data?.map((rendicion, index) => (
                         <motion.div
                             key={rendicion.id}
                             initial={{ opacity: 0, y: 20 }}
@@ -106,8 +99,6 @@ export default function VerRendicionesPage() {
                     </p>
                 </motion.div>
             )}
-
-            {/* Edit Modal */}
             <EditRendicionModal
                 isOpen={editModal.isOpen}
                 rendicion={editModal.rendicion}
@@ -117,8 +108,6 @@ export default function VerRendicionesPage() {
                 updateSuccess={updateSuccess}
                 updateError={updateError}
             />
-
-            {/* View Details Modal */}
             <ViewRendicionModal
                 isOpen={viewModal.isOpen}
                 rendicion={viewModal.rendicion}
