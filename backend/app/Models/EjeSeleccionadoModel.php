@@ -47,4 +47,14 @@ class EjeSeleccionadoModel extends Model
 
     protected $skipValidation       = false;
     protected $cleanValidationRules = true;
+    
+    public function getEjesConNombreByRendicion($rendicionId)
+    {
+        return $this->db->table('eje_seleccionado es')
+            ->select('es.id, es.id_eje, es.cantidad_pregunta, et.tematica')
+            ->join('eje et', 'et.id = es.id_eje')
+            ->where('es.id_rendicion', $rendicionId)
+            ->get()
+            ->getResultArray();
+    }
 }
