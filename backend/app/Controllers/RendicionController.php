@@ -21,10 +21,58 @@ class RendicionController extends ResourceController
         try {
             $model = new RendicionModel();
             $data = $model->findAll();
-            return $this->respond(['status' => 'success', 'message' => 'Rendiciones obtenidas', 'data' => $data], 200);
+            $hasData = !empty($data);
+
+            return $this->respond([
+                'success' => $hasData,
+                'message' => $hasData ? 'Rendiciones obtenidas' : 'No se encontraron rendiciones',
+                'data'    => $hasData ? $data : []
+            ], 200);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error obteniendo rendiciones'], 500);
+            return $this->respond([
+                'success' => false,
+                'message' => 'Error obteniendo rendiciones',
+                'data'    => []
+            ], 500);
+        }
+    }
+
+    // Listar rendiciones más actuales:
+    // - Si existe query param ?year=YYYY devuelve hasta 2 rendiciones de ese año (ordenadas por fecha desc)
+    // - Si no hay año, devuelve la rendición más reciente
+    public function recientes()
+    {
+        try {
+            $year = $this->request->getGet('year');
+            $model = new RendicionModel();
+
+            if ($year && is_numeric($year)) {
+                $y = (int) $year;
+                $data = $model
+                    ->where("YEAR(fecha) = {$y}", null, false)
+                    ->orderBy('fecha', 'DESC')
+                    ->findAll(2);
+            } else {
+                $data = $model
+                    ->orderBy('fecha', 'DESC')
+                    ->findAll(1);
+            }
+
+            $hasData = !empty($data);
+            return $this->respond([
+                'success' => $hasData,
+                'message' => $hasData ? 'Rendiciones obtenidas' : 'No se encontraron rendiciones',
+                'count'   => $hasData ? count($data) : 0,
+                'data'    => $hasData ? $data : []
+            ], 200);
+        } catch (\Throwable $e) {
+            log_message('error', 'Error obteniendo rendiciones recientes: ' . $e->getMessage());
+            return $this->respond([
+                'success' => false,
+                'message' => 'Error interno al obtener rendiciones',
+                'data'    => []
+            ], 500);
         }
     }
 
@@ -33,11 +81,25 @@ class RendicionController extends ResourceController
         try {
             $model = new RendicionModel();
             $item = $model->find($id);
-            if (!$item) return $this->respondNotFound(['status' => 'error', 'message' => 'Rendición no encontrada']);
-            return $this->respond(['status' => 'success', 'message' => 'Rendición encontrada', 'data' => $item], 200);
+            if (!$item) {
+                return $this->respond([
+                    'success' => false,
+                    'message' => 'Rendición no encontrada',
+                    'data'    => []
+                ], 404);
+            }
+            return $this->respond([
+                'success' => true,
+                'message' => 'Rendición encontrada',
+                'data'    => $item
+            ], 200);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error obteniendo rendición'], 500);
+            return $this->respond([
+                'success' => false,
+                'message' => 'Error obteniendo rendición',
+                'data'    => []
+            ], 500);
         }
     }
 
@@ -49,16 +111,17 @@ class RendicionController extends ResourceController
             $jsonData = $this->getJsonData();
             if (!$jsonData) {
                 return $this->respond([
-                    'status' => 'error',
-                    'message' => 'Datos JSON requeridos'
+                    'success' => false,
+                    'message' => 'Datos JSON requeridos',
+                    'data'    => []
                 ], 400);
             }
             $validation = $this->validateRendicionData($jsonData);
             if ($validation !== true) {
                 return $this->respond([
-                    'status' => 'error',
+                    'success' => false,
                     'message' => 'Datos inválidos',
-                    'errors' => $validation
+                    'data'    => $validation
                 ], 422);
             }
             $loggedAdminId = null;
@@ -68,7 +131,6 @@ class RendicionController extends ResourceController
                 $loggedAdminId = isset($decoded->data->id) ? (int)$decoded->data->id : null;
             }
             $adminId = $jsonData['admin_id'] ?? 1;
-            // $adminId = $jsonData['admin_id'] ?? $loggedAdminId;
             $uploadedFiles = $this->processUploadedFiles();
             $rendicionData = [
                 'fecha' => $jsonData['fecha'],
@@ -80,9 +142,9 @@ class RendicionController extends ResourceController
         } catch (\Throwable $e) {
             log_message('error', 'Error creando rendicion: ' . $e->getMessage());
             return $this->respond([
-                'status' => 'error',
+                'success' => false,
                 'message' => 'Error interno del servidor',
-                'error' => $e->getMessage()
+                'data'    => []
             ], 500);
         }
     }
@@ -111,7 +173,8 @@ class RendicionController extends ResourceController
         }
         if (empty($data['hora'])) $errors['hora'] = 'La hora es requerida';
         else {
-            if (!preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/', $data['hora'])) {
+            // Acepta "HH:MM" o "HH:MM:SS"
+            if (!preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/', $data['hora'])) {
                 $errors['hora'] = 'Formato de hora inválido (HH:MM)';
             }
         }
@@ -183,7 +246,7 @@ class RendicionController extends ResourceController
             if ($db->transStatus() === false) throw new \Exception('Transacción fallida');
             $rendicionCreada = $this->getRendicionCompleta($rendicionId);
             return $this->respondCreated([
-                'status' => 'success',
+                'success' => true,
                 'message' => 'Rendición creada exitosamente',
                 'data' => [
                     'id' => $rendicionId,
@@ -197,7 +260,11 @@ class RendicionController extends ResourceController
         } catch (\Throwable $e) {
             $db->transRollback();
             log_message('error', $e->getMessage());
-            throw $e;
+            return $this->respond([
+                'success' => false,
+                'message' => 'Error interno al crear rendición',
+                'data'    => []
+            ], 500);
         }
     }
     private function saveBanners($rendicionId, $uploadedFiles)
@@ -271,12 +338,20 @@ class RendicionController extends ResourceController
     public function asociarEjes()
     {
         $input = $this->request->getJSON(true);
-        if (!$input) return $this->respond(['status' => 'error', 'message' => 'Payload inválido'], 400);
+        if (!$input) return $this->respond([
+            'success' => false,
+            'message' => 'Payload inválido',
+            'data'    => []
+        ], 400);
 
         $adminId = $input['admin_id'] ?? null;
         $idRend  = $input['id_rendicion'] ?? null;
         $ejes    = $input['ejes'] ?? null;
-        if (!$adminId || !$idRend || !is_array($ejes)) return $this->respond(['status' => 'error', 'message' => 'admin_id, id_rendicion y ejes son requeridos'], 400);
+        if (!$adminId || !$idRend || !is_array($ejes)) return $this->respond([
+            'success' => false,
+            'message' => 'admin_id, id_rendicion y ejes son requeridos',
+            'data'    => []
+        ], 400);
 
         $esModel = new EjeSeleccionadoModel();
         $histModel = new HistorialAdminModel();
@@ -304,11 +379,20 @@ class RendicionController extends ResourceController
             $db->transComplete();
             if ($db->transStatus() === false) throw new \Exception('Transacción fallida al asociar ejes');
 
-            return $this->respond(['status' => 'success', 'message' => 'Ejes asociados', 'data' => $inserted], 201);
+            $hasData = !empty($inserted);
+            return $this->respond([
+                'success' => $hasData,
+                'message' => $hasData ? 'Ejes asociados' : 'No se asociaron ejes',
+                'data'    => $hasData ? $inserted : []
+            ], 201);
         } catch (\Throwable $e) {
             $db->transRollback();
             log_message('error', $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error asociando ejes', 'error' => $e->getMessage()], 500);
+            return $this->respond([
+                'success' => false,
+                'message' => 'Error asociando ejes',
+                'data'    => []
+            ], 500);
         }
     }
 
@@ -318,17 +402,131 @@ class RendicionController extends ResourceController
     public function participantes($id = null)
     {
         if (empty($id) || !is_numeric($id)) {
-            return $this->respond(['status' => 'error', 'message' => 'id rendicion inválido'], 400);
+            return $this->respond([
+                'success' => false,
+                'message' => 'id rendicion inválido',
+                'data'    => []
+            ], 400);
         }
 
         try {
             $userModel = new \App\Models\UsuarioModel();
             $data = $userModel->getUsuariosPorRendicionConPreguntas((int)$id);
+            $hasData = !empty($data);
 
-            return $this->respond(['status' => 'success', 'message' => 'Participantes obtenidos', 'data' => $data], 200);
+            return $this->respond([
+                'success' => $hasData,
+                'message' => $hasData ? 'Participantes obtenidos' : 'No se encontraron participantes',
+                'data'    => $hasData ? $data : []
+            ], 200);
         } catch (\Throwable $e) {
             log_message('error', 'Error obteniendo participantes: ' . $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error obteniendo participantes'], 500);
+            return $this->respond([
+                'success' => false,
+                'message' => 'Error obteniendo participantes',
+                'data'    => []
+            ], 500);
+        }
+    }
+
+    /*======================
+    EDITAR RENDICION
+    ======================*/
+
+    public function editarRendicion($id = null)
+    {
+        if (empty($id) || !is_numeric($id)) {
+            return $this->respond(['success' => false, 'message' => 'id rendicion inválido', 'data' => []], 400);
+        }
+
+        $rendModel = new RendicionModel();
+        $rend = $rendModel->find((int) $id);
+        if (!$rend) {
+            return $this->respond(['success' => false, 'message' => 'Rendición no encontrada', 'data' => []], 404);
+        }
+
+        $input = $this->request->getPost('data');
+        $json = $input ? json_decode($input, true) : null;
+
+        $update = [];
+        $hasChange = false;
+
+        if ($json) {
+            if (array_key_exists('fecha', $json)) {
+                $fecha = $json['fecha'];
+                $dt = \DateTime::createFromFormat('Y-m-d', $fecha);
+                if (!$dt || $dt->format('Y-m-d') !== $fecha) {
+                    return $this->respond(['success' => false, 'message' => 'fecha inválida, formato YYYY-MM-DD', 'data' => []], 422);
+                }
+                $update['fecha'] = $fecha;
+                $hasChange = true;
+            }
+            if (array_key_exists('hora', $json)) {
+                $hora = $json['hora'];
+                // Acepta "HH:MM" o "HH:MM:SS"
+                if (!preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/', $hora)) {
+                    return $this->respond(['success' => false, 'message' => 'hora inválida, formato HH:MM o HH:MM:SS', 'data' => []], 422);
+                }
+                $update['hora'] = $hora;
+                $hasChange = true;
+            }
+        }
+
+        // Check uploaded banners
+        $uploadedFiles = $this->processUploadedFiles();
+        if (!empty($uploadedFiles)) $hasChange = true;
+
+        if (!$hasChange) {
+            return $this->respond(['success' => false, 'message' => 'Nada para actualizar', 'data' => []], 400);
+        }
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+        try {
+            // update fecha/hora if provided
+            if (!empty($update)) {
+                $res = $rendModel->update($id, $update);
+                if ($res === false) {
+                    throw new \RuntimeException('Error actualizando rendición: ' . json_encode($rendModel->errors()));
+                }
+            }
+
+            $bannerModel = new BanerRendicionModel();
+            $bannersSaved = $bannerModel->where('id_rendicion', $id)->findAll() ?: [];
+
+            if (!empty($uploadedFiles)) {
+                // delete existing files and DB rows
+                foreach ($bannersSaved as $b) {
+                    if (!empty($b['file_path'])) {
+                        $fp = FCPATH . $b['file_path'];
+                        if (is_file($fp)) @unlink($fp);
+                    }
+                }
+                $bannerModel->where('id_rendicion', $id)->delete();
+
+                $bannersSaved = $this->saveBanners($id, $uploadedFiles);
+            } else {
+                $bannersSaved = $bannerModel->where('id_rendicion', $id)->findAll() ?: [];
+            }
+
+            $db->transComplete();
+            if ($db->transStatus() === false) {
+                throw new \RuntimeException('Transacción fallida');
+            }
+
+            $rendicionActualizada = $rendModel->find($id);
+            return $this->respond([
+                'success' => true,
+                'message' => 'Rendición actualizada',
+                'data'    => [
+                    'rendicion' => $rendicionActualizada,
+                    'banners'   => $bannersSaved
+                ]
+            ], 200);
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            log_message('error', 'Error editando rendición: ' . $e->getMessage());
+            return $this->respond(['success' => false, 'message' => 'Error actualizando rendición', 'data' => []], 500);
         }
     }
 }
