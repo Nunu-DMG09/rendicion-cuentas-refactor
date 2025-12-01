@@ -3,7 +3,7 @@ import { env } from "./env";
 
 export const api = axios.create({
     baseURL: env.BACKEND_URL,
-    timeout: 10000,
+    timeout: 30000,
 })
 
 api.interceptors.response.use(
