@@ -45,26 +45,38 @@ class RendicionController extends ResourceController
     {
         try {
             $year = $this->request->getGet('year');
-            $model = new RendicionModel();
+            $rendModel = new RendicionModel();
 
             if ($year && is_numeric($year)) {
                 $y = (int) $year;
-                $data = $model
+                $rendiciones = $rendModel
                     ->where("YEAR(fecha) = {$y}", null, false)
                     ->orderBy('fecha', 'DESC')
                     ->findAll(2);
             } else {
-                $data = $model
+                $rendiciones = $rendModel
                     ->orderBy('fecha', 'DESC')
                     ->findAll(1);
             }
 
-            $hasData = !empty($data);
+            if (empty($rendiciones)) {
+                return $this->respond([
+                    'success' => false,
+                    'message' => 'No se encontraron rendiciones',
+                    'count' => 0,
+                    'data' => []
+                ], 200);
+            }
+
+            $rendicionesFormateadas = [];
+            foreach ($rendiciones as $r) {
+                $rendicionesFormateadas[] = $this->formatRendicionItem($r);
+            }
             return $this->respond([
-                'success' => $hasData,
-                'message' => $hasData ? 'Rendiciones obtenidas' : 'No se encontraron rendiciones',
-                'count'   => $hasData ? count($data) : 0,
-                'data'    => $hasData ? $data : []
+                'success' => true,
+                'message' => 'Rendiciones obtenidas',
+                'count'   => count($rendiciones),
+                'data'    => $rendicionesFormateadas
             ], 200);
         } catch (\Throwable $e) {
             log_message('error', 'Error obteniendo rendiciones recientes: ' . $e->getMessage());
@@ -74,6 +86,96 @@ class RendicionController extends ResourceController
                 'data'    => []
             ], 500);
         }
+    }
+    private function getRendicionStats($rendicionId)
+    {
+        try {
+            $userModel = new \App\Models\UsuarioModel();
+            $preguntaModel = new \App\Models\PreguntaModel();
+            $preguntaSelModel = new \App\Models\PreguntaSeleccionadaModel();
+            $usuarios = $userModel->where('id_rendicion', $rendicionId)->findAll() ?: [];
+            $totalInscritos = count($usuarios);
+            $asistentes = $userModel->where('id_rendicion', $rendicionId)->where('asistencia', 'si')->countAllResults();
+            $noAsistentes = $totalInscritos - $asistentes;
+            $totalPreguntas = $preguntaModel->where('id_rendicion', $rendicionId)->countAllResults();
+            // TODO: Esto no esta bien, se debe hacer joins para contar solo las preguntas seleccionadas para la rendición y hacer calculos
+            $preguntasRespondidas = $preguntaModel->where('id_rendicion', $rendicionId)->where('estado', 'respondida')->countAllResults();
+            $preguntasPendientes = $totalPreguntas - $preguntasRespondidas;
+            return [
+                'total_inscritos' => $totalInscritos,
+                'asistentes' => $asistentes,
+                'no_asistentes' => $noAsistentes,
+                'total_preguntas' => $totalPreguntas,
+                'preguntas_respondidas' => $preguntasRespondidas,
+                'preguntas_pendientes' => $preguntasPendientes
+            ];
+        } catch (\Throwable $e) {
+            log_message('error', 'Error obteniendo stats de rendición ' . $rendicionId . ': ' . $e->getMessage());
+            return [
+                'total_inscritos' => 0,
+                'asistentes' => 0,
+                'no_asistentes' => 0,
+                'total_preguntas' => 0,
+                'preguntas_respondidas' => 0,
+                'preguntas_pendientes' => 0
+            ];
+        }
+    }
+    private function determineRendicionStatus($fecha, $hora)
+    {
+        $fechaHora = new \DateTime($fecha . ' ' . $hora);
+        $now = new \DateTime();
+
+        if ($fechaHora > $now) return 'programada';
+        elseif ($fechaHora <= $now && $fechaHora->diff($now)->h < 3) {
+            // Si es el mismo día y han pasado menos de 3 horas, está en curso
+            return 'en_curso';
+        } else return 'finalizada';
+    }
+    private function formatRendicionItem($rendicion)
+    {
+        $bannerModel = new BanerRendicionModel();
+        $ejeSelModel = new EjeSeleccionadoModel();
+
+        $banners = $bannerModel->where('id_rendicion', $rendicion['id'])->findAll() ?: [];
+        $bannersFormateados = array_map(function ($b) {
+            return [
+                'id' => (int)$b['id'],
+                'name' => basename($b['file_path']),
+                'url' => base_url($b['file_path'])
+            ];
+        }, $banners);
+
+        $ejesAsociados = $ejeSelModel->getEjesConNombreByRendicion($rendicion['id']);
+        $ejesTematicos = array_map(function ($eje) {
+            return [
+                'id' => (int)$eje['id_eje'],
+                'nombre' => $eje['tematica'],
+                'cantidad_pregunta' => (int)$eje['cantidad_pregunta']
+            ];
+        }, $ejesAsociados);
+        $stats = $this->getRendicionStats($rendicion['id']);
+        $status = $this->determineRendicionStatus($rendicion['fecha'], $rendicion['hora']);
+        return [
+            'id' => (string)$rendicion['id'],
+            'fecha' => $rendicion['fecha'],
+            'hora'  => $rendicion['hora'],
+            'banners' => $bannersFormateados,
+            'ejesTematicos' => $ejesTematicos,
+            'status' => $status,
+            'asistentesRegistrados' => $stats['total_inscritos'],
+            'preguntasRecibidas' => $stats['total_preguntas'],
+            'year' => (int)date('Y', strtotime($rendicion['fecha'])),
+            'detalles' => [
+                'totalInscritos' => $stats['total_inscritos'],
+                'asistentes' => $stats['asistentes'],
+                'noAsistentes' => $stats['no_asistentes'],
+                'totalPreguntas' => $stats['total_preguntas'],
+                'preguntasRespondidas' => $stats['preguntas_respondidas'],
+                'preguntasPendientes' => $stats['preguntas_pendientes'],
+                'lugar' => "Auditorio Municipal"
+            ]
+        ];
     }
 
     public function obtenerRendicion($id = null)
