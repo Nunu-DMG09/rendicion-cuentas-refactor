@@ -17,10 +17,16 @@ class PreguntaController extends ResourceController
     public function crearPregunta()
     {
         $input = $this->request->getJSON(true);
-        if (!$input) return $this->respond(['status' => 'error', 'message' => 'Payload inválido'], 400);
+        if (!$input) {
+            return $this->respond(['success' => false, 'message' => 'Payload inválido', 'data' => []], 400);
+        }
 
         $required = ['contenido', 'id_usuario', 'id_eje'];
-        foreach ($required as $r) if (empty($input[$r])) return $this->respond(['status' => 'error', 'message' => "$r es requerido"], 400);
+        foreach ($required as $r) {
+            if (empty($input[$r])) {
+                return $this->respond(['success' => false, 'message' => "$r es requerido", 'data' => []], 400);
+            }
+        }
 
         $model = new PreguntaModel();
         try {
@@ -30,10 +36,11 @@ class PreguntaController extends ResourceController
                 'id_eje' => $input['id_eje']
             ]);
             $created = $model->find($id);
-            return $this->respondCreated(['status' => 'success', 'message' => 'Pregunta creada', 'data' => $created]);
+            $success = !empty($created);
+            return $this->respondCreated(['success' => $success, 'message' => $success ? 'Pregunta creada' : 'No creada', 'data' => $success ? $created : []]);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error creando pregunta'], 500);
+            return $this->respond(['success' => false, 'message' => 'Error creando pregunta', 'data' => []], 500);
         }
     }
 
@@ -46,14 +53,14 @@ class PreguntaController extends ResourceController
         try {
             $model = new PreguntaModel();
             $items = $model->where('id_eje', $idEje)->findAll();
-            return $this->respond(['status' => 'success', 'message' => 'Preguntas por eje', 'data' => $items]);
+            $has = !empty($items);
+            return $this->respond(['success' => $has, 'message' => $has ? 'Preguntas por eje' : 'No se encontraron preguntas', 'data' => $has ? $items : []], 200);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error obteniendo preguntas'], 500);
+            return $this->respond(['success' => false, 'message' => 'Error obteniendo preguntas', 'data' => []], 500);
         }
     }
 
-  
     public function preguntasPorRendicion($idRend = null)
     {
         try {
@@ -63,32 +70,50 @@ class PreguntaController extends ResourceController
                     JOIN eje_seleccionado es ON es.id_eje = e.id
                     WHERE es.id_rendicion = ?";
             $results = $db->query($sql, [$idRend])->getResultArray();
-            return $this->respond(['status' => 'success', 'message' => 'Preguntas por rendición', 'data' => $results]);
+            $has = !empty($results);
+            return $this->respond(['success' => $has, 'message' => $has ? 'Preguntas por rendición' : 'No se encontraron preguntas para la rendición', 'data' => $has ? $results : []], 200);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error obteniendo preguntas por rendición'], 500);
+            return $this->respond(['success' => false, 'message' => 'Error obteniendo preguntas por rendición', 'data' => []], 500);
         }
     }
 
     public function preguntasPorFechaRendicion($fecha = null)
     {
         if (empty($fecha)) {
-            return $this->respond(['status' => 'error', 'message' => 'fecha es requerida. Formato Y-m-d'], 400);
+            return $this->respond(['success' => false, 'message' => 'fecha es requerida. Formato Y-m-d', 'data' => []], 400);
         }
 
-       
         $d = \DateTime::createFromFormat('Y-m-d', $fecha);
         if (!($d && $d->format('Y-m-d') === $fecha)) {
-            return $this->respond(['status' => 'error', 'message' => 'Formato de fecha inválido, use Y-m-d'], 400);
+            return $this->respond(['success' => false, 'message' => 'Formato de fecha inválido, use Y-m-d', 'data' => []], 400);
         }
 
         try {
             $model = new PreguntaModel();
-            $data = $model->getPreguntasPorFechaRendicion($fecha);
-            return $this->respond(['status' => 'success', 'message' => 'Preguntas por fecha de rendición', 'data' => $data], 200);
+            $preguntas = $model->getPreguntasPorFechaRendicion($fecha);
+
+            $db = \Config\Database::connect();
+            $rendRows = $db->table('rendicion')->select('id')->where('fecha', $fecha)->get()->getResultArray();
+            $rendIds = array_column($rendRows, 'id');
+
+            $usuarios = [];
+            if (!empty($rendIds)) {
+                $usuarios = $db->table('usuario')->whereIn('id_rendicion', $rendIds)->get()->getResultArray();
+            }
+
+            $has = !empty($preguntas) || !empty($usuarios);
+            return $this->respond([
+                'success' => $has,
+                'message' => $has ? 'Preguntas y usuarios por fecha de rendición' : 'No se encontraron preguntas ni usuarios para la fecha',
+                'data' => [
+                    'preguntas' => $preguntas ?: [],
+                    'usuarios'  => $usuarios  ?: []
+                ]
+            ], 200);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error obteniendo preguntas por fecha'], 500);
+            return $this->respond(['success' => false, 'message' => 'Error obteniendo preguntas por fecha', 'data' => []], 500);
         }
     }
 }
