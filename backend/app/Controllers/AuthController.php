@@ -143,7 +143,7 @@ class AuthController extends ResourceController
                 service('response')->setCookie($cookie);
 
                 return $this->response->setJSON([
-                    'role_changed' => true,
+                    'roleChanged' => true,
                     'user' => [
                         'id' => (int)$admin['id'],
                         'dni' => $admin['dni'],
@@ -155,7 +155,7 @@ class AuthController extends ResourceController
             }
 
             return $this->response->setJSON([
-                'role_changed' => false,
+                'roleChanged' => false,
                 'user' => [
                     'id' => (int)$admin['id'],
                     'dni' => $admin['dni'],
