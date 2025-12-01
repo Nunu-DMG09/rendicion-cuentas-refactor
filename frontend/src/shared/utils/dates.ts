@@ -6,13 +6,19 @@ export const formatDate = (dateStr: string) => {
 		month: "short",
 		year: "numeric",
 	});
-}
+};
 export const formatDateWithWeekday = (dateStr: string) => {
-        const date = new Date(dateStr + 'T00:00:00')
-        return date.toLocaleDateString('es-ES', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-        })
-    }
+	const date = new Date(dateStr + "T00:00:00");
+	return date.toLocaleDateString("es-ES", {
+		weekday: "long",
+		day: "numeric",
+		month: "long",
+		year: "numeric",
+	});
+};
+export const getMonthYear = (dateStr: string) => {
+	const date = new Date(dateStr + "T00:00:00");
+	const month = date.toLocaleDateString("es-ES", { month: "long" });
+	const year = date.getFullYear();
+	return `${month.charAt(0).toUpperCase() + month.slice(1)} ${year}`;
+};
