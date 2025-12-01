@@ -1,14 +1,15 @@
 import { api } from "@/core/config";
-import type { User } from "@/core/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import type { ApiError, User } from "@/core/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuthStore } from "../store/auth.store";
-import { useEffect } from "react";
 import { toast } from "sonner";
 
 export const useAuth = () => {
     const queryClient = useQueryClient();
     const login = async (credentials: { dni: string; password: string }) => {
-        const res = await api.post('/auth/login', credentials);
+        const res = await api.post('/auth/login', credentials, {
+            withCredentials: true,
+        });
         if (!res.data.success || !res.data.user) {
             throw new Error(res.data.message || res.data.error || 'Error al iniciar sesión.');
         }
@@ -20,9 +21,15 @@ export const useAuth = () => {
             useAuthStore.getState().setUser(user);
             queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
         },
-        onError: (error: { error: string; message?: string }) => {
-            const errorMsg = error.message || error.error || 'Error al iniciar sesión.';
-            toast.error(errorMsg);
+        onError: (error: ApiError) => {
+            console.error('Login error:', error);            
+            let errorMessage = 'Error al iniciar sesión';
+
+            if (error.response?.data?.error) errorMessage = error.response.data.error;
+            else if (error.response?.data?.message) errorMessage = error.response.data.message;
+            else if (error.message) errorMessage = error.message;
+            
+            toast.error(errorMessage);
         }
     })
     const logout = async () => {
@@ -35,41 +42,16 @@ export const useAuth = () => {
         onSuccess: () => {
             useAuthStore.getState().clearAuth();
             queryClient.clear();
-        }
-    })
-    const refresh = async () => {
-        const res = await api.get('/auth/refresh', {
-            withCredentials: true,
-        });
-        return res.data;
-    }
-    const refreshQuery = useQuery({
-        queryKey: ['auth', 'me', 'refresh'],
-        queryFn: refresh,
-        staleTime: Infinity,
-        refetchInterval: 5 * 60 * 1000, // 5 minutes
-        retry: 1
-    })
-    useEffect(() => {
-        if (refreshQuery.isSuccess && refreshQuery.data) {
-            const data: { forceLogout?: boolean; user?: User; roleChanged?: boolean } = refreshQuery.data;
-            if (data.forceLogout) {
-                useAuthStore.getState().clearAuth();
-                return;
-            }
-            if (data.user) useAuthStore.getState().setUser(data.user);
-            if (data.roleChanged) {
-                useAuthStore.getState().setUser(data.user!);
-            }
-        }
-        if (refreshQuery.isError) {
+        },
+        onError: () => {
             useAuthStore.getState().clearAuth();
+            queryClient.clear();
+            toast.info('Sesión cerrada localmente.');
         }
-    }, [refreshQuery.isSuccess, refreshQuery.data, refreshQuery.isError])
+    })
     
     return {
         useLoginMutation,
         useLogoutMutation,
-        refreshQuery,
     }
 }
