@@ -3,8 +3,9 @@ export interface ApiError {
         data?: {
             message?: string
             errors?: Record<string, string[]>
+            error?: string
         }
         status?: number
     }
-    message?: string
+    message?: string;
 }
