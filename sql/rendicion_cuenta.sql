@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.40, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
 --
 -- Host: localhost    Database: rendicion_cuenta
 -- ------------------------------------------------------
--- Server version	8.0.40
+-- Server version	9.5.0
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -14,6 +14,14 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+SET @MYSQLDUMP_TEMP_LOG_BIN = @@SESSION.SQL_LOG_BIN;
+SET @@SESSION.SQL_LOG_BIN= 0;
+
+--
+-- GTID state at the beginning of the backup 
+--
+
+SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ '9e90c906-cc6b-11f0-950f-9c6b0066090d:1-364';
 
 --
 -- Table structure for table `administrador`
@@ -33,7 +41,7 @@ CREATE TABLE `administrador` (
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -42,7 +50,7 @@ CREATE TABLE `administrador` (
 
 LOCK TABLES `administrador` WRITE;
 /*!40000 ALTER TABLE `administrador` DISABLE KEYS */;
-INSERT INTO `administrador` VALUES (1,'40346175','MARTHA LUZ TUÑOQUE JULCAS','$2y$10$n7ZurrZsQR/Ha6liA4SoGun3jEggeie2hxBA09wXeVP8mOplHWT8e','super_admin',1,NULL,NULL,NULL);
+INSERT INTO `administrador` VALUES (1,'40346175','MARTHA LUZ TUÑOQUE JULCAS','$2y$10$n7ZurrZsQR/Ha6liA4SoGun3jEggeie2hxBA09wXeVP8mOplHWT8e','super_admin',1,NULL,NULL,NULL),(2,'40346175','MARTHA LUZ TUÑOQUE JULCAS','$2y$10$coeQBveJQit33gCDhjRT8OT.7TE/uhJdnd998JIg5lrQ1OGHPyxl.','super_admin',1,'2025-11-29 04:29:34','2025-11-29 04:29:34',NULL);
 /*!40000 ALTER TABLE `administrador` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -91,7 +99,7 @@ CREATE TABLE `eje` (
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -100,6 +108,7 @@ CREATE TABLE `eje` (
 
 LOCK TABLES `eje` WRITE;
 /*!40000 ALTER TABLE `eje` DISABLE KEYS */;
+INSERT INTO `eje` VALUES (1,'Medio Ambiente',0,'2025-11-29 04:29:34','2025-11-29 04:29:34',NULL),(2,'Educación y Cultura',1,'2025-11-29 04:29:34','2025-11-29 04:29:34',NULL),(3,'Salud Pública',0,'2025-11-29 04:29:34','2025-11-29 04:29:34',NULL),(4,'Seguridad Ciudadana',1,'2025-11-29 04:29:34','2025-11-29 04:29:34',NULL),(5,'Infraestructura',1,'2025-11-29 04:29:34','2025-11-29 04:29:34',NULL),(6,'Limpieza Pública',1,'2025-11-29 04:29:34','2025-11-29 04:29:34',NULL),(7,'Institucionalidad',1,'2025-11-29 04:29:34','2025-11-29 04:29:34',NULL),(8,'Desarrollo Social',1,'2025-11-29 04:29:34','2025-11-29 04:29:34',NULL);
 /*!40000 ALTER TABLE `eje` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -243,7 +252,6 @@ CREATE TABLE `rendicion` (
   `id` int NOT NULL AUTO_INCREMENT,
   `fecha` date NOT NULL,
   `hora` time NOT NULL,
-  `path` varchar(255) NOT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL,
@@ -257,7 +265,6 @@ CREATE TABLE `rendicion` (
 
 LOCK TABLES `rendicion` WRITE;
 /*!40000 ALTER TABLE `rendicion` DISABLE KEYS */;
-INSERT INTO `rendicion` VALUES (1,'2025-11-17','14:30:00','1763434222_3e7da763d00759c28b58.jpeg','2025-11-18 02:50:22','2025-11-18 02:50:22',NULL),(2,'2025-12-20','17:30:00','1763434487_0769223b10ba126ea478.jpeg','2025-11-18 02:54:47','2025-11-18 02:54:47',NULL),(3,'2025-12-24','15:30:00','[\"http:\\/\\/localhost\\/repositorios-github\\/rendicion-cuentas-refactor\\/backend\\/uploads\\/rendicion\\/3\\/1763481590_550c0d019adf0d1f5f3d.jpeg\"]','2025-11-18 15:59:50','2025-11-18 15:59:50',NULL),(4,'2026-01-30','17:45:00','/uploads/rendicion/4/1763482015_68c9ee1c9590a031c293.jpg','2025-11-18 16:06:55','2025-11-18 16:06:55',NULL);
 /*!40000 ALTER TABLE `rendicion` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -296,6 +303,7 @@ LOCK TABLES `usuario` WRITE;
 /*!40000 ALTER TABLE `usuario` DISABLE KEYS */;
 /*!40000 ALTER TABLE `usuario` ENABLE KEYS */;
 UNLOCK TABLES;
+SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -306,4 +314,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-19 16:04:06
+-- Dump completed on 2025-11-30 18:42:43
