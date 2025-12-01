@@ -19,11 +19,13 @@ $routes->group('rendicion',  ['namespace' => 'App\Controllers', 'filter' => 'cor
     $routes->post('/', 'RendicionController::crearRendicion'); // Crea nueva rendición (acepta archivos)
     $routes->post('/asociar-ejes', 'RendicionController::asociarEjes'); // Asocia ejes a una rendición
     $routes->get('(:num)/participantes', 'RendicionController::participantes/$1'); // Participantes de una rendición
-
-    // Ejes
+    $routes->get('rendiciones', 'RendicionController::recientes');
+    $routes->post('(:num)', 'RendicionController::editarRendicion/$1'); // Actualiza rendición (acepta archivos)
+    
+     // Ejes
     $routes->get('ejes', 'EjeController::listarEjes'); // Lista ejes temáticos
     $routes->post('ejes', 'EjeController::crearEje'); // Crea un nuevo eje
-    $routes->put('ejes/(:num)/toggle-estado', 'EjeController::toggleEjeEstado/$1'); // Habilita o deshabilita un eje
+    $routes->put('ejes/(:num)', 'EjeController::toggleEjeEstado/$1'); // Habilita o deshabilita un eje
 
     // Usuarios
     $routes->post('usuarios', 'UsuarioController::registrarUsuario'); // Registra usuario
