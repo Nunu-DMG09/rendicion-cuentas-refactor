@@ -55,6 +55,7 @@ $routes->group('rendicion',  ['namespace' => 'App\Controllers', 'filter' => 'cor
     $routes->post('admin', 'AdministradorController::crearAdministrador'); // Crear administrador
     $routes->put('admin/(:num)', 'AdministradorController::ActualizarAdministrador/$1'); // Actualizar administrador
     $routes->delete('admin/(:num)', 'AdministradorController::eliminarAdministrador/$1'); // Eliminar administrador
+    $routes->get('admin/dashboard-statics', 'AdministradorController::DashboardStatistics');
 
     // Autenticación
     $routes->post('auth/login', 'AuthController::login'); // Login (obtener token)
