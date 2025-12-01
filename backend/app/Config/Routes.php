@@ -34,7 +34,7 @@ $routes->group('rendicion',  ['namespace' => 'App\Controllers', 'filter' => 'cor
     $routes->get('usuarios/asistentes', 'UsuarioController::listarAsistentes'); // Lista asistentes
     $routes->get('usuarios/oradores', 'UsuarioController::listarOradores'); // Lista oradores
     $routes->post('usuarios/asignar', 'UsuarioController::asignarARendicion'); // Asignar usuario a rendición
-
+    $routes->get('usuarios/fecha/(:segment)', 'UsuarioController::usuariosPorFechaRendicion/$1'); // Usuarios por fecha de rendición
     // Preguntas
     $routes->post('preguntas', 'PreguntaController::crearPregunta'); // Crear pregunta
     $routes->get('ejes/(:num)/preguntas', 'PreguntaController::preguntasPorEje/$1'); // Preguntas por eje
