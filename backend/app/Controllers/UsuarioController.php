@@ -5,6 +5,7 @@ namespace App\Controllers;
 use CodeIgniter\RESTful\ResourceController;
 use App\Models\UsuarioModel;
 use App\Models\PreguntaModel;
+use App\Models\RendicionModel;
 
 class UsuarioController extends ResourceController
 {
@@ -16,36 +17,47 @@ class UsuarioController extends ResourceController
     public function registrarUsuario()
     {
         $input = $this->request->getJSON(true);
-        if (!$input) return $this->respond(['status' => 'error', 'message' => 'Payload inválido'], 400);
+        if (!$input) {
+            return $this->respond(['success' => false, 'message' => 'Payload inválido', 'data' => []], 400);
+        }
 
-        // Validaciones básicas siempre requeridas
+       
         $required = ['nombre', 'sexo', 'tipo_participacion'];
         foreach ($required as $r) {
             if (empty($input[$r])) {
-                return $this->respond(['status' => 'error', 'message' => "$r es requerido"], 400);
+                return $this->respond(['success' => false, 'message' => "$r es requerido", 'data' => []], 400);
             }
         }
 
-        // Si es orador, exigir campos adicionales
         $isOrador = (isset($input['tipo_participacion']) && $input['tipo_participacion'] === 'orador');
         if ($isOrador) {
             if (empty($input['titulo'])) {
-                return $this->respond(['status' => 'error', 'message' => 'titulo es requerido para orador'], 400);
+                return $this->respond(['success' => false, 'message' => 'titulo es requerido para orador', 'data' => []], 400);
             }
-            if (empty($input['id_eje'])) {
-                return $this->respond(['status' => 'error', 'message' => 'id_eje (eje tematico) es requerido para orador'], 400);
-            }
-            if (empty($input['pregunta'])) {
-                return $this->respond(['status' => 'error', 'message' => 'pregunta es requerida para orador'], 400);
+            $questionContent = $input['pregunta'] ?? $input['contenido'] ?? null;
+            if (empty($questionContent)) {
+                return $this->respond(['success' => false, 'message' => 'pregunta (o contenido) es requerida para orador', 'data' => []], 400);
             }
         }
 
         $userModel = new UsuarioModel();
         $pregModel = new PreguntaModel();
+        $rendModel = new RendicionModel();
         $db = \Config\Database::connect();
 
         $db->transStart();
         try {
+           
+            $idRendicion = isset($input['id_rendicion']) ? (int)$input['id_rendicion'] : null;
+            if (empty($idRendicion)) {
+                $ultima = $rendModel->orderBy('fecha', 'DESC')->orderBy('hora', 'DESC')->first();
+                if (!empty($ultima) && isset($ultima['id'])) {
+                    $idRendicion = (int)$ultima['id'];
+                } else {
+                    $idRendicion = null;
+                }
+            }
+
             $data = [
                 'nombre' => $input['nombre'],
                 'sexo' => $input['sexo'],
@@ -54,7 +66,7 @@ class UsuarioController extends ResourceController
                 'ruc_empresa' => $input['ruc_empresa'] ?? null,
                 'nombre_empresa' => $input['nombre_empresa'] ?? null,
                 'dni' => $input['dni'] ?? null,
-                'id_rendicion' => isset($input['id_rendicion']) ? (int)$input['id_rendicion'] : null,
+                'id_rendicion' => $idRendicion,
                 'asistencia' => $input['asistencia'] ?? 'no'
             ];
 
@@ -62,41 +74,41 @@ class UsuarioController extends ResourceController
             if ($userId === false) {
                 $db->transRollback();
                 $errors = $userModel->errors();
-                return $this->respond(['status' => 'error', 'message' => 'Validación usuario falló', 'errors' => $errors], 422);
+                return $this->respond(['success' => false, 'message' => 'Validación usuario falló', 'data' => $errors], 422);
             }
 
             $createdUser = $userModel->find($userId);
 
-            // Si es orador, crear pregunta y asociarla al usuario y eje
             $createdQuestion = null;
             if ($isOrador) {
                 $pregData = [
-                    'contenido' => $input['pregunta'],
+                    'contenido'  => $input['pregunta'] ?? $input['contenido'] ?? '',
                     'id_usuario' => (int)$userId,
-                    'id_eje' => (int)$input['id_eje']
+                    'id_eje'     => isset($input['id_eje']) && $input['id_eje'] !== '' ? (int)$input['id_eje'] : null
                 ];
+
                 $pregId = $pregModel->insert($pregData);
                 if ($pregId === false) {
                     $db->transRollback();
                     $errors = $pregModel->errors();
-                    return $this->respond(['status' => 'error', 'message' => 'Error guardando pregunta', 'errors' => $errors], 422);
+                    return $this->respond(['success' => false, 'message' => 'Error guardando pregunta', 'data' => $errors], 422);
                 }
                 $createdQuestion = $pregModel->find($pregId);
             }
 
             $db->transComplete();
             if ($db->transStatus() === false) {
-                return $this->respond(['status' => 'error', 'message' => 'Transacción fallida'], 500);
+                return $this->respond(['success' => false, 'message' => 'Transacción fallida', 'data' => []], 500);
             }
 
-            $response = ['status' => 'success', 'message' => 'Usuario registrado', 'data' => $createdUser];
-            if ($createdQuestion) $response['pregunta'] = $createdQuestion;
+            $responseData = $createdUser ?: [];
+            if ($createdQuestion) $responseData['pregunta'] = $createdQuestion;
 
-            return $this->respondCreated($response);
+            return $this->respondCreated(['success' => true, 'message' => 'Usuario registrado', 'data' => $responseData]);
         } catch (\Throwable $e) {
             $db->transRollback();
             log_message('error', $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error registrando usuario'], 500);
+            return $this->respond(['success' => false, 'message' => 'Error registrando usuario', 'data' => []], 500);
         }
     }
 
@@ -108,18 +120,20 @@ class UsuarioController extends ResourceController
     public function marcarAsistencia($id = null)
     {
         $input = $this->request->getJSON(true);
-        if (!$input || !isset($input['asistencia'])) return $this->respond(['status' => 'error', 'message' => 'asistencia es requerido'], 400);
+        if (!$input || !isset($input['asistencia'])) {
+            return $this->respond(['success' => false, 'message' => 'asistencia es requerido', 'data' => []], 400);
+        }
 
         $model = new UsuarioModel();
         try {
             $user = $model->find($id);
-            if (!$user) return $this->respondNotFound(['status' => 'error', 'message' => 'Usuario no encontrado']);
+            if (!$user) return $this->respond(['success' => false, 'message' => 'Usuario no encontrado', 'data' => []], 404);
             $model->update($id, ['asistencia' => $input['asistencia']]);
             $updated = $model->find($id);
-            return $this->respond(['status' => 'success', 'message' => 'Asistencia actualizada', 'data' => $updated]);
+            return $this->respond(['success' => true, 'message' => 'Asistencia actualizada', 'data' => $updated], 200);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error actualizando asistencia'], 500);
+            return $this->respond(['success' => false, 'message' => 'Error actualizando asistencia', 'data' => []], 500);
         }
     }
 
@@ -132,10 +146,11 @@ class UsuarioController extends ResourceController
         try {
             $model = new UsuarioModel();
             $users = $model->where('id_rendicion', $idRend)->findAll();
-            return $this->respond(['status' => 'success', 'message' => 'Usuarios obtenidos', 'data' => $users]);
+            $has = !empty($users);
+            return $this->respond(['success' => $has, 'message' => $has ? 'Usuarios obtenidos' : 'No se encontraron usuarios', 'data' => $has ? $users : []], 200);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error obteniendo usuarios'], 500);
+            return $this->respond(['success' => false, 'message' => 'Error obteniendo usuarios', 'data' => []], 500);
         }
     }
 
@@ -147,10 +162,11 @@ class UsuarioController extends ResourceController
         try {
             $model = new UsuarioModel();
             $data = $model->getAsistentes();
-            return $this->respond(['status' => 'success', 'message' => 'Asistentes obtenidos', 'data' => $data], 200);
+            $has = !empty($data);
+            return $this->respond(['success' => $has, 'message' => $has ? 'Asistentes obtenidos' : 'No se encontraron asistentes', 'data' => $has ? $data : []], 200);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error obteniendo asistentes'], 500);
+            return $this->respond(['success' => false, 'message' => 'Error obteniendo asistentes', 'data' => []], 500);
         }
     }
 
@@ -162,10 +178,11 @@ class UsuarioController extends ResourceController
         try {
             $model = new UsuarioModel();
             $data = $model->getOradores();
-            return $this->respond(['status' => 'success', 'message' => 'Oradores obtenidos', 'data' => $data], 200);
+            $has = !empty($data);
+            return $this->respond(['success' => $has, 'message' => $has ? 'Oradores obtenidos' : 'No se encontraron oradores', 'data' => $has ? $data : []], 200);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error obteniendo oradores'], 500);
+            return $this->respond(['success' => false, 'message' => 'Error obteniendo oradores', 'data' => []], 500);
         }
     }
 
@@ -177,7 +194,7 @@ class UsuarioController extends ResourceController
     {
         $input = $this->request->getJSON(true);
         if (!$input || !isset($input['id_rendicion']) || empty($input['user_ids'])) {
-            return $this->respond(['status' => 'error', 'message' => 'id_rendicion y user_ids son requeridos'], 400);
+            return $this->respond(['success' => false, 'message' => 'id_rendicion y user_ids son requeridos', 'data' => []], 400);
         }
 
         $idRend = (int)$input['id_rendicion'];
@@ -191,14 +208,68 @@ class UsuarioController extends ResourceController
 
             $db->transComplete();
             if ($db->transStatus() === false) {
-                return $this->respond(['status' => 'error', 'message' => 'Transacción fallida'], 500);
+                return $this->respond(['success' => false, 'message' => 'Transacción fallida', 'data' => []], 500);
             }
 
-            return $this->respond(['status' => 'success', 'message' => 'Usuarios asignados a rendición', 'id_rendicion' => $idRend, 'user_ids' => $userIds], 200);
+            return $this->respond(['success' => true, 'message' => 'Usuarios asignados a rendición', 'data' => ['id_rendicion' => $idRend, 'user_ids' => $userIds]], 200);
         } catch (\Throwable $e) {
             $db->transRollback();
             log_message('error', 'Error asignando usuarios: ' . $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error asignando usuarios'], 500);
+            return $this->respond(['success' => false, 'message' => 'Error asignando usuarios', 'data' => []], 500);
+        }
+    }
+
+    /**
+     * usuariosPorFechaRendicion
+     * Obtiene todos los usuarios vinculados a las rendiciones de una fecha (Y-m-d),
+     * incluyendo sus preguntas y datos del eje.
+     */
+    public function usuariosPorFechaRendicion($fecha = null)
+    {
+        if (empty($fecha)) {
+            return $this->respond(['success' => false, 'message' => 'fecha es requerida. Formato Y-m-d', 'data' => []], 400);
+        }
+
+        $d = \DateTime::createFromFormat('Y-m-d', $fecha);
+        if (!($d && $d->format('Y-m-d') === $fecha)) {
+            return $this->respond(['success' => false, 'message' => 'Formato de fecha inválido, use Y-m-d', 'data' => []], 400);
+        }
+
+        try {
+            $db = \Config\Database::connect();
+            $rendRows = $db->table('rendicion')->select('id, fecha, hora')->where('fecha', $fecha)->orderBy('hora', 'DESC')->get()->getResultArray();
+
+            if (empty($rendRows)) {
+                return $this->respond(['success' => false, 'message' => 'No se encontraron rendiciones para la fecha', 'data' => []], 200);
+            }
+
+            $userModel = new \App\Models\UsuarioModel();
+            $result = [];
+
+            foreach ($rendRows as $r) {
+                $usuarios = $userModel->getUsuariosPorRendicionConPreguntas((int)$r['id']);
+                $result[] = [
+                    'id_rendicion' => (int)$r['id'],
+                    'fecha' => $r['fecha'],
+                    'hora'  => $r['hora'],
+                    'usuarios' => $usuarios
+                ];
+            }
+
+            // success true only if there is at least one usuario across all rendiciones
+            $hasAnyUsers = false;
+            foreach ($result as $r) {
+                if (!empty($r['usuarios'])) { $hasAnyUsers = true; break; }
+            }
+
+            return $this->respond([
+                'success' => $hasAnyUsers,
+                'message' => $hasAnyUsers ? 'Usuarios por fecha obtenidos' : 'No se encontraron usuarios para las rendiciones de la fecha',
+                'data' => $hasAnyUsers ? $result : []
+            ], 200);
+        } catch (\Throwable $e) {
+            log_message('error', $e->getMessage());
+            return $this->respond(['success' => false, 'message' => 'Error obteniendo usuarios por fecha', 'data' => []], 500);
         }
     }
 }
