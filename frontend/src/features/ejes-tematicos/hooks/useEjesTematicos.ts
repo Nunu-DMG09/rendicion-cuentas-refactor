@@ -17,7 +17,7 @@ const ejesApi = {
         return res.data.data
     },
     toggleEstado: async (id: string): Promise<EjeTematico> => {
-        const res = await api.put(`ejes/${id}/toggle-estado`)
+        const res = await api.put(`ejes/${id}`)
         return res.data.data
     }
 }
