@@ -77,7 +77,11 @@ export type RendicionItem = {
     fecha: string
     hora: string
     banners: BannerPreview[]
-    ejesTematicos: string[]
+    ejesTematicos: {
+        id: string
+        nombre: string
+        cantidad_pregunta: number
+    }[]
     status: RendicionStatus
     asistentesRegistrados: number
     preguntasRecibidas: number
