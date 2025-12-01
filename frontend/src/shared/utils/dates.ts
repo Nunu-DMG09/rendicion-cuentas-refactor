@@ -6,4 +6,13 @@ export const formatDate = (dateStr: string) => {
 		month: "short",
 		year: "numeric",
 	});
-};
+}
+export const formatDateWithWeekday = (dateStr: string) => {
+        const date = new Date(dateStr + 'T00:00:00')
+        return date.toLocaleDateString('es-ES', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        })
+    }
