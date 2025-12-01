@@ -22,22 +22,17 @@ class EjeModel extends Model
     protected $updatedField  = 'updated_at';
     protected $deletedField  = 'deleted_at';
 
-    // Validation
+    // Validation - estado ya no es obligatorio (la BD tiene default = 1)
     protected $validationRules = [
         'tematica' => 'required|string|max_length[120]',
-        'estado'   => 'required|integer|in_list[0,1]'
+        'estado'   => 'permit_empty|integer|in_list[0,1]'
     ];
 
     protected $validationMessages = [
         'tematica' => [
             'required' => 'El campo {field} es obligatorio.',
             'max_length' => 'El campo {field} no puede exceder {param} caracteres.'
-        ],
-        'estado' => [
-            'required' => 'El campo {field} es obligatorio.',
-            'integer'  => 'El campo {field} debe ser un número.',
-            'in_list'  => 'El campo {field} debe ser 0 o 1.'
-        ]
+        ]   
     ];
 
     protected $skipValidation       = false;
