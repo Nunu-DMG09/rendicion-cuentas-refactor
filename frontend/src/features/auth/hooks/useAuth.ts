@@ -3,6 +3,7 @@ import type { User } from "@/core/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuthStore } from "../store/auth.store";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 export const useAuth = () => {
     const queryClient = useQueryClient();
@@ -18,6 +19,10 @@ export const useAuth = () => {
         onSuccess: (user) => {
             useAuthStore.getState().setUser(user);
             queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+        },
+        onError: (error: { error: string; message?: string }) => {
+            const errorMsg = error.message || error.error || 'Error al iniciar sesión.';
+            toast.error(errorMsg);
         }
     })
     const logout = async () => {
