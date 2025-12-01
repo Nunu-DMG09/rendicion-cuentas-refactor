@@ -65,6 +65,7 @@ class AuthController extends ResourceController
         $response->setCookie($cookie);
 
         return $response->setJSON([
+            'success' => true,
             'role_changed' => false,
             'user' => [
                 'id' => (int)$user['id'],
