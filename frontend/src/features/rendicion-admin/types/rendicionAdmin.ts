@@ -109,7 +109,21 @@ export type RendicionEditData = {
     id: string
     fecha: string
     hora: string
-    banners: BannerFile[]
+    banners?: BannerFile[]
+}
+export interface EditRendicionResponse {
+    success: boolean
+    message: string
+    data: {
+        rendicion: RendicionItem
+        banners: Array<{
+            id: number
+            file_path: string
+            original_name?: string
+            file_size?: number
+            url: string
+        }>
+    }
 }
 
 export type EditModalState = {
