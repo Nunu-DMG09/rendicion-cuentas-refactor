@@ -17,28 +17,26 @@ class AdministradorController extends ResourceController
         $token = get_cookie('access_token');
 
         if (!$token) {
-            return $this->respond(['error' => 'No autenticado'], 401);
+            return $this->respond(['success' => false, 'message' => 'No autenticado', 'data' => []], 401);
         }
 
         try {
             $decoded = verifyJWT($token);
 
             if (!isset($decoded->data->dni)) {
-                return $this->respond(['error' => 'Token inválido'], 401);
+                return $this->respond(['success' => false, 'message' => 'Token inválido', 'data' => []], 401);
             }
 
             $adminModel = new \App\Models\AdministradorModel();
             $admin = $adminModel->where('dni', $decoded->data->dni)->first();
 
             if (!$admin) {
-                return $this->respond(['error' => 'Admin no encontrado'], 404);
+                return $this->respond(['success' => false, 'message' => 'Admin no encontrado', 'data' => []], 404);
             }
 
-            return $admin; 
-
-
+            return $admin;
         } catch (\Throwable $e) {
-            return $this->respond(['error' => 'Token inválido: ' . $e->getMessage()], 401);
+            return $this->respond(['success' => false, 'message' => 'Token inválido: ' . $e->getMessage(), 'data' => []], 401);
         }
     }
 
@@ -50,10 +48,11 @@ class AdministradorController extends ResourceController
         try {
             $model = new AdministradorModel();
             $data = $model->findAll();
-            return $this->respond(['status' => 'success', 'message' => 'Administradores obtenidos', 'data' => $data], 200);
+            $has = !empty($data);
+            return $this->respond(['success' => $has, 'message' => $has ? 'Administradores obtenidos' : 'No se encontraron administradores', 'data' => $has ? $data : []], 200);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error obteniendo administradores'], 500);
+            return $this->respond(['success' => false, 'message' => 'Error obteniendo administradores', 'data' => []], 500);
         }
     }
 
@@ -63,11 +62,11 @@ class AdministradorController extends ResourceController
         if (is_object($admin)) return $admin;
 
         $input = $this->request->getJSON(true);
-        if (!$input) return $this->respond(['status' => 'error', 'message' => 'Payload inválido'], 400);
+        if (!$input) return $this->respond(['success' => false, 'message' => 'Payload inválido', 'data' => []], 400);
 
         $required = ['dni', 'nombre', 'password', 'categoria'];
         foreach ($required as $f) {
-            if (empty($input[$f])) return $this->respond(['status' => 'error', 'message' => "$f es requerido"], 400);
+            if (empty($input[$f])) return $this->respond(['success' => false, 'message' => "$f es requerido", 'data' => []], 400);
         }
 
         $model = new AdministradorModel();
@@ -83,12 +82,11 @@ class AdministradorController extends ResourceController
             $id = $model->createAdministrador($data);
             if ($id === false) {
                 $errors = $model->errors();
-                return $this->respond(['status' => 'error', 'message' => 'No se pudo crear administrador', 'errors' => $errors], 422);
+                return $this->respond(['success' => false, 'message' => 'No se pudo crear administrador', 'data' => $errors], 422);
             }
 
             $created = $model->find($id);
 
-            // Registrar en historial: acción estática 'crear' y motivo estático
             try {
                 $hist = new HistorialAdminModel();
                 $performedBy = isset($input['realizado_por']) ? (int)$input['realizado_por'] : (int)$admin['id'];
@@ -102,10 +100,10 @@ class AdministradorController extends ResourceController
                 log_message('error', 'Historial crear administrador falló: ' . $h->getMessage());
             }
 
-            return $this->respondCreated(['status' => 'success', 'message' => 'Administrador creado', 'data' => $created]);
+            return $this->respondCreated(['success' => true, 'message' => 'Administrador creado', 'data' => $created]);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error creando administrador'], 500);
+            return $this->respond(['success' => false, 'message' => 'Error creando administrador', 'data' => []], 500);
         }
     }
 
@@ -114,9 +112,9 @@ class AdministradorController extends ResourceController
         $admin = $this->authAdmin();
         if (is_object($admin)) return $admin;
 
-        if (!$id) return $this->respond(['status' => 'error', 'message' => 'ID requerido'], 400);
+        if (!$id) return $this->respond(['success' => false, 'message' => 'ID requerido', 'data' => []], 400);
         $input = $this->request->getJSON(true);
-        if (!$input || empty($input['password'])) return $this->respond(['status' => 'error', 'message' => 'password requerido'], 400);
+        if (!$input || empty($input['password'])) return $this->respond(['success' => false, 'message' => 'password requerido', 'data' => []], 400);
 
         $model = new \App\Models\AdministradorModel();
         try {
@@ -124,16 +122,14 @@ class AdministradorController extends ResourceController
             $res = $model->updateAdministrador((int)$id, $input['password'], $newCategoria);
             if ($res === false) {
                 $errors = $model->errors();
-                return $this->respond(['status' => 'error', 'message' => 'No se pudo actualizar administrador', 'errors' => $errors], 422);
+                return $this->respond(['success' => false, 'message' => 'No se pudo actualizar administrador', 'data' => $errors], 422);
             }
             $updated = $model->find($id);
 
-            // Registrar en historial: acción 'actualizar' y motivos estáticos según lo actualizado
             try {
                 $hist = new HistorialAdminModel();
                 $performedBy = isset($input['realizado_por']) ? (int)$input['realizado_por'] : (int)$admin['id'];
 
-                // Si password fue actualizado (siempre en este endpoint) registrar motivo de contraseña
                 $hist->insert([
                     'id_admin'     => (int)$id,
                     'accion'       => 'actualizar',
@@ -141,7 +137,6 @@ class AdministradorController extends ResourceController
                     'realizado_por'=> $performedBy
                 ]);
 
-                // Si categoría fue enviada y cambiada, registrar motivo de categoria
                 if ($newCategoria !== null) {
                     $hist->insert([
                         'id_admin'     => (int)$id,
@@ -154,10 +149,10 @@ class AdministradorController extends ResourceController
                 log_message('error', 'Historial actualizar administrador falló: ' . $h->getMessage());
             }
 
-            return $this->respond(['status' => 'success', 'message' => 'Administrador actualizado', 'data' => $updated], 200);
+            return $this->respond(['success' => true, 'message' => 'Administrador actualizado', 'data' => $updated], 200);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error actualizando administrador'], 500);
+            return $this->respond(['success' => false, 'message' => 'Error actualizando administrador', 'data' => []], 500);
         }
     }
 
@@ -166,22 +161,17 @@ class AdministradorController extends ResourceController
         $admin = $this->authAdmin();
         if (is_object($admin)) return $admin;
 
-        if (!$id) return $this->respond(['status' => 'error', 'message' => 'ID requerido'], 400);
+        if (!$id) return $this->respond(['success' => false, 'message' => 'ID requerido', 'data' => []], 400);
 
         $model = new AdministradorModel();
         try {
             $res = $model->eliminarAdministrador((int)$id);
-            if ($res === false) return $this->respond(['status' => 'error', 'message' => 'No se pudo eliminar administrador'], 500);
+            if ($res === false) return $this->respond(['success' => false, 'message' => 'No se pudo eliminar administrador', 'data' => []], 500);
 
-            // Registrar en historial: acción 'eliminar' y motivo estático
             try {
                 $hist = new HistorialAdminModel();
-
-                // intentar obtener quien realizó la acción desde body o querystring
                 $body = $this->request->getJSON(true) ?: [];
-
                 $performedBy = isset($body['realizado_por']) ? (int) $body['realizado_por'] : (int)$admin['id'];
-
                 $hist->insert([
                     'id_admin'     => (int)$id,
                     'accion'       => 'eliminar',
@@ -192,10 +182,10 @@ class AdministradorController extends ResourceController
                 log_message('error', 'Historial eliminar administrador falló: ' . $h->getMessage());
             }
 
-            return $this->respondDeleted(['status' => 'success', 'message' => 'Administrador eliminado']);
+            return $this->respondDeleted(['success' => true, 'message' => 'Administrador eliminado', 'data' => []]);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error eliminando administrador'], 500);
+            return $this->respond(['success' => false, 'message' => 'Error eliminando administrador', 'data' => []], 500);
         }
     }
 
@@ -204,15 +194,15 @@ class AdministradorController extends ResourceController
         $admin = $this->authAdmin();
         if (is_object($admin)) return $admin;
 
-        if (!$dni) return $this->respond(['status' => 'error', 'message' => 'DNI requerido'], 400);
+        if (!$dni) return $this->respond(['success' => false, 'message' => 'DNI requerido', 'data' => []], 400);
         $model = new AdministradorModel();
         try {
             $item = $model->findByDni($dni);
-            if (!$item) return $this->respondNotFound(['status' => 'error', 'message' => 'Administrador no encontrado']);
-            return $this->respond(['status' => 'success', 'message' => 'Administrador encontrado', 'data' => $item], 200);
+            if (!$item) return $this->respondNotFound(['success' => false, 'message' => 'Administrador no encontrado', 'data' => []]);
+            return $this->respond(['success' => true, 'message' => 'Administrador encontrado', 'data' => $item], 200);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
-            return $this->respond(['status' => 'error', 'message' => 'Error buscando administrador'], 500);
+            return $this->respond(['success' => false, 'message' => 'Error buscando administrador', 'data' => []], 500);
         }
     }
 }
