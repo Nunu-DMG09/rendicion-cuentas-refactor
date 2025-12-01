@@ -205,4 +205,29 @@ class AdministradorController extends ResourceController
             return $this->respond(['success' => false, 'message' => 'Error buscando administrador', 'data' => []], 500);
         }
     }
+
+    /**
+     * DashboardStatistics
+     * Llama al modelo para obtener las estadísticas y responde con success/data.
+     */
+    public function DashboardStatistics()
+    {
+        $admin = $this->authAdmin();
+        if (is_object($admin)) return $admin;
+
+        try {
+            $model = new \App\Models\AdministradorModel();
+            $estadisticas = $model->getDashboardStatistics((int) ($admin['id'] ?? 0));
+
+            $has = !empty($estadisticas);
+            return $this->respond([
+                'success' => $has,
+                'message' => $has ? 'Estadísticas obtenidas' : 'No se pudieron obtener estadísticas',
+                'data'    => $has ? $estadisticas : []
+            ], 200);
+        } catch (\Throwable $e) {
+            log_message('error', 'DashboardStatistics controller error: ' . $e->getMessage());
+            return $this->respond(['success' => false, 'message' => 'Error obteniendo estadísticas', 'data' => []], 500);
+        }
+    }
 }
