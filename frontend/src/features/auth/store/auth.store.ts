@@ -1,7 +1,6 @@
 import type { User } from '@/core/types';
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware/devtools';
-
+import { devtools } from "zustand/middleware"
 interface AuthState {
     user: User | null;
     isAuthenticated: boolean;
