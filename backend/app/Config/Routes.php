@@ -22,6 +22,12 @@ $routes->group('rendicion',  ['namespace' => 'App\Controllers', 'filter' => 'cor
     $routes->get('rendiciones', 'RendicionController::recientes');
     $routes->post('(:num)', 'RendicionController::editarRendicion/$1'); // Actualiza rendición (acepta archivos)
     
+    // RUTAS ACTUALES LO QUE ME PEDISTE QUE AGREGUE @DIEGAZO OÑO
+    $routes->get('home/banners', 'RendicionController::banners'); // Obtiene los banners de la rendición más reciente
+    $routes->get('home/datos-registro', 'RendicionController::datosRegistro');  // Obtiene datos de la rendición actual para el formulario de registro
+    $routes->get('home/rendiciones', 'RendicionController::rendiciones'); // Obtiene todas las rendiciones del año actual con sus preguntas para mostrar en home
+
+
      // Ejes
     $routes->get('ejes', 'EjeController::listarEjes'); // Lista ejes temáticos
     $routes->post('ejes', 'EjeController::crearEje'); // Crea un nuevo eje
