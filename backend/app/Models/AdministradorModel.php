@@ -186,7 +186,8 @@ class AdministradorModel extends Model
             ", [$today])->getResultArray();
 
             $proximasRendiciones = array_map(function($r){
-                $titulo = $r['titulo'] ?? $r['nombre'] ?? $r['descripcion'] ?? ($r['id'] ?? '');
+                // Corregir ese titulo a algo como 'Rendicion del DD/MM' si no tiene titulo
+                $titulo = $r['titulo'] ?? $r['nombre'] ?? $r['descripcion'] ?? 'Rendición #' . ($r['id'] ?? '');
                 return [
                     'id' => $r['id'] ?? null,
                     'titulo' => $titulo,
@@ -210,7 +211,8 @@ class AdministradorModel extends Model
             ", [$today])->getResultArray();
 
             $rendicionesHoy = array_map(function($r){
-                $titulo = $r['titulo'] ?? $r['nombre'] ?? $r['descripcion'] ?? ($r['id'] ?? '');
+                // Corregir ese titulo a algo como 'Rendicion del DD/MM' si no tiene titulo
+                $titulo = $r['titulo'] ?? $r['nombre'] ?? $r['descripcion'] ?? 'Rendición #' . ($r['id'] ?? '');
                 return [
                     'id' => $r['id'] ?? null,
                     'titulo' => $titulo,
