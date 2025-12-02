@@ -23,42 +23,41 @@ export const STAT_CARDS_CONFIG = [
     title: 'Rendiciones Realizadas',
     icon: FaCalendarAlt,
     color: 'blue' as const,
-    trend: { value: 8, isPositive: true }
   },
   {
     key: 'totalAsistentes',
     title: 'Total Asistentes',
     icon: FaUsers,
     color: 'green' as const,
-    trend: { value: 12, isPositive: true }
+    // trend: { value: 12, isPositive: true }
   },
   {
     key: 'totalOradores',
     title: 'Oradores Registrados',
     icon: FaMicrophone,
     color: 'purple' as const,
-    trend: { value: 5, isPositive: true }
+    // trend: { value: 5, isPositive: true }
   },
   {
-    key: 'totalPreguntas',
+    key: 'preguntasRecibidas',
     title: 'Preguntas Recibidas',
     icon: FaQuestionCircle,
     color: 'yellow' as const,
-    trend: { value: 15, isPositive: true }
+    // trend: { value: 15, isPositive: true }
   },
   {
     key: 'preguntasRespondidas',
     title: 'Preguntas Respondidas',
     icon: FaCheckCircle,
     color: 'indigo' as const,
-    trend: { value: 10, isPositive: true }
+    // trend: { value: 10, isPositive: true }
   },
   {
     key: 'preguntasPendientes',
     title: 'Preguntas Pendientes',
     icon: FaClock,
     color: 'red' as const,
-    trend: { value: 3, isPositive: false }
+    // trend: { value: 3, isPositive: false }
   }
 ]
 
