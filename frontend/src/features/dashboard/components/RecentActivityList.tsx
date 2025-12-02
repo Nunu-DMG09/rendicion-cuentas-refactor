@@ -8,7 +8,7 @@ type Props = {
 
 const getActivityIcon = (type: RecentActivity['type']) => {
     switch (type) {
-        case 'registro':
+        case 'usuario':
             return <FaUser className="h-4 w-4" />
         case 'pregunta':
             return <FaQuestionCircle className="h-4 w-4" />
@@ -21,25 +21,15 @@ const getActivityIcon = (type: RecentActivity['type']) => {
 
 const getActivityColor = (type: RecentActivity['type']) => {
     switch (type) {
-        case 'registro':
+        case 'usuario':
             return 'bg-green-100 text-green-600'
         case 'pregunta':
             return 'bg-yellow-100 text-yellow-600'
         case 'rendicion':
-            return 'bg-blue-100 text-[#002f59]'
+            return 'bg-blue-100 text-primary-dark'
         default:
             return 'bg-gray-100 text-gray-600'
     }
-}
-
-const formatTimeAgo = (date: Date) => {
-    const now = new Date()
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
-
-    if (diffInMinutes < 1) return 'Hace un momento'
-    if (diffInMinutes < 60) return `Hace ${diffInMinutes} min`
-    if (diffInMinutes < 1440) return `Hace ${Math.floor(diffInMinutes / 60)} h`
-    return `Hace ${Math.floor(diffInMinutes / 1440)} días`
 }
 
 export default function RecentActivityList({ activities }: Props) {
@@ -52,38 +42,35 @@ export default function RecentActivityList({ activities }: Props) {
         >
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-900">Actividad Reciente</h3>
-                <button className="cursor-pointer text-sm text-[#002f59] hover:underline font-medium">
-                    Ver todo
-                </button>
             </div>
 
             <div className="space-y-4">
-                {activities.map((activity, index) => (
-                    <motion.div
-                        key={activity.id}
-                        className="flex items-start space-x-4 p-3 rounded-xl hover:bg-gray-50 transition-colors"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                    >
-                        <div className={`p-2 rounded-lg ${getActivityColor(activity.type)}`}>
-                            {getActivityIcon(activity.type)}
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
-                                {activity.description}
-                            </p>
-                            <p className="text-sm text-gray-500 truncate">
-                                {activity.user}
-                            </p>
-                        </div>
-
-                        <span className="text-xs text-gray-400 whitespace-nowrap">
-                            {formatTimeAgo(activity.timestamp)}
-                        </span>
-                    </motion.div>
-                ))}
+                {activities.length === 0 ? (
+                    <p className="text-gray-500 text-center py-4">No hay actividad reciente</p>
+                ) : (
+                    activities.slice(0, 10).map((activity) => (
+                        <motion.div
+                            key={activity.id}
+                            className="flex items-start gap-3"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: parseInt(activity.id) * 0.1 }}
+                        >
+                            <div className={`shrink-0 w-8 h-8 rounded-full ${getActivityColor(activity.type)} flex items-center justify-center`}>
+                                {getActivityIcon(activity.type)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900">{activity.title}</p>
+                                <p className="text-sm text-gray-500">{activity.subtitle}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-xs text-gray-400">{activity.time_ago}</span>
+                                    <span className="text-xs text-gray-400">•</span>
+                                    <span className="text-xs text-gray-400">{activity.administrador}</span>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))
+                )}
             </div>
         </motion.div>
     )
