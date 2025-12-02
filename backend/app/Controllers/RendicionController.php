@@ -631,4 +631,70 @@ class RendicionController extends ResourceController
             return $this->respond(['success' => false, 'message' => 'Error actualizando rendición', 'data' => []], 500);
         }
     }
+
+    /*=======================================================================
+     * BANNERS
+     * Obtiene los banners de la rendición más reciente
+     =======================================================================*/
+    public function banners()
+    {
+        try {
+            $model = new \App\Models\RendicionModel();
+            $data = $model->getBannersRendicionActual();
+            $has = !empty($data);
+
+            return $this->respond([
+                'success' => $has,
+                'message' => $has ? 'Banners obtenidos' : 'No se encontraron banners',
+                'data' => $has ? $data : []
+            ], 200);
+        } catch (\Throwable $e) {
+            log_message('error', 'RendicionController::banners error: ' . $e->getMessage());
+            return $this->respond(['success' => false, 'message' => 'Error obteniendo banners', 'data' => []], 500);
+        }
+    }
+
+    /*=======================================================================
+     * Datos Registro
+     * Obtiene datos de la rendición actual para el formulario de registro
+     =======================================================================*/
+    public function datosRegistro()
+    {
+        try {
+            $model = new \App\Models\RendicionModel();
+            $data = $model->getDatosRendicionParaRegistro();
+            $has = !empty($data);
+
+            return $this->respond([
+                'success' => $has,
+                'message' => $has ? 'Datos de registro obtenidos' : 'No hay rendición disponible para registro',
+                'data' => $has ? $data : []
+            ], 200);
+        } catch (\Throwable $e) {
+            log_message('error', 'RendicionController::datosRegistro error: ' . $e->getMessage());
+            return $this->respond(['success' => false, 'message' => 'Error obteniendo datos de registro', 'data' => []], 500);
+        }
+    }
+
+    /*=======================================================================
+    rendiciones
+    Obtiene las rendiciones del año actual con sus estadísticas (para home)
+     =======================================================================*/
+    public function rendiciones()
+    {
+        try {
+            $model = new \App\Models\RendicionModel();
+            $data = $model->getRendicionesAnoActualConPreguntas();
+            $has = !empty($data);
+
+            return $this->respond([
+                'success' => $has,
+                'message' => $has ? 'Rendiciones obtenidas' : 'No se encontraron rendiciones',
+                'data' => $has ? $data : []
+            ], 200);
+        } catch (\Throwable $e) {
+            log_message('error', 'RendicionController::rendiciones error: ' . $e->getMessage());
+            return $this->respond(['success' => false, 'message' => 'Error obteniendo rendiciones', 'data' => []], 500);
+        }
+    }
 }
