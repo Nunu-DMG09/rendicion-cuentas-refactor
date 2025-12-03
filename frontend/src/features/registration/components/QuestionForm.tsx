@@ -302,7 +302,7 @@ export default function QuestionForm({
 						<TbBulb className="text-white size-6" />
 					</div>
 					<div>
-						<h3 className="font-semibold text-[#002f59] mb-2">
+						<h3 className="font-semibold text-primary-dark mb-2">
 							Consejos para una buena pregunta
 						</h3>
 						<div className="space-y-1 text-sm text-gray-600">
