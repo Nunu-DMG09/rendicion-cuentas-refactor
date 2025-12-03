@@ -3,8 +3,8 @@ import type { SidebarItemRestricted } from "./types/sidebarItem";
 import { useSidebar } from "@/core/hooks";
 import { IoChevronForward } from "react-icons/io5";
 import { NavLink } from "react-router-dom";
-// import { isAdmin } from "@/core/utils";
-// import { useAuth } from "@/features/auth/hooks";
+import { isSuperAdmin } from "@/core/utils";
+import { useAuthStore } from "@/features/auth/store/auth.store";
 
 interface Props {
 	parentTo?: string;
@@ -24,7 +24,7 @@ export const SidebarSubmenu = ({
 }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const { closeSidebar } = useSidebar();
-	// const { user } = useAuth();
+	const { user } = useAuthStore();
 	const toggleSubmenu = () => {
 		if (!isCompact) setIsOpen(!isOpen);
 	};
@@ -60,7 +60,7 @@ export const SidebarSubmenu = ({
 				>
 					<div className="pl-4 pr-2 py-1">
 						{subItems.map((item) => {
-							const showItem = !item.restricted /*|| isAdmin(user?.role || "")*/;
+							const showItem = !item.restricted || isSuperAdmin(user?.rol || "");
 							if (!showItem) return null;
 							return (
 								<NavLink
