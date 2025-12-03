@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use CodeIgniter\Model;
@@ -98,8 +99,15 @@ class RendicionModel extends Model
             if (!empty($baners)) {
                 foreach ($baners as $b) {
                     $file = $b['file_path'] ?? $b['file'] ?? $b['ruta'] ?? '';
-                    $fsPath = FCPATH . 'uploads' . DIRECTORY_SEPARATOR . 'rendicion' . DIRECTORY_SEPARATOR . $rendicionId . DIRECTORY_SEPARATOR . $file;
-                    $rutaPublic = $baseUrl . '/uploads/rendicion/' . $rendicionId . '/' . $file;
+                    if (str_starts_with($file, 'uploads/')) {
+                        // Si file_path ya incluye "uploads/", usar directamente
+                        $rutaPublic = $baseUrl . '/' . $file;
+                        $fsPath = FCPATH . $file;
+                    } else {
+                        // Si no incluye "uploads/", construir la ruta completa
+                        $rutaPublic = $baseUrl . '/uploads/rendicion/' . $rendicionId . '/' . $file;
+                        $fsPath = FCPATH . 'uploads' . DIRECTORY_SEPARATOR . 'rendicion' . DIRECTORY_SEPARATOR . $rendicionId . DIRECTORY_SEPARATOR . $file;
+                    }
                     // si no existe en FS, mantener ruta pero marcar raw
                     $normalized[] = [
                         'id' => (int)($b['id'] ?? 0),
@@ -114,7 +122,7 @@ class RendicionModel extends Model
                 // fallback: listar archivos en public/uploads/rendicion/{id}/
                 $dir = FCPATH . 'uploads' . DIRECTORY_SEPARATOR . 'rendicion' . DIRECTORY_SEPARATOR . $rendicionId . DIRECTORY_SEPARATOR;
                 if (is_dir($dir)) {
-                    $files = array_values(array_filter(scandir($dir), function($f){
+                    $files = array_values(array_filter(scandir($dir), function ($f) {
                         return $f !== '.' && $f !== '..' && !is_dir($f);
                     }));
                     foreach ($files as $i => $file) {
@@ -289,9 +297,13 @@ class RendicionModel extends Model
     private function convertToRoman(int $number): string
     {
         $romans = [
-            10 => 'X', 9 => 'IX', 5 => 'V', 4 => 'IV', 1 => 'I'
+            10 => 'X',
+            9 => 'IX',
+            5 => 'V',
+            4 => 'IV',
+            1 => 'I'
         ];
-        
+
         $result = '';
         foreach ($romans as $value => $roman) {
             while ($number >= $value) {
@@ -299,7 +311,7 @@ class RendicionModel extends Model
                 $number -= $value;
             }
         }
-        
+
         return $result ?: 'I';
     }
 
