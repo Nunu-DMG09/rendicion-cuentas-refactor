@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Layout, AdminLayout } from './layouts'
 import { SidebarProvider, AuthProvider } from './providers'
-import HomePage from './pages/HomePage'
+import HomePage from '../features/home/pages/HomePage'
 import RendicionPage from './pages/RendicionPage'
 import RegistrationPage from './pages/RegistrationPage'
 import DashboardPage from '../features/dashboard/pages/DashboardPage'
