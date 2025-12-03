@@ -65,13 +65,13 @@ export default function RegistrationForm({
           </motion.div>
           
           <motion.h1 
-            className="text-3xl font-bold text-white mb-2"
+            className="text-4xl font-bold text-white mb-2 font-titles"
             variants={itemVariants}
           >
             {rendicionTitle}
           </motion.h1>
           <motion.p 
-            className="text-blue-100 text-lg"
+            className="text-blue-100 text-lg font-body"
             variants={itemVariants}
           >
             {rendicionDate}

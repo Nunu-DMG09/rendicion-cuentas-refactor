@@ -65,13 +65,13 @@ export default function QuestionForm({
 					</motion.div>
 
 					<motion.h1
-						className="text-3xl font-bold text-white mb-2"
+						className="text-4xl font-bold text-white mb-2 font-titles"
 						variants={itemVariants}
 					>
 						{rendicionTitle}
 					</motion.h1>
 					<motion.p
-						className="text-blue-100 text-lg"
+						className="text-blue-100 text-lg font-body"
 						variants={itemVariants}
 					>
 						{rendicionDate}
@@ -147,7 +147,11 @@ export default function QuestionForm({
 										label="RUC de la Organización"
 										type="text"
 										value={questionForm.organizationRuc}
-										onChange={(e) => questionForm.handleOrganizationRucChange(e.target.value)}
+										onChange={(e) =>
+											questionForm.handleOrganizationRucChange(
+												e.target.value
+											)
+										}
 									/>
 								</motion.div>
 								<motion.div
@@ -159,10 +163,12 @@ export default function QuestionForm({
 										label="Nombre de la Organización"
 										type="text"
 										value={questionForm.organizationName}
-										onChange={(e) => questionForm.handleOrganizationNameChange(e.target.value)}
-										isLoading={
-											questionForm.isLoadingRuc
+										onChange={(e) =>
+											questionForm.handleOrganizationNameChange(
+												e.target.value
+											)
 										}
+										isLoading={questionForm.isLoadingRuc}
 										loader={<Loader />}
 									/>
 								</motion.div>
