@@ -38,6 +38,7 @@ export type RegistrationFormComponentProps = {
   registrationForm: {
     dni: string
     fullName: string
+    isLoadingName: boolean
     gender: Gender
     role: Role
     handleDniChange: (value: string) => void
@@ -60,6 +61,7 @@ export type QuestionFormComponentProps = {
     question: string
     organizationRuc: string
     organizationName: string
+    isLoadingRuc: boolean
     handleParticipationTypeChange: (value: ParticipationType) => void
     handleThematicAxisChange: (value: string) => void
     handleQuestionChange: (value: string) => void

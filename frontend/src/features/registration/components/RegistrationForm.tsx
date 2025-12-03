@@ -108,6 +108,8 @@ export default function RegistrationForm({
                 icon={<FaUser className="h-5 w-5 text-gray-400" />}
                 value={registrationForm.fullName}
                 onChange={(e) => registrationForm.handleFullNameChange(e.target.value)}
+                isLoading={registrationForm.isLoadingName}
+                loader={<Loader />}
               />
             </motion.div>
             <motion.div variants={itemVariants}>
