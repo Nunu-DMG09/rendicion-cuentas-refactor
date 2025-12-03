@@ -19,8 +19,8 @@ export default function QuestionForm({
 	isLoading,
 	rendicionTitle,
 	rendicionDate,
-    questionForm,
-    axis
+	questionForm,
+	axis,
 }: QuestionFormComponentProps) {
 	const { slideInVariants, itemVariants } = useFormAnimations();
 	const handleSubmit = (e: React.FormEvent) => {
@@ -84,7 +84,7 @@ export default function QuestionForm({
 					>
 						<div className="flex items-center space-x-4">
 							<div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-semibold">
-								<HiMiniCheck className='size-5' />
+								<HiMiniCheck className="size-5" />
 							</div>
 							<div className="w-16 h-1 bg-primary-dark rounded-full"></div>
 							<div className="w-8 h-8 bg-primary-dark rounded-full flex items-center justify-center text-white font-semibold">
@@ -104,7 +104,8 @@ export default function QuestionForm({
 										className={`relative flex items-center p-4 rounded-xl border-2 
                                             cursor-pointer transition-all duration-300 
                                             ${
-												questionForm.participationType === type.value
+												questionForm.participationType ===
+												type.value
 													? "border-primary-dark bg-primary-dark/5 shadow-md"
 													: "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
 											}
@@ -116,7 +117,8 @@ export default function QuestionForm({
 											type="radio"
 											value={type.value}
 											checked={
-												questionForm.participationType === type.value
+												questionForm.participationType ===
+												type.value
 											}
 											onChange={(e) =>
 												questionForm.handleParticipationTypeChange(
@@ -134,34 +136,38 @@ export default function QuestionForm({
 								))}
 							</div>
 						</motion.div>
-                        {questionForm.participationType === "organization" && (
-                            <>
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                >
-                                    <InputField
-                                        label="RUC de la Organización"
-                                        type="text"
-                                        value=""
-                                        onChange={() => {}}
-                                    />
-                                </motion.div>
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3, delay: 0.1 }}
-                                >
-                                    <InputField
-                                        label="Nombre de la Organización"
-                                        type="text"
-                                        value=""
-                                        onChange={() => {}}
-                                    />
-                                </motion.div>
-                            </>
-                        )} 
+						{questionForm.participationType === "organization" && (
+							<>
+								<motion.div
+									initial={{ opacity: 0, y: 20 }}
+									animate={{ opacity: 1, y: 0 }}
+									transition={{ duration: 0.3 }}
+								>
+									<InputField
+										label="RUC de la Organización"
+										type="text"
+										value={questionForm.organizationRuc}
+										onChange={(e) => questionForm.handleOrganizationRucChange(e.target.value)}
+									/>
+								</motion.div>
+								<motion.div
+									initial={{ opacity: 0, y: 20 }}
+									animate={{ opacity: 1, y: 0 }}
+									transition={{ duration: 0.3, delay: 0.1 }}
+								>
+									<InputField
+										label="Nombre de la Organización"
+										type="text"
+										value={questionForm.organizationName}
+										onChange={(e) => questionForm.handleOrganizationNameChange(e.target.value)}
+										isLoading={
+											questionForm.isLoadingRuc
+										}
+										loader={<Loader />}
+									/>
+								</motion.div>
+							</>
+						)}
 						<motion.div variants={itemVariants}>
 							<label
 								htmlFor="thematicAxis"
@@ -182,12 +188,14 @@ export default function QuestionForm({
 									value={questionForm.thematicAxis}
 									label="Eje Temático"
 									onChange={(e) =>
-										questionForm.handleThematicAxisChange(e.target.value)
+										questionForm.handleThematicAxisChange(
+											e.target.value
+										)
 									}
 									icon={
 										<PiFolderOpenBold className="h-5 w-5 text-gray-400" />
 									}
-                                    options={axis}
+									options={axis}
 									required
 								/>
 							</motion.div>
@@ -212,7 +220,9 @@ export default function QuestionForm({
 									id="question"
 									value={questionForm.question}
 									onChange={(e) =>
-										questionForm.handleQuestionChange(e.target.value)
+										questionForm.handleQuestionChange(
+											e.target.value
+										)
 									}
 									placeholder="Escriba su pregunta de manera clara y específica..."
 									rows={5}
@@ -233,37 +243,51 @@ export default function QuestionForm({
 								onClick={onBack}
 								type="button"
 								variant="outline"
-                                classes={{
-                                    container: "border-gray-400! hover:bg-gray-200! hover:text-black! flex-1!",
-                                    content: "flex items-center gap-3 justify-center text-lg!"
-                                }}
+								classes={{
+									container:
+										"border-gray-400! hover:bg-gray-200! hover:text-black! flex-1!",
+									content:
+										"flex items-center gap-3 justify-center text-lg!",
+								}}
 							>
 								<>
 									<motion.span
 										animate={{ x: [0, 4, 0] }}
 										transition={{
-                                            duration: 1.5,
+											duration: 1.5,
 											repeat: Infinity,
 										}}
-                                        >
+									>
 										<RiArrowLeftSLine className="size-6" />
 									</motion.span>
-                                    Volver
+									Volver
 								</>
 							</Button>
-                            <Button
-                                type="submit"
-                                disabled={isLoading}
-                                loading={isLoading}
-                                loadingIcon={<Loader size="sm" classes={{ outerRing: "border-t-gray-white", innerRing: "border-t-gray-300" }} />}
-                                loadingText="Enviando..."
-                                classes={{ container: "flex-1!", content: "flex items-center gap-3 justify-center text-lg!" }}
-                            >
-                                <>
-                                    <BsFillSendFill />
-                                    Enviar Pregunta
-                                </>
-                            </Button>
+							<Button
+								type="submit"
+								disabled={isLoading}
+								loading={isLoading}
+								loadingIcon={
+									<Loader
+										size="sm"
+										classes={{
+											outerRing: "border-t-gray-white",
+											innerRing: "border-t-gray-300",
+										}}
+									/>
+								}
+								loadingText="Enviando..."
+								classes={{
+									container: "flex-1!",
+									content:
+										"flex items-center gap-3 justify-center text-lg!",
+								}}
+							>
+								<>
+									<BsFillSendFill />
+									Enviar Pregunta
+								</>
+							</Button>
 						</motion.div>
 					</form>
 				</motion.div>
