@@ -1,8 +1,9 @@
 export type ScheduleEvent = {
   id: string
-  date: string
-  month: string
-  status: 'upcoming' | 'completed' | 'active'
+  titulo: string
+  fecha: string
+  hora: string
+  estado: 'realizada' | 'programada'
   description?: string
 }
 
