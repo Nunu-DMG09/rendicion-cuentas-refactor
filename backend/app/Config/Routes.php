@@ -35,6 +35,7 @@ $routes->group('rendicion',  ['namespace' => 'App\Controllers', 'filter' => 'cor
 
     // Usuarios
     $routes->post('usuarios', 'UsuarioController::registrarUsuario'); // Registra usuario
+    $routes->post('usuarios/(:num)', 'UsuarioController::registrarUsuario/$1'); // Registra usuario con rendición específica
     $routes->put('usuarios/(:num)/asistencia', 'UsuarioController::marcarAsistencia/$1'); // Marcar asistencia
     $routes->get('rendiciones/(:num)/usuarios', 'UsuarioController::usuariosPorRendicion/$1'); // Usuarios por rendición
     $routes->get('usuarios/asistentes', 'UsuarioController::listarAsistentes'); // Lista asistentes
