@@ -1,4 +1,4 @@
-import type { Slide } from "../types/slide";
+import type { Slide } from "../../types/slide";
 
 type Props = {
   slides: Slide[];           

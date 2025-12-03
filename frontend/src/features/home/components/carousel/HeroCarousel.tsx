@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from "react";
-import useSlides from "../hooks/useSlides";
-import useCarouselLoop from "../hooks/useCarouselLoop";
+import useSlides from "../../hooks/useSlides";
+import useCarouselLoop from "../../hooks/useCarouselLoop";
 import CarouselTrack from "./CarouselTrack";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
-import type { Slide } from "../types/slide";
+import type { Slide } from "../../types/slide";
 
 type Props = {
 	slides?: Slide[];

@@ -1,5 +1,5 @@
 import { Loader } from "dialca-ui";
-import type { Slide } from "../types/slide";
+import type { Slide } from "../../types/slide";
 import HeroCarousel from "./HeroCarousel";
 
 interface Props {
