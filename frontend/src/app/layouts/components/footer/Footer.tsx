@@ -1,7 +1,7 @@
 import SocialLink from './SocialLink'
 import ContactInfo from './ContactInfo'
 import ScheduleInfo from './ScheduleInfo'
-import { useFooter } from '../hooks/useFooter'
+import { useFooter } from './hooks/useFooter'
 
 export default function Footer() {
     const footerData = useFooter()
