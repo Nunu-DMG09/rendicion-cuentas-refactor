@@ -250,6 +250,8 @@ class RendicionController extends ResourceController
             ], 500);
         }
     }
+
+    
     private function getJsonData()
     {
         $input = $this->request->getPost("data");
@@ -568,6 +570,10 @@ class RendicionController extends ResourceController
                 // Acepta "HH:MM" o "HH:MM:SS"
                 if (!preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/', $hora)) {
                     return $this->respond(['success' => false, 'message' => 'hora inválida, formato HH:MM o HH:MM:SS', 'data' => []], 422);
+                }
+                // Normalizar a HH:MM:SS si viene como HH:MM
+                if (preg_match('/^[0-2]\d:[0-5]\d$/', $hora)) {
+                    $hora = $hora . ':00';
                 }
                 $update['hora'] = $hora;
                 $hasChange = true;
