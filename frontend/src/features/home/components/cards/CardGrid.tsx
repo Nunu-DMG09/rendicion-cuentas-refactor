@@ -1,6 +1,6 @@
 import { motion } from 'motion/react'
 import Card from './Card'
-import type { CardData } from '../types/card'
+import type { CardData } from '../../types/card'
 import { FiUsers } from 'react-icons/fi'
 import { AiOutlineEye } from 'react-icons/ai'
 import { HiOutlineDocumentText } from 'react-icons/hi2'

@@ -1,4 +1,4 @@
-import type { CardData } from '../types/card'
+import type { CardData } from '../../types/card'
 type Props = {
     data: CardData
 }

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import type { ScheduleEvent } from "../types/schedule";
+import type { ScheduleEvent } from "../../types/schedule";
 import { RiArrowRightSLine } from "react-icons/ri";
 import { HiMiniCheck } from "react-icons/hi2";
 import { LuCalendar } from "react-icons/lu";

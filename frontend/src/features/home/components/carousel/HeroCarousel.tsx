@@ -97,14 +97,14 @@ export default function HeroCarousel({
 							aria-label="Anterior"
 							className="cursor-pointer absolute left-4 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-12 h-12 rounded-full bg-white/95 shadow hover:scale-105 transition"
 						>
-							<HiChevronLeft className="w-6 h-6 text-[#002f59]" />
+							<HiChevronLeft className="w-6 h-6 text-primary-dark" />
 						</button>
 						<button
 							onClick={next}
 							aria-label="Siguiente"
 							className="cursor-pointer absolute right-4 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-12 h-12 rounded-full bg-white/95 shadow hover:scale-105 transition"
 						>
-							<HiChevronRight className="w-6 h-6 text-[#002f59]" />
+							<HiChevronRight className="w-6 h-6 text-primary-dark" />
 						</button>
 						<div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex gap-2">
 							{realSlides.map((_, i) => (
@@ -114,7 +114,7 @@ export default function HeroCarousel({
 									aria-label={`Ir a la diapositiva ${i + 1}`}
 									className={`w-3 h-3 rounded-full transition-all ${
 										position === i + 1
-											? "bg-[#002f59] scale-110"
+											? "bg-primary-dark scale-110"
 											: "bg-white/80"
 									} shadow`}
 								/>

@@ -4,7 +4,7 @@ import ScheduleCard from "./ScheduleCard";
 import type { RegistrationRendicion } from "@/core/hooks";
 import { Button } from "dialca-ui";
 import { RiArrowRightSLine } from "react-icons/ri";
-import type { ScheduleEvent } from "../types/schedule";
+import type { ScheduleEvent } from "../../types/schedule";
 import { ScheduleCardSkeleton } from "./ScheduleSkeleton";
 import { HiCalendarDays, HiExclamationTriangle } from "react-icons/hi2";
 
