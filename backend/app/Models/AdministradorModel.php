@@ -122,72 +122,91 @@ class AdministradorModel extends Model
         try {
             $db = \Config\Database::connect();
             $today = date('Y-m-d');
+            $currentYear = date('Y');
 
-            $totalRendiciones = (int) $db->table('rendicion')->countAllResults();
+            // Rendiciones del año (estadísticas por año)
+            $totalRendiciones = (int) $db->table('rendicion')
+                ->where("YEAR(fecha) = {$currentYear}", null, false)
+                ->countAllResults();
 
             $rendicionesRealizadas = (int) $db->table('rendicion')
+                ->where("YEAR(fecha) = {$currentYear}", null, false)
                 ->where('fecha <=', $today)
                 ->countAllResults();
 
+            // Usuarios del año
             $totalAsistentes = (int) $db->table('usuario')
+                ->where("YEAR(created_at) = {$currentYear}", null, false)
                 ->where('tipo_participacion', 'asistente')
                 ->countAllResults();
 
             $totalOradores = (int) $db->table('usuario')
+                ->where("YEAR(created_at) = {$currentYear}", null, false)
                 ->where('tipo_participacion', 'orador')
                 ->countAllResults();
 
-          
-            $preguntasRecibidas = (int) $db->table('pregunta')->countAllResults();
+            // Preguntas del año
+            $preguntasRecibidas = (int) $db->table('pregunta')
+                ->where("YEAR(created_at) = {$currentYear}", null, false)
+                ->countAllResults();
 
-            
+            // Verificar existencia de columna 'respondida' y contar sólo del año
             $hasRespondidaCol = !empty($db->query("SHOW COLUMNS FROM `pregunta` LIKE 'respondida'")->getResultArray());
             $preguntasRespondidas = 0;
             if ($hasRespondidaCol) {
-                $preguntasRespondidas = (int) $db->table('pregunta')->where('respondida', 1)->countAllResults();
+                $preguntasRespondidas = (int) $db->table('pregunta')
+                    ->where("YEAR(created_at) = {$currentYear}", null, false)
+                    ->where('respondida', 1)
+                    ->countAllResults();
             }
             $preguntasPendientes = max(0, $preguntasRecibidas - $preguntasRespondidas);
 
+            // Asistentes por mes (año actual)
             $asistentesPorMes = $db->query("
                 SELECT DATE_FORMAT(created_at, '%Y-%m') AS mes, COUNT(*) AS total
                 FROM usuario
                 WHERE tipo_participacion = 'asistente'
-                  AND created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+                  AND YEAR(created_at) = ?
                 GROUP BY DATE_FORMAT(created_at, '%Y-%m')
                 ORDER BY mes DESC
-            ")->getResultArray();
+            ", [$currentYear])->getResultArray();
 
+            // Preguntas por mes (año actual)
             $preguntasPorMes = $db->query("
                 SELECT DATE_FORMAT(created_at, '%Y-%m') AS mes, COUNT(*) AS total
                 FROM pregunta
-                WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+                WHERE YEAR(created_at) = ?
                 GROUP BY DATE_FORMAT(created_at, '%Y-%m')
                 ORDER BY mes DESC
-            ")->getResultArray();
+            ", [$currentYear])->getResultArray();
 
-            
+            // Preguntas por eje (filtro por año)
             $preguntasPorEje = $db->query("
                 SELECT e.id, e.tematica, COUNT(p.id) AS total_preguntas
                 FROM eje e
-                LEFT JOIN pregunta p ON p.id_eje = e.id
+                LEFT JOIN pregunta p ON p.id_eje = e.id AND YEAR(p.created_at) = ?
                 GROUP BY e.id, e.tematica
                 ORDER BY total_preguntas DESC
-            ")->getResultArray();
+            ", [$currentYear])->getResultArray();
 
+            // Próximas rendiciones (cualquier año, pero título se genera por año de la rendición)
             $proximasRows = $db->query("
                 SELECT
                     r.*,
                     (SELECT COUNT(*) FROM usuario u WHERE u.id_rendicion = r.id) AS registrados,
-                    (SELECT COUNT(*) FROM pregunta p JOIN usuario u2 ON p.id_usuario = u2.id WHERE u2.id_rendicion = r.id) AS preguntas_count
+                    (SELECT COUNT(*) FROM pregunta p JOIN usuario u2 ON p.id_usuario = u2.id WHERE u2.id_rendicion = r.id AND YEAR(p.created_at) = ?) AS preguntas_count
                 FROM rendicion r
                 WHERE r.fecha >= ?
                 ORDER BY r.fecha ASC, r.hora ASC
                 LIMIT 5
-            ", [$today])->getResultArray();
+            ", [$currentYear, $today])->getResultArray();
 
-            $proximasRendiciones = array_map(function($r){
-                // Corregir ese titulo a algo como 'Rendicion del DD/MM' si no tiene titulo
-                $titulo = $r['titulo'] ?? $r['nombre'] ?? $r['descripcion'] ?? 'Rendición #' . ($r['id'] ?? '');
+            $proximasRendiciones = array_map(function($r) use ($db) {
+                $year = isset($r['fecha']) ? date('Y', strtotime($r['fecha'])) : date('Y');
+                $posicion = $this->getPosicionRendicionEnAno((int)($r['id'] ?? 0), (int)$year, $db);
+                $numeroRomano = $this->convertToRoman($posicion);
+                $titulo = "Rendición {$numeroRomano} del año {$year}";
+
                 return [
                     'id' => $r['id'] ?? null,
                     'titulo' => $titulo,
@@ -196,23 +215,27 @@ class AdministradorModel extends Model
                     'hora' => $r['hora'] ?? null,
                     'registrados' => isset($r['registrados']) ? (int)$r['registrados'] : 0,
                     'preguntas_count' => isset($r['preguntas_count']) ? (int)$r['preguntas_count'] : 0,
-                    'estado' => 'Programada'
+                    'estado' => strtotime($r['fecha']) <= time() ? 'Realizada' : 'Programada'
                 ];
             }, $proximasRows);
 
+            // Rendiciones programadas para hoy (título en romano según su año)
             $hoyRows = $db->query("
                 SELECT
                     r.*,
                     (SELECT COUNT(*) FROM usuario u WHERE u.id_rendicion = r.id) AS registrados,
-                    (SELECT COUNT(*) FROM pregunta p JOIN usuario u2 ON p.id_usuario = u2.id WHERE u2.id_rendicion = r.id) AS preguntas_count
+                    (SELECT COUNT(*) FROM pregunta p JOIN usuario u2 ON p.id_usuario = u2.id WHERE u2.id_rendicion = r.id AND YEAR(p.created_at) = ?) AS preguntas_count
                 FROM rendicion r
                 WHERE r.fecha = ?
                 ORDER BY r.hora ASC
-            ", [$today])->getResultArray();
+            ", [$currentYear, $today])->getResultArray();
 
-            $rendicionesHoy = array_map(function($r){
-                // Corregir ese titulo a algo como 'Rendicion del DD/MM' si no tiene titulo
-                $titulo = $r['titulo'] ?? $r['nombre'] ?? $r['descripcion'] ?? 'Rendición #' . ($r['id'] ?? '');
+            $rendicionesHoy = array_map(function($r) use ($db) {
+                $year = isset($r['fecha']) ? date('Y', strtotime($r['fecha'])) : date('Y');
+                $posicion = $this->getPosicionRendicionEnAno((int)($r['id'] ?? 0), (int)$year, $db);
+                $numeroRomano = $this->convertToRoman($posicion);
+                $titulo = "Rendición {$numeroRomano} del año {$year}";
+
                 return [
                     'id' => $r['id'] ?? null,
                     'titulo' => $titulo,
@@ -221,10 +244,11 @@ class AdministradorModel extends Model
                     'hora' => $r['hora'] ?? null,
                     'registrados' => isset($r['registrados']) ? (int)$r['registrados'] : 0,
                     'preguntas_count' => isset($r['preguntas_count']) ? (int)$r['preguntas_count'] : 0,
-                    'estado' => 'Programada'
+                    'estado' => strtotime($r['fecha']) <= time() ? 'Realizada' : 'Programada'
                 ];
             }, $hoyRows);
 
+            // Actividad reciente (sin filtrar por año, mantiene comportamiento previo)
             $usuariosAct = $db->table('usuario')->select('id, nombre, tipo_participacion, created_at')->orderBy('created_at','DESC')->limit(15)->get()->getResultArray();
             $preguntasAct = $db->table('pregunta')->select('id, contenido, id_usuario, created_at')->orderBy('created_at','DESC')->limit(15)->get()->getResultArray();
             $rendAct = $db->table('rendicion')->select('id, fecha, hora, created_at')->orderBy('created_at','DESC')->limit(10)->get()->getResultArray();
@@ -255,7 +279,10 @@ class AdministradorModel extends Model
                 ];
             }
             foreach ($rendAct as $r) {
-                $subtitle = $r['fecha'] . ' ' . ($r['hora'] ?? '');
+                $year = isset($r['fecha']) ? date('Y', strtotime($r['fecha'])) : date('Y');
+                $pos = $this->getPosicionRendicionEnAno((int)($r['id'] ?? 0), (int)$year, $db);
+                $roman = $this->convertToRoman($pos);
+                $subtitle = "Rendición {$roman} del año {$year} - " . ($r['fecha'] ?? '');
                 $act[] = [
                     'type' => 'rendicion',
                     'title' => 'Rendición de cuentas programada',
@@ -292,7 +319,6 @@ class AdministradorModel extends Model
                 ];
             }, $actividadReciente);
 
-          
             $estadisticas = [
                 'resumen_general' => [
                     'total_rendiciones' => $totalRendiciones,
@@ -319,6 +345,54 @@ class AdministradorModel extends Model
         } catch (\Throwable $e) {
             log_message('error', 'AdministradorModel::getDashboardStatistics error: ' . $e->getMessage());
             return [];
+        }
+    }
+
+    /**
+     * Convierte un entero a numeral romano (1 => I, 2 => II, ...)
+     */
+    private function convertToRoman(int $number): string
+    {
+        $map = [
+            1000 => 'M', 900 => 'CM', 500 => 'D', 400 => 'CD',
+            100 => 'C', 90 => 'XC', 50 => 'L', 40 => 'XL',
+            10 => 'X', 9 => 'IX', 5 => 'V', 4 => 'IV', 1 => 'I'
+        ];
+        $result = '';
+        $num = max(1, $number);
+        foreach ($map as $val => $rom) {
+            while ($num >= $val) {
+                $result .= $rom;
+                $num -= $val;
+            }
+        }
+        return $result ?: 'I';
+    }
+
+    /**
+     * Obtiene la posición (orden) de una rendición dentro de su año.
+     * Devuelve 1..N según orden ascendente por fecha/hora.
+     */
+    private function getPosicionRendicionEnAno(int $rendicionId, int $year, $db = null): int
+    {
+        try {
+            $db = $db ?? \Config\Database::connect();
+            $rows = $db->query("
+                SELECT id FROM rendicion
+                WHERE YEAR(fecha) = ?
+                ORDER BY fecha ASC, hora ASC
+            ", [$year])->getResultArray();
+
+            $pos = 1;
+            foreach ($rows as $i => $r) {
+                if ((int)$r['id'] === $rendicionId) {
+                    $pos = $i + 1;
+                    break;
+                }
+            }
+            return max(1, $pos);
+        } catch (\Throwable $e) {
+            return 1;
         }
     }
 }
