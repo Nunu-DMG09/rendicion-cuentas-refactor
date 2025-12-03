@@ -14,14 +14,14 @@ class UsuarioController extends ResourceController
     /*=======================================
     REGISTRAR USUARIOS
     =======================================*/
-    public function registrarUsuario()
+    public function registrarUsuario($idRendicionRoute = null)
     {
         $input = $this->request->getJSON(true);
         if (!$input) {
             return $this->respond(['success' => false, 'message' => 'Payload inválido', 'data' => []], 400);
         }
 
-       
+        // campos requeridos
         $required = ['nombre', 'sexo', 'tipo_participacion'];
         foreach ($required as $r) {
             if (empty($input[$r])) {
@@ -45,16 +45,98 @@ class UsuarioController extends ResourceController
         $rendModel = new RendicionModel();
         $db = \Config\Database::connect();
 
+        $idRendicion = null;
+        if (!empty($idRendicionRoute)) {
+            $idRendicion = (int)$idRendicionRoute;
+        } elseif (!empty($input['id_rendicion'])) {
+            $idRendicion = (int)$input['id_rendicion'];
+        }
+
+        // Si se proporcionó id_rendicion verificar existencia y fecha (ruta/body)
+        if (!empty($idRendicion)) {
+            $rend = $rendModel->find($idRendicion);
+            if (!$rend) {
+                return $this->respond(['success' => false, 'message' => 'Rendición no encontrada', 'data' => []], 404);
+            }
+
+            $rendFecha = $rend['fecha'] ?? null;
+            $rendHora = $rend['hora'] ?? '00:00:00';
+            if ($rendFecha) {
+                $rendDatetime = strtotime($rendFecha . ' ' . $rendHora);
+                $now = time();
+                if ($rendDatetime <= $now) {
+                    return $this->respond(['success' => false, 'message' => 'No se puede registrar: la rendición ya pasó', 'data' => []], 400);
+                }
+            }
+        }
+
         $db->transStart();
         try {
-           
-            $idRendicion = isset($input['id_rendicion']) ? (int)$input['id_rendicion'] : null;
             if (empty($idRendicion)) {
                 $ultima = $rendModel->orderBy('fecha', 'DESC')->orderBy('hora', 'DESC')->first();
                 if (!empty($ultima) && isset($ultima['id'])) {
                     $idRendicion = (int)$ultima['id'];
                 } else {
                     $idRendicion = null;
+                }
+            }
+
+            // --- NUEVO: vuelvo a validar la rendición escogida (si se tomó la última) ---
+            if (!empty($idRendicion)) {
+                $rend = $rendModel->find($idRendicion);
+                if (!$rend) {
+                    $db->transRollback();
+                    return $this->respond(['success' => false, 'message' => 'Rendición no encontrada (después de asignar última)', 'data' => []], 404);
+                }
+                $rendFecha = $rend['fecha'] ?? null;
+                $rendHora = $rend['hora'] ?? '00:00:00';
+                if ($rendFecha) {
+                    $rendDatetime = strtotime($rendFecha . ' ' . $rendHora);
+                    if ($rendDatetime <= time()) {
+                        $db->transRollback();
+                        return $this->respond(['success' => false, 'message' => 'No se puede registrar: la rendición seleccionada ya pasó', 'data' => []], 400);
+                    }
+                }
+            }
+
+            // --- NUEVO: validación de duplicados por DNI o por user id para la misma rendición ---
+            if (!empty($idRendicion)) {
+                // validar por DNI (si viene en el payload)
+                if (!empty($input['dni'])) {
+                    $existsDni = $db->table('usuario')
+                        ->where('id_rendicion', $idRendicion)
+                        ->where('dni', $input['dni'])
+                        ->get()
+                        ->getRowArray();
+                    if (!empty($existsDni)) {
+                        $db->transRollback();
+                        return $this->respond([
+                            'success' => false,
+                            'message' => 'Ya existe un usuario con ese DNI registrado para esta rendición',
+                            'data' => $existsDni
+                        ], 409);
+                    }
+                }
+
+                // validar si el cliente envía un id de usuario (user_id / id_usuario / id) y ese id ya está asignado a la rendición
+                $providedUserId = null;
+                foreach (['user_id', 'id_usuario', 'id'] as $k) {
+                    if (!empty($input[$k])) { $providedUserId = (int)$input[$k]; break; }
+                }
+                if (!empty($providedUserId)) {
+                    $existsId = $db->table('usuario')
+                        ->where('id_rendicion', $idRendicion)
+                        ->where('id', $providedUserId)
+                        ->get()
+                        ->getRowArray();
+                    if (!empty($existsId)) {
+                        $db->transRollback();
+                        return $this->respond([
+                            'success' => false,
+                            'message' => 'El usuario indicado ya está registrado para esta rendición',
+                            'data' => $existsId
+                        ], 409);
+                    }
                 }
             }
 
