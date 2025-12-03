@@ -16,7 +16,7 @@ import type { SidebarItemRestricted } from "../types/sidebarItem";
 export const SIDEBAR_ITEMS: SidebarItemRestricted[] = [
     {
         text: "Dashboard",
-        to: "/admin",
+        to: "/admin/dashboard",
         icon: MdDashboard
     },
     {
