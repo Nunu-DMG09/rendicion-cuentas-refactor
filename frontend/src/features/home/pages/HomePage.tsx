@@ -1,5 +1,5 @@
-import { CardGrid } from "../../cards/components/CardGrid";
-import { ScheduleSection } from "../../schedule/components/ScheduleSection";
+import { CardGrid } from "../components/cards/CardGrid";
+import { ScheduleSection } from "../components/schedule/ScheduleSection";
 import { useHomeData } from "../hooks/useHomeData";
 import { HeroCarouselSection } from "../components/carousel/HeroCarouselSection";
 import { useRegistrationData } from "@/core/hooks";
