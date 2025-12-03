@@ -1,10 +1,12 @@
 import { CardGrid } from "../../cards/components/CardGrid";
 import { ScheduleSection } from "../../schedule/components/ScheduleSection";
 import { useHomeData } from "../hooks/useHomeData";
-import { HeroCarouselSection } from "../components/HeroCarouselSection";
+import { HeroCarouselSection } from "../components/carousel/HeroCarouselSection";
+import { useRegistrationData } from "@/core/hooks";
 
 export default function HomePage() {
 	const { slides, isLoadingBanners, bannersError } = useHomeData();
+    const { hasActiveRegistration, rendicionData, isLoading: isLoadingRendicion } = useRegistrationData();
 	return (
 		<>
 			<HeroCarouselSection
@@ -13,7 +15,11 @@ export default function HomePage() {
 				error={bannersError}
 			/>
 			<CardGrid />
-			<ScheduleSection />
+			<ScheduleSection
+                hasActiveRegistration={hasActiveRegistration}
+                rendicionData={rendicionData}
+                isLoading={isLoadingRendicion}
+            />
 		</>
 	);
 }
