@@ -15,6 +15,8 @@ export type QuestionFormData = {
   participationType: ParticipationType
   thematicAxis: string
   question: string
+  organizationRuc?: string
+  organizationName?: string
 }
 
 export type RegistrationData = {
@@ -28,19 +30,42 @@ export type RegistrationFormProps = {
 }
 
 export type RegistrationFormComponentProps = {
-  onSubmitAttendee: (data: RegistrationFormData) => void
-  onSubmitSpeaker: (data: RegistrationFormData) => void
+  onSubmitAttendee: () => void
+  onSubmitSpeaker: () => void
   isLoading: boolean
   rendicionTitle: string
   rendicionDate: string
+  registrationForm: {
+    dni: string
+    fullName: string
+    gender: Gender
+    role: Role
+    handleDniChange: (value: string) => void
+    handleFullNameChange: (value: string) => void
+    handleGenderChange: (value: Gender) => void
+    handleRoleChange: (value: Role) => void
+  }
 }
 
 export type QuestionFormComponentProps = {
-  onSubmit: (data: QuestionFormData) => void
+  onSubmit: () => void
   onBack: () => void
   isLoading: boolean
   rendicionTitle: string
   rendicionDate: string
+  axis: { value: string; label: string }[]
+  questionForm: {
+    participationType: ParticipationType
+    thematicAxis: string
+    question: string
+    organizationRuc: string
+    organizationName: string
+    handleParticipationTypeChange: (value: ParticipationType) => void
+    handleThematicAxisChange: (value: string) => void
+    handleQuestionChange: (value: string) => void
+    handleOrganizationRucChange: (value: string) => void
+    handleOrganizationNameChange: (value: string) => void
+  }
 }
 
 // Re-export modal types
