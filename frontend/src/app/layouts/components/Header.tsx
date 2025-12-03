@@ -1,9 +1,17 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import logo from '../../../assets/logo.png'
-import { IoAddCircleSharp } from "react-icons/io5"
+import { useRegistrationData } from '@/core/hooks';
+import { Button } from 'dialca-ui';
 
 export default function Header() {
+  const navigate = useNavigate();
+  const { hasActiveRegistration, rendicionData, isLoading } = useRegistrationData();
+  const handleRegistrationClick = () => {
+    if (hasActiveRegistration && rendicionData?.id) {
+      navigate(`/register/${rendicionData.id}`);
+    }
+  }
   return (
     <header className="bg-white border-b border-gray-200 p-5">
       <div className=" mx-auto px-4 sm:px-6 lg:px-8">
@@ -33,16 +41,23 @@ export default function Header() {
               </motion.div>
             </Link>
           </motion.div>
-
           <div className="flex items-center gap-3">
-            <Link
-              to="/register/2"
-              className="inline-flex items-center px-4 py-3 text-sm font-medium rounded-md bg-primary-dark text-white hover:bg-primary-dark/90 hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-label="Registrarse"
+            <Button
+              onClick={handleRegistrationClick}
+              disabled={!hasActiveRegistration || isLoading}
+              loading={isLoading}
+              variant={hasActiveRegistration ? 'primary' : 'outline'}
+              className={`
+                ${!hasActiveRegistration ? 'opacity-50 cursor-not-allowed' : ''}
+              `}
             >
-              Registra tu asistencia
-              <IoAddCircleSharp className="ml-2 h-5 w-5" />
-            </Link>
+              {isLoading 
+                ? 'Cargando...' 
+                : hasActiveRegistration 
+                  ? 'Registrarse' 
+                  : 'Sin registro disponible'
+              }
+            </Button>
           </div>
         </div>
       </div>
