@@ -36,7 +36,7 @@ export default function CarouselTrack({
           role="group"
           aria-roledescription="slide"
           aria-label={s.alt ?? `Slide ${i}`}
-          className="relative flex-shrink-0 h-full"
+          className="relative shrink-0 h-full"
           style={{
             width: `100vw`,
             backgroundImage: `url("${s.src}")`,
@@ -46,7 +46,7 @@ export default function CarouselTrack({
             backgroundColor: "#f3f4f6",
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent pointer-events-none" />
         </div>
       ))}
     </div>
