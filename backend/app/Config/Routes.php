@@ -66,7 +66,7 @@ $routes->group('rendicion',  ['namespace' => 'App\Controllers', 'filter' => 'cor
     $routes->delete('admin/(:num)', 'AdministradorController::eliminarAdministrador/$1'); // Eliminar administrador
     $routes->get('admin/dashboard', 'AdministradorController::DashboardStatistics');
     $routes->get('admin/rendiciones', 'AdministradorController::rendicionesList'); // lista rendiciones (id + titulo) con ?query=
-    $routes->get('admin-preguntas/(:num)', 'AdministradorController::preguntasConSeleccion/$1');
+    $routes->get('admin/preguntas/(:num)', 'AdministradorController::preguntasConSeleccion/$1');
 
     // Autenticación
     $routes->post('auth/login', 'AuthController::login'); // Login (obtener token)
