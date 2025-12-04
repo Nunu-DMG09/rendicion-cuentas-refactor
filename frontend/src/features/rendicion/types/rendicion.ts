@@ -1,33 +1,30 @@
 export type RendicionAxis = {
-  id: string
-  name: string
-  description: string
-  questionsCount: number
-  questions: Question[]
+  id: number
+  eje_id: number
+  tematica: string
+  preguntas: Question[]
 }
 
 export type Question = {
-  id: string
-  personName: string
-  question: string
-  createdAt: string
+  id: number
+  contenido: string
+  usuario: string
+  usuario_id: number
+  created_at: string
+  id_eje: number
 }
 
-export type RendicionData = {
-  id: string
-  title: string
-  date: string
-  time: string
-  location: string
-  axes: RendicionAxis[]
-}
+export type RendicionData = Record<string, RendicionAxis>
 
 export type RendicionDetailProps = {
   rendicionId: string
+  title?: string
+  date?: string
+  time?: string
 }
 
-export type QuestionsModalProps = {
-  isOpen: boolean
-  onClose: () => void
-  axis: RendicionAxis | null
+// Para uso interno del componente
+export type NormalizedRendicionData = {
+  axes: RendicionAxis[]
+  totalQuestions: number
 }
