@@ -116,6 +116,56 @@ class AdministradorModel extends Model
         return $this->where('dni', $dni)->first();
     }
 
+    /**
+     * Retorna lista de rendiciones con id y título en formato romano.
+     * Si $year es un string con 4 dígitos filtra por ese año, si no devuelve todas ordenadas desc.
+     *
+     * @param string|null $year
+     * @return array
+     */
+    public function getRendicionesList(?string $year = null): array
+    {
+        try {
+            $db = \Config\Database::connect();
+            $sql = "SELECT id, fecha, hora FROM rendicion";
+            $params = [];
+
+            if (!empty($year) && preg_match('/^\d{4}$/', $year)) {
+                $sql .= " WHERE YEAR(fecha) = ?";
+                $params[] = $year;
+            }
+
+            $sql .= " ORDER BY fecha DESC, hora DESC";
+
+            $rows = $db->query($sql, $params)->getResultArray();
+
+            $result = array_map(function($r) use ($db) {
+                $yearRow = isset($r['fecha']) ? date('Y', strtotime($r['fecha'])) : date('Y');
+
+                $posRow = $db->query("
+                    SELECT COUNT(*) AS pos
+                    FROM rendicion
+                    WHERE YEAR(fecha) = ? AND (fecha < ? OR (fecha = ? AND COALESCE(hora,'00:00:00') <= COALESCE(?, '00:00:00')))
+                ", [$yearRow, $r['fecha'], $r['fecha'], $r['hora']])->getRowArray();
+
+                $pos = max(1, (int)($posRow['pos'] ?? 1));
+                $numeroRomano = $this->convertToRoman($pos);
+                $titulo = "Rendición {$numeroRomano} del año {$yearRow}";
+
+                return [
+                    'id' => (int)$r['id'],
+                    'titulo' => $titulo
+                ];
+            }, $rows);
+
+            return $result;
+        } catch (\Throwable $e) {
+            log_message('error', 'AdministradorModel::getRendicionesList error: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+
     // ESTADISTICAS PARA EL DASHBOARD DEL ADMINISTRADOR
     public function getDashboardStatistics(int $adminId = null): array
     {

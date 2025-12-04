@@ -230,4 +230,24 @@ class AdministradorController extends ResourceController
             return $this->respond(['success' => false, 'message' => 'Error obteniendo estadísticas', 'data' => []], 500);
         }
     }
+
+    /*=======================================================================
+    LISTAR RENDICIONES CON FILTRO DE BÚSQUEDA ?query=2026
+     =================================================*/
+    public function rendicionesList()
+    {
+        $admin = $this->authAdmin();
+        if (is_object($admin)) return $admin;
+
+        try {
+            $query = $this->request->getGet('query');
+            $model = new \App\Models\AdministradorModel();
+            $result = $model->getRendicionesList($query ?? null);
+
+            return $this->respond(['success' => true, 'message' => 'Rendiciones listadas', 'data' => $result], 200);
+        } catch (\Throwable $e) {
+            log_message('error', 'AdministradorController::rendicionesList error: ' . $e->getMessage());
+            return $this->respond(['success' => false, 'message' => 'Error listando rendiciones', 'data' => []], 500);
+        }
+    }
 }

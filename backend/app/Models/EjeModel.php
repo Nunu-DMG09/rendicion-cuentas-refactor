@@ -22,7 +22,6 @@ class EjeModel extends Model
     protected $updatedField  = 'updated_at';
     protected $deletedField  = 'deleted_at';
 
-    // Validation - estado ya no es obligatorio (la BD tiene default = 1)
     protected $validationRules = [
         'tematica' => 'required|string|max_length[120]',
         'estado'   => 'permit_empty|integer|in_list[0,1]'

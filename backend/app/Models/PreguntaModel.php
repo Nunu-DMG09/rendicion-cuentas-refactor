@@ -118,7 +118,6 @@ class PreguntaModel extends Model
             ];
         }
 
-        // devolver como array indexado
         return array_values($grouped);
     }
 }

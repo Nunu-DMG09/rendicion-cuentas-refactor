@@ -703,4 +703,28 @@ class RendicionController extends ResourceController
             return $this->respond(['success' => false, 'message' => 'Error obteniendo rendiciones', 'data' => []], 500);
         }
     }
+
+    /*=======================================================================
+     OBTENER PREGUNTAS SELECCIONADAS CON SU EJE POR ID DE LA RENDICION
+     ==============================================================*/
+    public function preguntasSeleccionadas($id = null)
+    {
+        if (empty($id) || !is_numeric($id)) {
+            return $this->respond(['success' => false, 'message' => 'id rendicion inválido', 'data' => []], 400);
+        }
+
+        $rendModel = new \App\Models\RendicionModel();
+        $rend = $rendModel->find((int)$id);
+        if (!$rend) {
+            return $this->respond(['success' => false, 'message' => 'Rendición no encontrada', 'data' => []], 404);
+        }
+
+        $data = $rendModel->getPreguntasSeleccionadasPorRendicion((int)$id);
+
+        return $this->respond([
+            'success' => true,
+            'message' => 'Preguntas seleccionadas obtenidas',
+            'data' => $data
+        ], 200);
+    }
 }

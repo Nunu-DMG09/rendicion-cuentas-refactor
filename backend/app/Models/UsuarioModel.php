@@ -69,13 +69,14 @@ class UsuarioModel extends Model
     protected $cleanValidationRules = true;
 
 
-    
+    /*=======================================
+    OBTENER USUARIOS POR TIPO (ASISTENTE U ORADOR)
+    ===========================================*/
     public function getUsuariosPorTipo(string $tipo): array
     {
         $db = \Config\Database::connect();
         $builder = $db->table($this->table . ' u');
 
-        // Campos base del usuario
         $builder->select('u.id,u.nombre,u.dni,u.sexo,u.tipo_participacion,u.titulo,u.ruc_empresa,u.nombre_empresa,u.id_rendicion,u.asistencia,u.created_at');
 
         if ($tipo === 'orador') {
