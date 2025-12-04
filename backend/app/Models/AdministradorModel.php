@@ -445,4 +445,90 @@ class AdministradorModel extends Model
             return 1;
         }
     }
+
+    /**
+     * Devuelve todas las preguntas por eje (seleccionadas o no) con indicador `is_selected`
+     * y `orden_seleccion` si aplica, para una rendición dada.
+     */
+    public function getPreguntasConSeleccionPorRendicion(int $idRendicion): array
+    {
+        try {
+            $db = \Config\Database::connect();
+
+            $ejes = $db->query("
+                SELECT es.id AS eje_sel_id, e.id AS eje_id, e.tematica
+                FROM eje_seleccionado es
+                JOIN eje e ON e.id = es.id_eje
+                WHERE es.id_rendicion = ?
+                ORDER BY e.tematica ASC
+            ", [$idRendicion])->getResultArray();
+
+            if (empty($ejes)) {
+                return [];
+            }
+
+            $result = [];
+
+            $hasSeleccion = !empty($db->query("SHOW TABLES LIKE 'seleccion'")->getResultArray());
+
+            foreach ($ejes as $es) {
+                $preguntas = [];
+
+                if ($hasSeleccion) {
+                    $rows = $db->query("
+                        SELECT DISTINCT
+                            p.id,
+                            p.contenido,
+                            p.created_at,
+                            u.id AS usuario_id,
+                            u.nombre AS usuario_nombre,
+                            p.id_eje,
+                            CASE WHEN s.id IS NULL THEN 0 ELSE 1 END AS is_selected,
+                            s.orden AS orden_seleccion
+                        FROM pregunta p
+                        JOIN usuario u ON u.id = p.id_usuario
+                        LEFT JOIN seleccion s ON s.id_pregunta = p.id AND s.id_eje_seleccionado = ?
+                        WHERE u.id_rendicion = ? AND (p.id_eje = ? OR s.id IS NOT NULL)
+                        ORDER BY s.orden IS NULL, s.orden ASC, p.created_at ASC
+                    ", [(int)$es['eje_sel_id'], $idRendicion, (int)$es['eje_id']])->getResultArray();
+
+                    $preguntas = $rows ?: [];
+                } else {
+                    $rows = $db->query("
+                        SELECT p.id, p.contenido, p.created_at, u.id AS usuario_id, u.nombre AS usuario_nombre, p.id_eje,
+                               0 AS is_selected, NULL AS orden_seleccion
+                        FROM pregunta p
+                        JOIN usuario u ON u.id = p.id_usuario
+                        WHERE u.id_rendicion = ? AND p.id_eje = ?
+                        ORDER BY p.created_at ASC
+                    ", [$idRendicion, (int)$es['eje_id']])->getResultArray();
+
+                    $preguntas = $rows ?: [];
+                }
+
+                $result['eje_' . $es['eje_sel_id']] = [
+                    'id' => (int)$es['eje_sel_id'],
+                    'eje_id' => (int)$es['eje_id'],
+                    'tematica' => $es['tematica'],
+                    'preguntas' => array_map(function($p){
+                        return [
+                            'id' => (int)($p['id'] ?? 0),
+                            'contenido' => $p['contenido'] ?? '',
+                            'usuario' => $p['usuario_nombre'] ?? '',
+                            'usuario_id' => isset($p['usuario_id']) ? (int)$p['usuario_id'] : null,
+                            'created_at' => $p['created_at'] ?? null,
+                            'id_eje' => isset($p['id_eje']) ? (int)$p['id_eje'] : null,
+                            'is_selected' => !empty($p['is_selected']) ? true : false,
+                            'orden_seleccion' => isset($p['orden_seleccion']) ? (is_null($p['orden_seleccion']) ? null : (int)$p['orden_seleccion']) : null
+                        ];
+                    }, $preguntas)
+                ];
+            }
+
+            return $result;
+        } catch (\Throwable $e) {
+            log_message('error', 'AdministradorModel::getPreguntasConSeleccionPorRendicion error: ' . $e->getMessage());
+            return [];
+        }
+    }
 }
