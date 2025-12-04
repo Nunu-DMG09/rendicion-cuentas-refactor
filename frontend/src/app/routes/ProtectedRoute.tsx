@@ -1,5 +1,5 @@
 import { isSuperAdmin } from "@/core/utils";
-import { useAuth } from "@/features/auth/hooks/useAuth";
+import { useAuthContext } from "@/features/auth/providers/AuthProvider";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { Loader } from "dialca-ui";
 import { useEffect } from "react";
@@ -12,14 +12,14 @@ interface Props {
 }
 export const ProtectedRoute: React.FC<Props> = ({ children, isRestricted = false }) => {
     const { isAuthenticated, user } = useAuthStore();
-    const { refreshQuery } = useAuth();
+    const { isInitializing, isRefreshing } = useAuthContext();
 
     useEffect(() => {
-        if (!refreshQuery.isLoading && isAuthenticated && user && user.estado === '0') {
+        if (!isRefreshing && isAuthenticated && user && user.estado === '0') {
             toast.error('Su cuenta ha sido deshabilitada. Por favor, contacte al administrador.');
         }
-    }, [refreshQuery.isLoading, isAuthenticated, user]);
-    if (refreshQuery.isLoading) {
+    }, [isRefreshing, isAuthenticated, user]);
+    if (isInitializing || isRefreshing) {
         return (
             <div className="flex justify-center items-center h-screen">
                 <Loader size="xl" />
