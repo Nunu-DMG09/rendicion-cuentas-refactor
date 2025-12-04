@@ -21,7 +21,8 @@ $routes->group('rendicion',  ['namespace' => 'App\Controllers', 'filter' => 'cor
     $routes->get('(:num)/participantes', 'RendicionController::participantes/$1'); // Participantes de una rendición
     $routes->get('rendiciones', 'RendicionController::recientes');
     $routes->post('(:num)', 'RendicionController::editarRendicion/$1'); // Actualiza rendición (acepta archivos)
-    
+    $routes->get('preguntas-seleccionadas/(:num)', 'RendicionController::preguntasSeleccionadas/$1'); // preguntas seleccionadas por rendición (home/admin)
+
     // RUTAS ACTUALES LO QUE ME PEDISTE QUE AGREGUE @DIEGAZO OÑO
     $routes->get('home/banners', 'RendicionController::banners'); // Obtiene los banners de la rendición más reciente
     $routes->get('home/datos-registro', 'RendicionController::datosRegistro');  // Obtiene datos de la rendición actual para el formulario de registro
@@ -63,6 +64,7 @@ $routes->group('rendicion',  ['namespace' => 'App\Controllers', 'filter' => 'cor
     $routes->put('admin/(:num)', 'AdministradorController::ActualizarAdministrador/$1'); // Actualizar administrador
     $routes->delete('admin/(:num)', 'AdministradorController::eliminarAdministrador/$1'); // Eliminar administrador
     $routes->get('admin/dashboard', 'AdministradorController::DashboardStatistics');
+    $routes->get('admin/rendiciones', 'AdministradorController::rendicionesList'); // lista rendiciones (id + titulo) con ?query=
 
     // Autenticación
     $routes->post('auth/login', 'AuthController::login'); // Login (obtener token)
