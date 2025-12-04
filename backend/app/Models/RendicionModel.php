@@ -47,9 +47,8 @@ class RendicionModel extends Model
 
 
     /*================================================
-      getBannersRendicionActual
-      Obtiene los banners de la rendición más reciente del año actual,
-      o la última registrada si no hay del año actual.
+      OBTENER BANNERS DE LA RENDICIÓN MÁS RECIENTE DEL AÑO ACTUAL,
+      O LA ÚLTIMA REGISTRADA SI NO HAY DEL AÑO ACTUAL.
      ==============================================================*/
     public function getBannersRendicionActual(): array
     {
@@ -57,7 +56,6 @@ class RendicionModel extends Model
             $db = \Config\Database::connect();
             $currentYear = date('Y');
 
-            // 1) obtener rendición más reciente del año actual o la última registrada
             $rendicion = $db->query("
                 SELECT * FROM rendicion
                 WHERE YEAR(fecha) = ?
@@ -79,7 +77,6 @@ class RendicionModel extends Model
 
             $rendicionId = (int)$rendicion['id'];
 
-            // 2) intentar leer baners desde la tabla baner_rendicion (BanerRendicionModel)
             $baners = [];
             try {
                 $brModel = new \App\Models\BanerRendicionModel();
@@ -88,10 +85,8 @@ class RendicionModel extends Model
                 $baners = [];
             }
 
-            // 3) Normalizar y construir rutas públicas (fallback a filesystem si no hay registros)
             $normalized = [];
 
-            // helper para construir URL absoluta relativa al host actual
             $host = $_SERVER['HTTP_HOST'] ?? 'localhost:8080';
             $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
             $baseUrl = $scheme . '://' . $host;
@@ -100,15 +95,12 @@ class RendicionModel extends Model
                 foreach ($baners as $b) {
                     $file = $b['file_path'] ?? $b['file'] ?? $b['ruta'] ?? '';
                     if (str_starts_with($file, 'uploads/')) {
-                        // Si file_path ya incluye "uploads/", usar directamente
                         $rutaPublic = $baseUrl . '/' . $file;
                         $fsPath = FCPATH . $file;
                     } else {
-                        // Si no incluye "uploads/", construir la ruta completa
                         $rutaPublic = $baseUrl . '/uploads/rendicion/' . $rendicionId . '/' . $file;
                         $fsPath = FCPATH . 'uploads' . DIRECTORY_SEPARATOR . 'rendicion' . DIRECTORY_SEPARATOR . $rendicionId . DIRECTORY_SEPARATOR . $file;
                     }
-                    // si no existe en FS, mantener ruta pero marcar raw
                     $normalized[] = [
                         'id' => (int)($b['id'] ?? 0),
                         'ruta' => $rutaPublic,
@@ -119,7 +111,6 @@ class RendicionModel extends Model
                     ];
                 }
             } else {
-                // fallback: listar archivos en public/uploads/rendicion/{id}/
                 $dir = FCPATH . 'uploads' . DIRECTORY_SEPARATOR . 'rendicion' . DIRECTORY_SEPARATOR . $rendicionId . DIRECTORY_SEPARATOR;
                 if (is_dir($dir)) {
                     $files = array_values(array_filter(scandir($dir), function ($f) {
@@ -150,16 +141,15 @@ class RendicionModel extends Model
     }
 
     /*================================================
-      getDatosRendicionParaRegistro
-      Obtiene datos de la rendición más actual para el formulario de registro.
-     ========================================================*/
+      OBTENER DATOS DE LA RENDICIÓN MÁS ACTUAL 
+      PARA EL FORMULARIO DE REGISTRO
+     =================================================*/
     public function getDatosRendicionParaRegistro(): array
     {
         try {
             $db = \Config\Database::connect();
             $currentYear = date('Y');
 
-            // Buscar rendición más reciente del año actual
             $rendicion = $db->query("
                 SELECT * FROM rendicion 
                 WHERE YEAR(fecha) = ? 
@@ -167,7 +157,6 @@ class RendicionModel extends Model
                 LIMIT 1
             ", [$currentYear])->getRowArray();
 
-            // Si no hay del año actual, buscar la última registrada
             if (!$rendicion) {
                 $rendicion = $db->query("
                     SELECT * FROM rendicion 
@@ -180,7 +169,6 @@ class RendicionModel extends Model
                 return [];
             }
 
-            // Generar título en formato "Rendición I del año XXXX" o "Rendición II del año XXXX"
             $year = date('Y', strtotime($rendicion['fecha']));
             $rendicionesDelAno = $db->query("
                 SELECT COUNT(*) as total 
@@ -216,8 +204,8 @@ class RendicionModel extends Model
     }
 
     /*===================================================
-     * getRendicionesAnoActualConPreguntas
-     * Obtiene todas las rendiciones del año actual con sus preguntas para mostrar en home.
+      OBTENER RENDICIONES DEL AÑO ACTUAL CON PREGUNTAS 
+      Y USUARIOS REGISTRADOS
      ========================================================*/
     public function getRendicionesAnoActualConPreguntas(): array
     {
@@ -232,7 +220,6 @@ class RendicionModel extends Model
             ", [$currentYear])->getResultArray();
 
             if (empty($rendiciones)) {
-                // Si no hay del año actual, traer las del último año que tenga rendiciones
                 $ultimoAno = $db->query("
                     SELECT YEAR(fecha) as year 
                     FROM rendicion 
@@ -251,13 +238,11 @@ class RendicionModel extends Model
 
             $result = [];
             foreach ($rendiciones as $r) {
-                // Generar título
                 $year = date('Y', strtotime($r['fecha']));
                 $posicion = $this->getPosicionRendicionEnAno($r['id'], $year);
                 $numeroRomano = $this->convertToRoman($posicion);
                 $titulo = "Rendición {$numeroRomano} del año {$year}";
 
-                // Contar preguntas de esta rendición
                 $totalPreguntas = $db->query("
                     SELECT COUNT(p.id) as total
                     FROM pregunta p
@@ -265,7 +250,6 @@ class RendicionModel extends Model
                     WHERE u.id_rendicion = ?
                 ", [$r['id']])->getRowArray();
 
-                // Contar usuarios registrados
                 $totalUsuarios = $db->query("
                     SELECT COUNT(*) as total
                     FROM usuario
@@ -291,9 +275,9 @@ class RendicionModel extends Model
         }
     }
 
-    /**
-     * Helper: convierte número a romano
-     */
+    /*===================================================
+     CONVERTIR NÚMERO A ROMANO (1-10)
+     =====================================================*/
     private function convertToRoman(int $number): string
     {
         $romans = [
@@ -315,9 +299,9 @@ class RendicionModel extends Model
         return $result ?: 'I';
     }
 
-    /**
-     * Helper: obtiene la posición de una rendición en su año
-     */
+    /*===================================================
+     OBTENER LA POSICIÓN DE UNA RENDICIÓN EN SU AÑO
+     =====================================================*/
     private function getPosicionRendicionEnAno(int $rendicionId, int $year): int
     {
         try {
@@ -339,6 +323,81 @@ class RendicionModel extends Model
             return $posicion;
         } catch (\Throwable $e) {
             return 1;
+        }
+    }
+
+    /*===================================================
+     OBTENER PREGUNTAS SELECCIONADAS CON SU EJE POR EL ID RENDICIÓN
+     =====================================================*/
+    public function getPreguntasSeleccionadasPorRendicion(int $idRendicion): array
+    {
+        try {
+            $db = \Config\Database::connect();
+
+            $ejes = $db->query("
+                SELECT es.id AS eje_sel_id, e.id AS eje_id, e.tematica
+                FROM eje_seleccionado es
+                JOIN eje e ON e.id = es.id_eje
+                WHERE es.id_rendicion = ?
+                ORDER BY e.tematica ASC
+            ", [$idRendicion])->getResultArray();
+
+            if (empty($ejes)) {
+                return [];
+            }
+
+            $result = [];
+
+            $hasSeleccion = !empty($db->query("SHOW TABLES LIKE 'seleccion'")->getResultArray());
+
+            foreach ($ejes as $es) {
+                $preguntas = [];
+
+                if ($hasSeleccion) {
+                        
+                    $rows = $db->query("
+                        SELECT p.id, p.contenido, p.created_at, u.id AS usuario_id, u.nombre AS usuario_nombre, p.id_eje
+                        FROM seleccion s
+                        JOIN pregunta p ON p.id = s.id_pregunta
+                        LEFT JOIN usuario u ON u.id = p.id_usuario
+                        WHERE s.id_eje_seleccionado = ?
+                        ORDER BY s.orden IS NULL, s.orden ASC, p.created_at ASC
+                    ", [(int)$es['eje_sel_id']])->getResultArray();
+
+                    $preguntas = $rows ?: [];
+                } else {
+                    $rows = $db->query("
+                        SELECT p.id, p.contenido, p.created_at, u.id AS usuario_id, u.nombre AS usuario_nombre, p.id_eje
+                        FROM pregunta p
+                        JOIN usuario u ON u.id = p.id_usuario
+                        WHERE u.id_rendicion = ? AND p.id_eje = ?
+                        ORDER BY p.created_at ASC
+                    ", [$idRendicion, (int)$es['eje_id']])->getResultArray();
+
+                    $preguntas = $rows ?: [];
+                }
+
+                $result['eje_' . $es['eje_sel_id']] = [
+                    'id' => (int)$es['eje_sel_id'],
+                    'eje_id' => (int)$es['eje_id'],
+                    'tematica' => $es['tematica'],
+                    'preguntas' => array_map(function($p){
+                        return [
+                            'id' => (int)($p['id'] ?? 0),
+                            'contenido' => $p['contenido'] ?? '',
+                            'usuario' => $p['usuario_nombre'] ?? '',
+                            'usuario_id' => isset($p['usuario_id']) ? (int)$p['usuario_id'] : null,
+                            'created_at' => $p['created_at'] ?? null,
+                            'id_eje' => isset($p['id_eje']) ? (int)$p['id_eje'] : null
+                        ];
+                    }, $preguntas)
+                ];
+            }
+
+            return $result;
+        } catch (\Throwable $e) {
+            log_message('error', 'RendicionModel::getPreguntasSeleccionadasPorRendicion error: ' . $e->getMessage());
+            return [];
         }
     }
 }

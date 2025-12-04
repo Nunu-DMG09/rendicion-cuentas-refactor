@@ -21,7 +21,6 @@ class UsuarioController extends ResourceController
             return $this->respond(['success' => false, 'message' => 'Payload inválido', 'data' => []], 400);
         }
 
-        // campos requeridos
         $required = ['nombre', 'sexo', 'tipo_participacion'];
         foreach ($required as $r) {
             if (empty($input[$r])) {
@@ -52,7 +51,6 @@ class UsuarioController extends ResourceController
             $idRendicion = (int)$input['id_rendicion'];
         }
 
-        // Si se proporcionó id_rendicion verificar existencia y fecha (ruta/body)
         if (!empty($idRendicion)) {
             $rend = $rendModel->find($idRendicion);
             if (!$rend) {
@@ -81,7 +79,6 @@ class UsuarioController extends ResourceController
                 }
             }
 
-            // --- NUEVO: vuelvo a validar la rendición escogida (si se tomó la última) ---
             if (!empty($idRendicion)) {
                 $rend = $rendModel->find($idRendicion);
                 if (!$rend) {
@@ -99,9 +96,7 @@ class UsuarioController extends ResourceController
                 }
             }
 
-            // --- NUEVO: validación de duplicados por DNI o por user id para la misma rendición ---
             if (!empty($idRendicion)) {
-                // validar por DNI (si viene en el payload)
                 if (!empty($input['dni'])) {
                     $existsDni = $db->table('usuario')
                         ->where('id_rendicion', $idRendicion)
@@ -118,7 +113,6 @@ class UsuarioController extends ResourceController
                     }
                 }
 
-                // validar si el cliente envía un id de usuario (user_id / id_usuario / id) y ese id ya está asignado a la rendición
                 $providedUserId = null;
                 foreach (['user_id', 'id_usuario', 'id'] as $k) {
                     if (!empty($input[$k])) { $providedUserId = (int)$input[$k]; break; }
@@ -338,7 +332,6 @@ class UsuarioController extends ResourceController
                 ];
             }
 
-            // success true only if there is at least one usuario across all rendiciones
             $hasAnyUsers = false;
             foreach ($result as $r) {
                 if (!empty($r['usuarios'])) { $hasAnyUsers = true; break; }
