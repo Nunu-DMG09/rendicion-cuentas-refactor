@@ -250,4 +250,38 @@ class AdministradorController extends ResourceController
             return $this->respond(['success' => false, 'message' => 'Error listando rendiciones', 'data' => []], 500);
         }
     }
+    
+    /**
+     * GET /admin-preguntas/{id}
+     * Devuelve todas las preguntas por eje para la rendición {id} con is_selected y orden_seleccion.
+     */
+    public function preguntasConSeleccion($id = null)
+    {
+        $id = (int)$id;
+        if ($id <= 0) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'success' => false,
+                'message' => 'ID de rendición inválido',
+                'data' => []
+            ]);
+        }
+
+        try {
+            $model = new \App\Models\AdministradorModel();
+            $data = $model->getPreguntasConSeleccionPorRendicion($id);
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Preguntas (seleccionadas y no seleccionadas) por eje para la rendición',
+                'data' => $data
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', 'AdministradorController::preguntasConSeleccion error: ' . $e->getMessage());
+            return $this->response->setStatusCode(500)->setJSON([
+                'success' => false,
+                'message' => 'Error al obtener preguntas',
+                'data' => []
+            ]);
+        }
+    }
 }
