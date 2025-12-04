@@ -43,14 +43,14 @@ export default function PreguntasSelector({
                         htmlFor="rendicion" 
                         className="block text-sm font-semibold text-gray-900 mb-2"
                     >
-                        <FaCalendarAlt className="inline-block mr-2 text-[#002f59]" />
+                        <FaCalendarAlt className="inline-block mr-2 text-primary-dark" />
                         Fecha de Rendición
                     </label>
                     <select
                         id="rendicion"
                         value={selectedRendicion}
                         onChange={(e) => onChange(e.target.value)}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#002f59]/20 focus:border-[#002f59] transition-all text-gray-900 bg-white cursor-pointer"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark/60 focus:border-primary-dark/60 outline-none transition-all text-gray-900 bg-white cursor-pointer"
                         disabled={isLoading}
                     >
                         <option value="">Seleccione una rendición</option>

@@ -1,11 +1,11 @@
 import { motion } from 'motion/react'
-import PreguntasSelector from '../components/PreguntasSelector'
 import PreguntasStats from '../components/PreguntasStats'
 import PreguntasPorEjeList from '../components/PreguntasPorEjeList'
 import PreguntasModal from '../components/PreguntasModal'
 import PresentacionModal from '../components/PresentacionModal'
 import EmptyPreguntas from '../components/EmptyPreguntas'
 import { useVerPreguntas } from '../hooks/useVerPreguntas'
+import RendicionesSelector from '../components/RendicionesSelector'
 
 export default function VerPreguntasPage() {
     const {
@@ -35,21 +35,13 @@ export default function VerPreguntasPage() {
             transition={{ duration: 0.5 }}
             className="space-y-6"
         >
-            {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold text-gray-900">Ver Preguntas</h1>
-                <p className="text-gray-600 mt-1">Consulta y gestiona las preguntas por rendición</p>
-            </div>
-
-            {/* Selector */}
-            <PreguntasSelector
+            <header>
+                <h1 className="text-4xl font-bold text-gray-900 font-titles">Ver Preguntas</h1>
+                <p className="text-gray-600 mt-1 font-body text-lg">Consulta y gestiona las preguntas por rendición</p>
+            </header>
+            <RendicionesSelector
                 selectedRendicion={selectedRendicion}
-                rendiciones={rendicionesOptions}
-                onChange={setSelectedRendicion}
-                onBuscar={buscarPreguntas}
-                onPresentar={openPresentacion}
-                isLoading={isLoading}
-                hasResults={hasSearched && preguntasPorEje.length > 0}
+                onRendicionChange={() => {}}
             />
 
             {/* Contenido */}
