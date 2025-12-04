@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+	BrowserRouter as Router,
+	Routes,
+	Route,
+	Navigate,
+} from "react-router-dom";
 import { Layout, AdminLayout } from "./layouts";
 import { SidebarProvider, AuthProvider } from "./providers";
 import HomePage from "../features/home/pages/HomePage";
@@ -13,6 +18,7 @@ import VerPreguntasPage from "../features/preguntas/pages/VerPreguntasPage";
 import { Toaster } from "sonner";
 import { LoginForm } from "@/features/login/pages/Login";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
+import { SeleccionarPreguntas } from "@/features/preguntas/pages/SeleccionarPreguntas";
 
 function App() {
 	return (
@@ -33,7 +39,12 @@ function App() {
 						</Route>
 						<Route path="/auth/login" element={<LoginForm />} />
 						<Route path="/admin" element={<AdminLayout />}>
-							<Route index element={<Navigate to="/admin/dashboard" replace />} />
+							<Route
+								index
+								element={
+									<Navigate to="/admin/dashboard" replace />
+								}
+							/>
 							<Route
 								path="dashboard"
 								element={
@@ -45,35 +56,46 @@ function App() {
 							<Route
 								path="rendiciones/nueva-rendicion"
 								element={
-                  <ProtectedRoute>
-                    <NuevaRendicionPage />
-                  </ProtectedRoute>
-              }
+									<ProtectedRoute>
+										<NuevaRendicionPage />
+									</ProtectedRoute>
+								}
 							/>
 							<Route
 								path="rendiciones/ver-rendiciones"
 								element={
-                  <ProtectedRoute>
-                    <VerRendicionesPage />
-                  </ProtectedRoute>
-              }
+									<ProtectedRoute>
+										<VerRendicionesPage />
+									</ProtectedRoute>
+								}
 							/>
 							<Route
 								path="ejes"
 								element={<EjesTematicosPage />}
 							/>
-							<Route path="reportes" element={
-                  <ProtectedRoute>
-                    <ReportesPage />
-                  </ProtectedRoute>
-              } />
+							<Route
+								path="reportes"
+								element={
+									<ProtectedRoute>
+										<ReportesPage />
+									</ProtectedRoute>
+								}
+							/>
 							<Route
 								path="preguntas/ver"
 								element={
-                  <ProtectedRoute>
-                    <VerPreguntasPage />
-                  </ProtectedRoute>
-              }
+									<ProtectedRoute>
+										<VerPreguntasPage />
+									</ProtectedRoute>
+								}
+							/>
+							<Route
+								path="preguntas/seleccionar"
+								element={
+									<ProtectedRoute>
+										<SeleccionarPreguntas />
+									</ProtectedRoute>
+								}
 							/>
 						</Route>
 					</Routes>
