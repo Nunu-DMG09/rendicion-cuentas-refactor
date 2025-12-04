@@ -1,76 +1,34 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { FaTags, FaTrash, FaUser, FaQuestionCircle, FaChevronDown } from 'react-icons/fa'
+import { FaTags, FaUser, FaChevronDown } from 'react-icons/fa'
 import type { PreguntasPorEje } from '../types/preguntas'
 
 type Props = {
     preguntasPorEje: PreguntasPorEje[]
-    onDeletePregunta: (preguntaId: string) => void
-    isLoading: boolean
 }
 
-export default function PreguntasPorEjeList({ preguntasPorEje, onDeletePregunta, isLoading }: Props) {
+export default function PreguntasPorEjeList({ preguntasPorEje }: Props) {
     const [expandedEjes, setExpandedEjes] = useState<Set<string>>(new Set())
 
     const toggleEje = (ejeId: string) => {
         setExpandedEjes(prev => {
             const newSet = new Set(prev)
-            if (newSet.has(ejeId)) {
-                newSet.delete(ejeId)
-            } else {
-                newSet.add(ejeId)
-            }
+            if (newSet.has(ejeId)) newSet.delete(ejeId)
+            else newSet.add(ejeId)
             return newSet
         })
     }
 
-    const expandAll = () => {
-        setExpandedEjes(new Set(preguntasPorEje.map(e => e.ejeId)))
-    }
+    const expandAll = () => setExpandedEjes(new Set(preguntasPorEje.map(e => e.ejeId)))
 
-    const collapseAll = () => {
-        setExpandedEjes(new Set())
-    }
-
-    if (isLoading) {
-        return (
-            <div className="space-y-4">
-                {Array.from({ length: 4 }).map((_, index) => (
-                    <div key={index} className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-pulse">
-                        <div className="bg-gray-200 h-16" />
-                    </div>
-                ))}
-            </div>
-        )
-    }
-
-    if (preguntasPorEje.length === 0) {
-        return (
-            <motion.div
-                className="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-            >
-                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <FaQuestionCircle className="h-10 w-10 text-gray-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    No hay preguntas registradas
-                </h3>
-                <p className="text-gray-500">
-                    No se encontraron preguntas para esta rendición.
-                </p>
-            </motion.div>
-        )
-    }
+    const collapseAll = () => setExpandedEjes(new Set())
 
     return (
         <div className="space-y-4">
-            {/* Controles de expansión */}
             <div className="flex justify-end gap-2">
                 <button
                     onClick={expandAll}
-                    className="px-3 py-1.5 text-sm text-[#002f59] hover:bg-[#002f59]/10 rounded-lg transition-colors cursor-pointer"
+                    className="px-3 py-1.5 text-sm text-primary-dark hover:bg-primary-dark/10 rounded-lg transition-colors cursor-pointer"
                 >
                     Expandir todo
                 </button>
@@ -81,13 +39,10 @@ export default function PreguntasPorEjeList({ preguntasPorEje, onDeletePregunta,
                     Colapsar todo
                 </button>
             </div>
-
-            {/* Lista de ejes (acordeones) */}
             <div className="space-y-3">
                 <AnimatePresence>
                     {preguntasPorEje.map((grupo, grupoIndex) => {
                         const isExpanded = expandedEjes.has(grupo.ejeId)
-                        
                         return (
                             <motion.div
                                 key={grupo.ejeId}
@@ -97,10 +52,9 @@ export default function PreguntasPorEjeList({ preguntasPorEje, onDeletePregunta,
                                 exit={{ opacity: 0, y: -20 }}
                                 transition={{ delay: grupoIndex * 0.05 }}
                             >
-                                {/* Header del eje (clickeable) */}
                                 <button
                                     onClick={() => toggleEje(grupo.ejeId)}
-                                    className="w-full bg-gradient-to-r from-[#002f59] to-[#003d73] p-4 flex items-center justify-between cursor-pointer hover:from-[#003366] hover:to-[#004080] transition-all"
+                                    className="w-full bg-linear-to-r from-primary-dark to-primary p-4 flex items-center justify-between cursor-pointer hover:brightness-110 transition-all"
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
@@ -119,8 +73,6 @@ export default function PreguntasPorEjeList({ preguntasPorEje, onDeletePregunta,
                                         <FaChevronDown className="h-4 w-4 text-white" />
                                     </motion.div>
                                 </button>
-
-                                {/* Lista de preguntas (colapsable) */}
                                 <AnimatePresence>
                                     {isExpanded && (
                                         <motion.div
@@ -142,27 +94,24 @@ export default function PreguntasPorEjeList({ preguntasPorEje, onDeletePregunta,
                                                     >
                                                         <div className="flex items-start justify-between gap-4">
                                                             <div className="flex-1 min-w-0">
-                                                                {/* Participante */}
                                                                 <div className="flex items-center gap-2 mb-2">
-                                                                    <div className="w-8 h-8 bg-[#002f59]/10 rounded-full flex items-center justify-center">
-                                                                        <FaUser className="h-4 w-4 text-[#002f59]" />
+                                                                    <div className="w-8 h-8 bg-primary-dark/10 rounded-full flex items-center justify-center">
+                                                                        <FaUser className="h-4 w-4 text-primary-dark" />
                                                                     </div>
                                                                     <div>
                                                                         <p className="font-semibold text-gray-900 text-sm">
                                                                             {pregunta.participante.nombre}
                                                                         </p>
-                                                                        <p className="text-xs text-gray-500">
-                                                                            DNI: {pregunta.participante.dni}
-                                                                        </p>
+                                                                        {pregunta.participante.dni && (
+                                                                            <p className="text-xs text-gray-500">
+                                                                                DNI: {pregunta.participante.dni}
+                                                                            </p>
+                                                                        )}
                                                                     </div>
                                                                 </div>
-
-                                                                {/* Pregunta */}
                                                                 <p className="text-gray-700 leading-relaxed pl-10">
                                                                     {pregunta.texto}
                                                                 </p>
-
-                                                                {/* Estado */}
                                                                 <div className="mt-2 pl-10">
                                                                     <span className={`
                                                                         inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium
@@ -178,20 +127,6 @@ export default function PreguntasPorEjeList({ preguntasPorEje, onDeletePregunta,
                                                                     </span>
                                                                 </div>
                                                             </div>
-
-                                                            {/* Botón eliminar */}
-                                                            <motion.button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation()
-                                                                    onDeletePregunta(pregunta.id)
-                                                                }}
-                                                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer flex-shrink-0"
-                                                                whileHover={{ scale: 1.1 }}
-                                                                whileTap={{ scale: 0.9 }}
-                                                                title="Eliminar pregunta"
-                                                            >
-                                                                <FaTrash className="h-4 w-4" />
-                                                            </motion.button>
                                                         </div>
                                                     </motion.div>
                                                 ))}
