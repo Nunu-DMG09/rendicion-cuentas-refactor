@@ -1,17 +1,9 @@
 import { useState, useMemo } from 'react'
-import type { Pregunta, PreguntasPorEje, PreguntasModalState, PresentacionState } from '../types/preguntas'
+import type { Pregunta, PreguntasPorEje, PresentacionState } from '../types/preguntas'
 import { useRendicion } from '@/features/rendicion/hooks/useRendicion'
 
 export const useVerPreguntas = () => {
     const [selectedRendicion, setSelectedRendicion] = useState<string>('')
-    
-    const [modal, setModal] = useState<PreguntasModalState>({
-        isOpen: false,
-        type: 'confirm',
-        title: '',
-        message: ''
-    })
-
     const [presentacion, setPresentacion] = useState<PresentacionState>({
         isOpen: false,
         preguntasPorEje: [],
@@ -62,12 +54,8 @@ export const useVerPreguntas = () => {
 
     const handleRendicionChange = (rendicionId: string) => {
         setSelectedRendicion(rendicionId)
-        setModal(prev => ({ ...prev, isOpen: false }))
         setPresentacion(prev => ({ ...prev, isOpen: false }))
     }
-    // Cerrar modal
-    const closeModal = () => setModal(prev => ({ ...prev, isOpen: false }))
-
     // Abrir presentación
     const openPresentacion = () => {        
         setPresentacion({
@@ -85,7 +73,6 @@ export const useVerPreguntas = () => {
     // Limpiar búsqueda
     const limpiarBusqueda = () => {
         setSelectedRendicion('')
-        setModal(prev => ({ ...prev, isOpen: false }))
         setPresentacion(prev => ({ ...prev, isOpen: false }))
     }
 
@@ -105,9 +92,6 @@ export const useVerPreguntas = () => {
         handleRendicionChange,
         limpiarBusqueda,
         refetch,
-        // Modal
-        modal,
-        closeModal,
         // Presentación
         presentacion,
         openPresentacion,
