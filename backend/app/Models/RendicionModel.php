@@ -346,36 +346,25 @@ class RendicionModel extends Model
                 return [];
             }
 
+            // Si no existe la tabla 'seleccion' no hay selección -> devolvemos vacío
+            $hasSeleccion = !empty($db->query("SHOW TABLES LIKE 'seleccion'")->getResultArray());
+            if (!$hasSeleccion) {
+                return [];
+            }
+
             $result = [];
 
-            $hasSeleccion = !empty($db->query("SHOW TABLES LIKE 'seleccion'")->getResultArray());
-
             foreach ($ejes as $es) {
-                $preguntas = [];
+                $rows = $db->query("
+                    SELECT p.id, p.contenido, p.created_at, u.id AS usuario_id, u.nombre AS usuario_nombre, p.id_eje, s.orden AS orden_seleccion
+                    FROM seleccion s
+                    JOIN pregunta p ON p.id = s.id_pregunta
+                    LEFT JOIN usuario u ON u.id = p.id_usuario
+                    WHERE s.id_eje_seleccionado = ?
+                    ORDER BY s.orden IS NULL, s.orden ASC, p.created_at ASC
+                ", [(int)$es['eje_sel_id']])->getResultArray();
 
-                if ($hasSeleccion) {
-                        
-                    $rows = $db->query("
-                        SELECT p.id, p.contenido, p.created_at, u.id AS usuario_id, u.nombre AS usuario_nombre, p.id_eje
-                        FROM seleccion s
-                        JOIN pregunta p ON p.id = s.id_pregunta
-                        LEFT JOIN usuario u ON u.id = p.id_usuario
-                        WHERE s.id_eje_seleccionado = ?
-                        ORDER BY s.orden IS NULL, s.orden ASC, p.created_at ASC
-                    ", [(int)$es['eje_sel_id']])->getResultArray();
-
-                    $preguntas = $rows ?: [];
-                } else {
-                    $rows = $db->query("
-                        SELECT p.id, p.contenido, p.created_at, u.id AS usuario_id, u.nombre AS usuario_nombre, p.id_eje
-                        FROM pregunta p
-                        JOIN usuario u ON u.id = p.id_usuario
-                        WHERE u.id_rendicion = ? AND p.id_eje = ?
-                        ORDER BY p.created_at ASC
-                    ", [$idRendicion, (int)$es['eje_id']])->getResultArray();
-
-                    $preguntas = $rows ?: [];
-                }
+                $preguntas = $rows ?: [];
 
                 $result['eje_' . $es['eje_sel_id']] = [
                     'id' => (int)$es['eje_sel_id'],
@@ -388,7 +377,9 @@ class RendicionModel extends Model
                             'usuario' => $p['usuario_nombre'] ?? '',
                             'usuario_id' => isset($p['usuario_id']) ? (int)$p['usuario_id'] : null,
                             'created_at' => $p['created_at'] ?? null,
-                            'id_eje' => isset($p['id_eje']) ? (int)$p['id_eje'] : null
+                            'id_eje' => isset($p['id_eje']) ? (int)$p['id_eje'] : null,
+                            'is_selected' => true,
+                            'orden_seleccion' => isset($p['orden_seleccion']) ? (is_null($p['orden_seleccion']) ? null : (int)$p['orden_seleccion']) : null
                         ];
                     }, $preguntas)
                 ];
@@ -399,5 +390,5 @@ class RendicionModel extends Model
             log_message('error', 'RendicionModel::getPreguntasSeleccionadasPorRendicion error: ' . $e->getMessage());
             return [];
         }
-    }
+    } 
 }
