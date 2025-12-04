@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FooterData } from '../types/footer'
-import { SocialIcons } from '../components/SocialIcons'
+import { SocialIcons } from '../SocialIcons'
 
 export function useFooter(): FooterData {
     const [footerData] = useState<FooterData>({

@@ -264,7 +264,7 @@ class RendicionModel extends Model
                     'descripcion' => $r['descripcion'] ?? '',
                     'total_preguntas' => (int)($totalPreguntas['total'] ?? 0),
                     'total_registrados' => (int)($totalUsuarios['total'] ?? 0),
-                    'estado' => strtotime($r['fecha']) <= time() ? 'Realizada' : 'Programada'
+                    'estado' => strtotime($r['fecha']) <= time() ? 'realizada' : 'programada'
                 ];
             }
 

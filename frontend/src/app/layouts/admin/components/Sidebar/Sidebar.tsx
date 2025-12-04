@@ -6,9 +6,12 @@ import { GoSidebarCollapse, GoSidebarExpand } from "react-icons/go";
 import { SIDEBAR_ITEMS } from "./constants/sidebarItems";
 import { SidebarSubmenu } from "./SidebarSubmenu";
 import { SidebarItem } from "./SidebarItem";
+import { isSuperAdmin } from "@/core/utils";
+import { useAuthStore } from "@/features/auth/store/auth.store";
 
 export const Sidebar = () => {
     const { isOpen, toggleSidebar, closeSidebar } = useSidebar();
+    const { user } = useAuthStore();
     const [isIconHovered, setIsIconHovered] = useState(false);
     return (
         <>
@@ -65,7 +68,7 @@ export const Sidebar = () => {
                     <div className="flex-1 pr-1 overflow-y-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-primary/50">
                         <nav className="flex flex-col gap-3 mt-2 justify-center">
                             {SIDEBAR_ITEMS.map(item => {
-                                const showItem = !item.restricted; // TODO: || isAdmin(user?.role || "")
+                                const showItem = !item.restricted || isSuperAdmin(user?.rol || "")
                                 if (!showItem) return null;
                                 const Icon = item.icon;
                                 if (item.subItems) {

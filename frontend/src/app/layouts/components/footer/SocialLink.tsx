@@ -1,4 +1,4 @@
-import type { SocialLink as SocialLinkType } from '../types/footer'
+import type { SocialLink as SocialLinkType } from './types/footer'
 
 type Props = {
   social: SocialLinkType

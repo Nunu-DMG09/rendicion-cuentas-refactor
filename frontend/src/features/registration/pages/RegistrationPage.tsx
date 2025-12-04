@@ -1,5 +1,5 @@
 import { useParams, Navigate } from 'react-router-dom'
-import { RegistrationWizard } from '../../features/registration/components/RegistrationWizard'
+import { RegistrationWizard } from '../components/RegistrationWizard'
 
 export default function RegistrationPage() {
   const { rendicionId } = useParams<{ rendicionId: string }>()

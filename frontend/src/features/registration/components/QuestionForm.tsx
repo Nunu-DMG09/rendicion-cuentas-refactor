@@ -65,13 +65,13 @@ export default function QuestionForm({
 					</motion.div>
 
 					<motion.h1
-						className="text-3xl font-bold text-white mb-2"
+						className="text-4xl font-bold text-white mb-2 font-titles"
 						variants={itemVariants}
 					>
 						{rendicionTitle}
 					</motion.h1>
 					<motion.p
-						className="text-blue-100 text-lg"
+						className="text-blue-100 text-lg font-body"
 						variants={itemVariants}
 					>
 						{rendicionDate}
@@ -147,7 +147,11 @@ export default function QuestionForm({
 										label="RUC de la Organización"
 										type="text"
 										value={questionForm.organizationRuc}
-										onChange={(e) => questionForm.handleOrganizationRucChange(e.target.value)}
+										onChange={(e) =>
+											questionForm.handleOrganizationRucChange(
+												e.target.value
+											)
+										}
 									/>
 								</motion.div>
 								<motion.div
@@ -159,10 +163,12 @@ export default function QuestionForm({
 										label="Nombre de la Organización"
 										type="text"
 										value={questionForm.organizationName}
-										onChange={(e) => questionForm.handleOrganizationNameChange(e.target.value)}
-										isLoading={
-											questionForm.isLoadingRuc
+										onChange={(e) =>
+											questionForm.handleOrganizationNameChange(
+												e.target.value
+											)
 										}
+										isLoading={questionForm.isLoadingRuc}
 										loader={<Loader />}
 									/>
 								</motion.div>
@@ -302,7 +308,7 @@ export default function QuestionForm({
 						<TbBulb className="text-white size-6" />
 					</div>
 					<div>
-						<h3 className="font-semibold text-[#002f59] mb-2">
+						<h3 className="font-semibold text-primary-dark mb-2">
 							Consejos para una buena pregunta
 						</h3>
 						<div className="space-y-1 text-sm text-gray-600">
