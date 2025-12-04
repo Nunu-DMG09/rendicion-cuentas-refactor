@@ -284,4 +284,127 @@ class AdministradorController extends ResourceController
             ]);
         }
     }
+
+    /*======================================
+    PARA SELECCIONAR / DESELECCIONAR PREGUNTAS
+    ======================================*/
+
+    public function seleccionarPreguntas()
+    {
+        $input = $this->request->getJSON(true);
+        if (!is_array($input)) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'success' => false,
+                'message' => 'Payload inválido',
+                'data' => []
+            ]);
+        }
+
+        $ids = $input['pregunta_ids'] ?? null;
+        $action = isset($input['action']) ? strtolower(trim($input['action'])) : null;
+        $idEjeSel = isset($input['id_eje_seleccionado']) ? (int)$input['id_eje_seleccionado'] : null;
+        $adminId = isset($input['admin_id']) ? (int)$input['admin_id'] : null;
+
+        if (!is_array($ids) || empty($ids)) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'success' => false,
+                'message' => 'Se requieren pregunta_ids como arreglo no vacío',
+                'data' => []
+            ]);
+        }
+
+        if (!in_array($action, ['select', 'unselect'], true)) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'success' => false,
+                'message' => 'Action inválida. Debe ser "select" o "unselect"',
+                'data' => []
+            ]);
+        }
+
+        if (!$idEjeSel || $idEjeSel <= 0) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'success' => false,
+                'message' => 'Se requiere id_eje_seleccionado válido',
+                'data' => []
+            ]);
+        }
+
+        $db = \Config\Database::connect();
+        $table = $db->table('pregunta_seleccionada');
+        $histModel = new \App\Models\HistorialAdminModel();
+
+        try {
+            $db->transStart();
+
+            $processed = 0;
+            $processedIds = [];
+
+            if ($action === 'select') {
+                foreach ($ids as $pid) {
+                    $pid = (int)$pid;
+                    if ($pid <= 0) continue;
+
+                    $exists = (int)$db->table('pregunta_seleccionada')
+                        ->where('id_eje_seleccionado', $idEjeSel)
+                        ->where('id_pregunta', $pid)
+                        ->countAllResults();
+
+                    if ($exists === 0) {
+                        $table->insert([
+                            'id_eje_seleccionado' => $idEjeSel,
+                            'id_pregunta' => $pid,
+                            'created_at' => date('Y-m-d H:i:s')
+                        ]);
+
+                        if ($db->affectedRows() > 0) {
+                            $processed++;
+                            $processedIds[] = $pid;
+                        }
+                    }
+                }
+            } else { 
+                $table->where('id_eje_seleccionado', $idEjeSel)
+                      ->whereIn('id_pregunta', array_map('intval', $ids))
+                      ->delete();
+
+                $processed = $db->affectedRows();
+                $processedIds = array_map('intval', $ids);
+            }
+
+            if ($adminId) {
+                $histModel->insert([
+                    'id_admin' => $adminId,
+                    'accion' => $action === 'select' ? 'seleccionar' : 'deseleccionar',
+                    'motivo' => ($action === 'select' ? 'Seleccionó preguntas: ' : 'Deseleccionó preguntas: ') . implode(',', $processedIds),
+                    'realizado_por' => $adminId,
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+            }
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                throw new \RuntimeException('Error en transacción de selección/deselección');
+            }
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => $action === 'select' ? 'Preguntas seleccionadas correctamente' : 'Preguntas deseleccionadas correctamente',
+                'data' => [
+                    'action' => $action,
+                    'id_eje_seleccionado' => $idEjeSel,
+                    'processed_count' => $processed,
+                    'pregunta_ids' => $processedIds
+                ]
+            ]);
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            log_message('error', 'AdministradorController::seleccionarPreguntas error: ' . $e->getMessage());
+            return $this->response->setStatusCode(500)->setJSON([
+                'success' => false,
+                'message' => 'Error al procesar selección/deselección',
+                'data' => []
+            ]);
+        }
+    }
 }
