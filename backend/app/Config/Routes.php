@@ -21,6 +21,7 @@ $routes->group('rendicion',  ['namespace' => 'App\Controllers', 'filter' => 'cor
     $routes->get('(:num)/participantes', 'RendicionController::participantes/$1'); // Participantes de una rendición
     $routes->get('rendiciones', 'RendicionController::recientes');
     $routes->post('(:num)', 'RendicionController::editarRendicion/$1'); // Actualiza rendición (acepta archivos)
+   
     $routes->get('preguntas-seleccionadas/(:num)', 'RendicionController::preguntasSeleccionadas/$1'); // preguntas seleccionadas por rendición (home/admin)
 
     // RUTAS ACTUALES LO QUE ME PEDISTE QUE AGREGUE @DIEGAZO OÑO
@@ -65,6 +66,7 @@ $routes->group('rendicion',  ['namespace' => 'App\Controllers', 'filter' => 'cor
     $routes->delete('admin/(:num)', 'AdministradorController::eliminarAdministrador/$1'); // Eliminar administrador
     $routes->get('admin/dashboard', 'AdministradorController::DashboardStatistics');
     $routes->get('admin/rendiciones', 'AdministradorController::rendicionesList'); // lista rendiciones (id + titulo) con ?query=
+    $routes->get('admin-preguntas/(:num)', 'AdministradorController::preguntasConSeleccion/$1');
 
     // Autenticación
     $routes->post('auth/login', 'AuthController::login'); // Login (obtener token)
