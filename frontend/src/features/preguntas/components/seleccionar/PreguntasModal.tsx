@@ -5,7 +5,7 @@ import {
     FaExclamationTriangle,
     FaTrash 
 } from 'react-icons/fa'
-import type { PreguntasModalState } from '../types/preguntas'
+import type { PreguntasModalState } from '../../types/preguntas'
 
 type Props = {
     modal: PreguntasModalState
@@ -56,7 +56,7 @@ export default function PreguntasModal({ modal, onClose, onConfirm }: Props) {
             opacity: 1, 
             scale: 1, 
             y: 0,
-            transition: { type: 'spring', stiffness: 300, damping: 25 }
+            transition: { type: 'spring' as const, stiffness: 300, damping: 25 }
         },
         exit: { opacity: 0, scale: 0.9, y: 20 }
     }
@@ -86,8 +86,6 @@ export default function PreguntasModal({ modal, onClose, onConfirm }: Props) {
                                 <FaTimes className="h-4 w-4 text-gray-500" />
                             </button>
                         </div>
-
-                        {/* Content */}
                         <div className="px-6 pb-6 text-center">
                             <motion.div 
                                 className={`w-16 h-16 ${config.iconBg} rounded-full flex items-center justify-center mx-auto mb-4`}
@@ -97,15 +95,12 @@ export default function PreguntasModal({ modal, onClose, onConfirm }: Props) {
                             >
                                 <Icon className={`h-8 w-8 ${config.iconColor}`} />
                             </motion.div>
-
                             <h3 className="text-xl font-bold text-gray-900 mb-2">
                                 {modal.title}
                             </h3>
                             <p className="text-gray-600 mb-6">
                                 {modal.message}
                             </p>
-
-                            {/* Buttons */}
                             <div className={`flex gap-3 ${modal.type === 'confirm' ? 'justify-center' : ''}`}>
                                 {modal.type === 'confirm' ? (
                                     <>
