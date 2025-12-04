@@ -14,37 +14,37 @@ export default function PreguntasStats({ total, respondidas, pendientes, ejes }:
             label: 'Total Preguntas',
             value: total,
             icon: FaQuestionCircle,
-            bg: 'bg-[#e8f4fc]',
-            border: 'border-[#cce5f5]',
-            iconBg: 'bg-[#3b82f6]',
-            textColor: 'text-[#3b82f6]'
+            bg: 'bg-blue-100',
+            border: 'border-blue-300',
+            iconBg: 'bg-blue-500',
+            textColor: 'text-blue-500'
         },
         {
             label: 'Respondidas',
             value: respondidas,
             icon: FaCheckCircle,
-            bg: 'bg-[#e6f7ed]',
-            border: 'border-[#c3ecd3]',
-            iconBg: 'bg-[#22c55e]',
-            textColor: 'text-[#22c55e]'
+            bg: 'bg-green-100',
+            border: 'border-green-300',
+            iconBg: 'bg-green-500',
+            textColor: 'text-green-500'
         },
         {
             label: 'Pendientes',
             value: pendientes,
             icon: FaClock,
-            bg: 'bg-[#fef9e6]',
-            border: 'border-[#fcefc3]',
-            iconBg: 'bg-[#f59e0b]',
-            textColor: 'text-[#f59e0b]'
+            bg: 'bg-amber-100',
+            border: 'border-amber-300',
+            iconBg: 'bg-amber-500',
+            textColor: 'text-amber-500'
         },
         {
             label: 'Ejes Temáticos',
             value: ejes,
             icon: FaTags,
-            bg: 'bg-[#f3e8ff]',
-            border: 'border-[#e9d5ff]',
-            iconBg: 'bg-[#a855f7]',
-            textColor: 'text-[#a855f7]'
+            bg: 'bg-purple-100',
+            border: 'border-purple-300',
+            iconBg: 'bg-purple-500',
+            textColor: 'text-purple-500'
         }
     ]
 
@@ -59,7 +59,7 @@ export default function PreguntasStats({ total, respondidas, pendientes, ejes }:
                     transition={{ delay: index * 0.05 }}
                 >
                     <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 ${stat.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                        <div className={`w-10 h-10 ${stat.iconBg} rounded-lg flex items-center justify-center shrink-0`}>
                             <stat.icon className="h-5 w-5 text-white" />
                         </div>
                         <div>
