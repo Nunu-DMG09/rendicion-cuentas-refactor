@@ -8,7 +8,7 @@ export function useRendicion(rendicionId: string) {
         return res.data.data
     }
     const questionsQuery = useQuery({
-        queryKey: ['questionsForRendicion', rendicionId],
+        queryKey: ['selectedQuestionsForRendicion', rendicionId],
         queryFn: fetchQuestionsForRendicion,
         enabled: !!rendicionId,
         staleTime: 5 * 60 * 1000,
