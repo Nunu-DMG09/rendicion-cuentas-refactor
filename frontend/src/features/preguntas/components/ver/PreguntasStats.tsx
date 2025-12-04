@@ -1,76 +1,129 @@
-import { motion } from 'motion/react'
-import { FaQuestionCircle, FaCheckCircle, FaClock, FaTags } from 'react-icons/fa'
+import { motion } from "motion/react";
+import { FaQuestionCircle, FaCheckCircle, FaClock, FaTags, FaHandPointRight } from "react-icons/fa";
 
-type Props = {
-    total: number
-    respondidas: number
-    pendientes: number
-    ejes: number
+interface Props {
+    total: number;
+    respondidas: number;
+    pendientes: number;
+    ejes: number;
+    selected?: number;
+    pending?: number;
 }
 
-export default function PreguntasStats({ total, respondidas, pendientes, ejes }: Props) {
-    const stats = [
-        {
-            label: 'Total Preguntas',
-            value: total,
-            icon: FaQuestionCircle,
-            bg: 'bg-blue-100',
-            border: 'border-blue-300',
-            iconBg: 'bg-blue-500',
-            textColor: 'text-blue-500'
-        },
-        {
-            label: 'Respondidas',
-            value: respondidas,
-            icon: FaCheckCircle,
-            bg: 'bg-green-100',
-            border: 'border-green-300',
-            iconBg: 'bg-green-500',
-            textColor: 'text-green-500'
-        },
-        {
-            label: 'Pendientes',
-            value: pendientes,
-            icon: FaClock,
-            bg: 'bg-amber-100',
-            border: 'border-amber-300',
-            iconBg: 'bg-amber-500',
-            textColor: 'text-amber-500'
-        },
-        {
-            label: 'Ejes Temáticos',
-            value: ejes,
-            icon: FaTags,
-            bg: 'bg-purple-100',
-            border: 'border-purple-300',
-            iconBg: 'bg-purple-500',
-            textColor: 'text-purple-500'
-        }
-    ]
+export default function PreguntasStats({ 
+    total, 
+    respondidas, 
+    pendientes, 
+    ejes,
+    selected,
+    pending
+}: Props) {
+    const isSelectorMode = selected !== undefined && pending !== undefined;
+
+    const stats = isSelectorMode 
+        ? [
+            {
+                icon: FaQuestionCircle,
+                label: "Total preguntas",
+                value: total,
+                color: "text-blue-600",
+                bg: "bg-blue-50",
+                border: "border-blue-200"
+            },
+            {
+                icon: FaHandPointRight,
+                label: "Seleccionadas",
+                value: selected,
+                color: "text-green-600",
+                bg: "bg-green-50",
+                border: "border-green-200"
+            },
+            {
+                icon: FaClock,
+                label: "Cambios pendientes",
+                value: pending,
+                color: "text-amber-600",
+                bg: "bg-amber-50",
+                border: "border-amber-200"
+            },
+            {
+                icon: FaTags,
+                label: "Ejes temáticos",
+                value: ejes,
+                color: "text-purple-600",
+                bg: "bg-purple-50",
+                border: "border-purple-200"
+            }
+        ]
+        : [
+            {
+                icon: FaQuestionCircle,
+                label: "Total preguntas",
+                value: total,
+                color: "text-blue-600",
+                bg: "bg-blue-50",
+                border: "border-blue-200"
+            },
+            {
+                icon: FaCheckCircle,
+                label: "Respondidas",
+                value: respondidas,
+                color: "text-green-600",
+                bg: "bg-green-50",
+                border: "border-green-200"
+            },
+            {
+                icon: FaClock,
+                label: "Pendientes",
+                value: pendientes,
+                color: "text-amber-600",
+                bg: "bg-amber-50",
+                border: "border-amber-200"
+            },
+            {
+                icon: FaTags,
+                label: "Ejes temáticos",
+                value: ejes,
+                color: "text-purple-600",
+                bg: "bg-purple-50",
+                border: "border-purple-200"
+            }
+        ];
 
     return (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <motion.div
+            className="grid grid-cols-2 sm:grid-cols-4 gap-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+        >
             {stats.map((stat, index) => (
                 <motion.div
                     key={stat.label}
-                    className={`${stat.bg} ${stat.border} border rounded-xl p-4`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
+                    className={`
+                        bg-white rounded-xl p-4 border-2 ${stat.border} ${stat.bg}/30 
+                        backdrop-blur-sm shadow-sm hover:shadow-md transition-all cursor-default
+                    `}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.1, duration: 0.3 }}
+                    whileHover={{ scale: 1.02 }}
                 >
                     <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 ${stat.iconBg} rounded-lg flex items-center justify-center shrink-0`}>
-                            <stat.icon className="h-5 w-5 text-white" />
+                        <div className={`p-2 rounded-lg ${stat.bg}`}>
+                            <stat.icon className={`w-5 h-5 ${stat.color}`} />
                         </div>
-                        <div>
-                            <p className={`text-2xl font-bold ${stat.textColor}`}>
-                                {stat.value}
+                        <div className="min-w-0 flex-1">
+                            <p className="text-2xl font-bold text-gray-900 leading-none">
+                                {stat.value.toLocaleString()}
                             </p>
-                            <p className="text-xs text-gray-600">{stat.label}</p>
+                            <p className="text-sm text-gray-600 font-medium mt-1 truncate">
+                                {stat.label}
+                            </p>
                         </div>
                     </div>
                 </motion.div>
             ))}
-        </div>
-    )
+        </motion.div>
+    );
 }
