@@ -8,17 +8,20 @@ import { useVerPreguntas } from "../hooks/useVerPreguntas";
 import RendicionesSelector from "../components/RendicionesSelector";
 import { PiFolderOpenFill } from "react-icons/pi";
 import { PreguntasSkeleton } from "../components/PreguntasSkeleton";
+import { useSeleccionarPreguntas } from "../hooks/useSeleccionarPreguntas";
+import PreguntasModal from "../components/seleccionar/PreguntasModal";
+import ActionBar from "../components/seleccionar/ActionBar";
 
-export default function VerPreguntasPage() {
+export default function VerPreguntasPage({ isSelectorMode = false }: { isSelectorMode?: boolean }) {
 	const {
 		selectedRendicion,
-		preguntasPorEje,
-		isLoading,
-		isError,
-		error,
+		preguntasPorEje: preguntasPorEjeSeleccionadas,
+		isLoading: isLoadingPreguntasSeleccionadas,
+		isError: isErrorPreguntasSeleccionadas,
+		error: errorPreguntasSeleccionadas,
 		hasSearched,
-		hasResults,
-		stats,
+		hasResults: hasPreguntasSeleccionadas,
+		stats: preguntasSeleccionadasStats,
 		// Acciones
 		handleRendicionChange,
 		limpiarBusqueda,
@@ -28,6 +31,28 @@ export default function VerPreguntasPage() {
 		closePresentacion,
 		openPresentacion,
 	} = useVerPreguntas();
+    const {
+        isLoading: isLoadingPreguntas,
+        isError: isErrorPreguntas,
+        error: errorPreguntas,
+        hasResults: hasPreguntas,
+        preguntasPorEje: allPreguntasPorEje,
+        stats: preguntasStats,
+        closeModal,
+        modal,
+        toggleQuestionSelection,
+        saveChanges,
+        discardChanges,
+        hasPendingChanges,
+        isUpdating,
+    } = useSeleccionarPreguntas(selectedRendicion);
+
+    const isLoading = isSelectorMode ? isLoadingPreguntas : isLoadingPreguntasSeleccionadas;
+    const isError = isSelectorMode ? isErrorPreguntas : isErrorPreguntasSeleccionadas;
+    const error = isSelectorMode ? errorPreguntas : errorPreguntasSeleccionadas;
+    const hasResults = isSelectorMode ? hasPreguntas : hasPreguntasSeleccionadas;
+    const preguntasPorEje = isSelectorMode ? allPreguntasPorEje : preguntasPorEjeSeleccionadas;
+    const stats = isSelectorMode ? preguntasStats : preguntasSeleccionadasStats;
 
 	return (
 		<motion.div
@@ -38,10 +63,13 @@ export default function VerPreguntasPage() {
 		>
 			<header>
 				<h1 className="text-4xl font-bold text-gray-900 font-titles">
-					Ver Preguntas
+					{isSelectorMode ? 'Seleccionar Preguntas' : 'Ver Preguntas'}
 				</h1>
 				<p className="text-gray-600 mt-1 font-body text-lg">
-					Consulta y gestiona las preguntas por rendición
+					{isSelectorMode 
+                        ? 'Elige las preguntas que serán presentadas en la rendición de cuentas'
+                        : 'Consulta y gestiona las preguntas por rendición'
+                    }
 				</p>
 			</header>
 			<motion.div
@@ -65,7 +93,7 @@ export default function VerPreguntasPage() {
 						>
 							Limpiar selección
 						</button>
-						{hasResults && (
+						{hasResults && !isSelectorMode && (
 							<button
 								onClick={openPresentacion}
 								className="px-4 py-2 text-sm bg-primary-dark hover:bg-primary text-white rounded-lg transition-colors"
@@ -73,6 +101,12 @@ export default function VerPreguntasPage() {
 								Modo Presentación
 							</button>
 						)}
+                        {isSelectorMode && hasPendingChanges && (
+                            <div className="px-3 py-2 text-sm bg-amber-50 text-amber-700 rounded-lg border border-amber-200 flex items-center gap-2">
+                                <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+								{"pending" in stats ? (stats.pending as number) : 0} cambios pendientes
+                            </div>
+                        )}
 					</motion.div>
 				)}
 			</motion.div>
@@ -96,10 +130,15 @@ export default function VerPreguntasPage() {
 						respondidas={stats.respondidas}
 						pendientes={stats.pendientes}
 						ejes={stats.ejes}
+                        selected={isSelectorMode ? ("selected" in stats ? (stats.selected as number) : 0) : undefined}
+                        pending={isSelectorMode ? ("pending" in stats ? (stats.pending as number) : 0) : undefined}
 					/>
 					{hasResults ? (
 						<PreguntasPorEjeList
 							preguntasPorEje={preguntasPorEje}
+                            isSelectorMode={isSelectorMode}
+                            onSelectQuestion={isSelectorMode ? toggleQuestionSelection : undefined}
+                            onUnselectQuestion={isSelectorMode ? toggleQuestionSelection : undefined}
 						/>
 					) : !isLoading && (
 						<motion.div
@@ -123,10 +162,29 @@ export default function VerPreguntasPage() {
 				</motion.div>
 			)}
 			{isLoading && (<PreguntasSkeleton />)}
-			<PresentacionModal
-				presentacion={presentacion}
-				onClose={closePresentacion}
-			/>
+			{!isSelectorMode && (
+                <PresentacionModal
+                    presentacion={presentacion}
+                    onClose={closePresentacion}
+                />
+            )}
+
+            {isSelectorMode && (
+                <PreguntasModal
+                    modal={modal}
+                    onClose={closeModal}
+                    onConfirm={closeModal}
+                />
+            )}
+            {isSelectorMode && (
+                <ActionBar
+                    hasPendingChanges={hasPendingChanges}
+                    pendingCount={isSelectorMode ? ("pending" in stats ? (stats.pending as number) : 0) : 0}
+                    isUpdating={isUpdating}
+                    onSave={saveChanges}
+                    onDiscard={discardChanges}
+                />
+            )}
 		</motion.div>
 	);
 }
