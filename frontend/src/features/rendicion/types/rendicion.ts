@@ -4,6 +4,9 @@ export type RendicionAxis = {
   tematica: string
   preguntas: Question[]
 }
+export interface RendicionAxisWithSelector extends RendicionAxis {
+  preguntas: (Question & { is_selected: boolean })[]
+}
 
 export type Question = {
   id: number
@@ -15,6 +18,7 @@ export type Question = {
 }
 
 export type RendicionData = Record<string, RendicionAxis>
+export type RendicionDataWithSelector = Record<string, RendicionAxisWithSelector>
 
 export type RendicionDetailProps = {
   rendicionId: string
@@ -26,5 +30,9 @@ export type RendicionDetailProps = {
 // Para uso interno del componente
 export type NormalizedRendicionData = {
   axes: RendicionAxis[]
+  totalQuestions: number
+}
+export type NormalizedRendicionDataWithSelector = {
+  axes: RendicionAxisWithSelector[]
   totalQuestions: number
 }

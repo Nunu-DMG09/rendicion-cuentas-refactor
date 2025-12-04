@@ -17,6 +17,9 @@ export type PreguntasPorEje = {
     ejeNombre: string
     preguntas: Pregunta[]
 }
+export interface PreguntasPorEjeSelector extends PreguntasPorEje {
+    preguntas: (Pregunta & { isSelected: boolean })[]
+}
 
 export type RendicionOptionPreguntas = {
     id: string
