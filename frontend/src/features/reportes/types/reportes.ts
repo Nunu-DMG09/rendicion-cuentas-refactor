@@ -1,51 +1,58 @@
-export type TipoParticipacion = 'asistente' | 'orador'
-
-export type Participante = {
-    id: string
-    dni: string
-    nombre: string
-    sexo: 'M' | 'F'
-    tipoParticipacion: TipoParticipacion
-    titulo: string | null
-    ruc: string | null
-    nombreOrganizacion: string | null
-    asistencia: boolean
-    eje: string | null
-    pregunta: string | null
-}
-
-export type RendicionOption = {
-    id: string
-    label: string
-    fecha: string
-}
-
-export type ReporteStats = {
-    totalInscritos: number
-    asistentes: number
-    noAsistentes: number
-    oradores: number
-    asistentesComunes: number
-    conPreguntas: number
-    sinPreguntas: number
-}
-
-export type ReporteData = {
-    rendicionId: string
-    rendicionLabel: string
-    fecha: string
-    stats: ReporteStats
-    participantes: Participante[]
-}
-
 export type ReporteModalState = {
     isOpen: boolean
     pregunta: string | null
     participante: string | null
 }
 
-export type PaginationState = {
-    currentPage: number
-    itemsPerPage: number
-    totalItems: number
+export interface ReporteDataResponse {
+    data: Data;
+}
+
+export interface Data {
+    rendicion:     Rendicion;
+    stats:         Stats;
+    participantes: Participante[];
+    pagination:    Pagination;
+}
+
+export interface Pagination {
+    total:        number;
+    per_page:     number;
+    current_page: number;
+    total_pages:  number;
+    has_next:     boolean;
+    has_prev:     boolean;
+    first_page:   number;
+    last_page:    number;
+}
+
+export interface Participante {
+    dni:          string;
+    nombre:       string;
+    sexo:         string;
+    tipo:         string;
+    ruc:          null | string;
+    organizacion: null | string;
+    asistencia:   string;
+    eje:          string;
+    pregunta:     string;
+}
+
+export interface Rendicion {
+    id:         string;
+    titulo:     string;
+    fecha:      string;
+    hora:       string;
+    created_at: string;
+    updated_at: string;
+    deleted_at: null;
+}
+
+export interface Stats {
+    total_inscritos:     number;
+    total_asistentes:    number;
+    total_no_asistieron: number;
+    total_oradores:      number;
+    total_con_pregunta:  number;
+    total_sin_preguntas: number;
 }

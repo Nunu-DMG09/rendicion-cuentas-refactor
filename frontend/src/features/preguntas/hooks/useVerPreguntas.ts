@@ -22,6 +22,7 @@ export const useVerPreguntas = () => {
     const preguntasPorEje = useMemo((): PreguntasPorEje[] => {
         if (!rendicionData?.axes) return []
         return rendicionData.axes.map(axis => ({
+            selectedEjeId: axis.id.toString(),
             ejeId: axis.eje_id.toString(),
             ejeNombre: axis.tematica,
             preguntas: axis.preguntas.map(pregunta => ({
