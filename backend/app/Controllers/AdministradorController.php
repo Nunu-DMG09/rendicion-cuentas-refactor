@@ -410,4 +410,127 @@ class AdministradorController extends ResourceController
             ]);
         }
     }
+
+    /**
+     * GET /admin/reportes/{id}?page=1&per_page=10
+     * Reporte general de una rendición con stats y participantes paginados
+     */
+    public function reporteRendicion($id = null)
+    {
+        $id = (int)$id;
+        if ($id <= 0) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'success' => false,
+                'message' => 'ID de rendición inválido',
+                'data' => []
+            ]);
+        }
+
+        $page = (int)($this->request->getGet('page') ?? 1);
+        $perPage = (int)($this->request->getGet('per_page') ?? 10);
+        
+        // Validar rangos
+        $page = max(1, $page);
+        $perPage = max(1, min(100, $perPage)); // Máximo 100 por página
+
+        try {
+            $model = new \App\Models\AdministradorModel();
+            $reporte = $model->getReporteRendicion($id, $page, $perPage);
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Reporte de rendición obtenido',
+                'data' => $reporte
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', 'AdministradorController::reporteRendicion error: ' . $e->getMessage());
+            return $this->response->setStatusCode(500)->setJSON([
+                'success' => false,
+                'message' => 'Error al obtener reporte',
+                'data' => []
+            ]);
+        }
+    }
+
+    /**
+     * GET /admin/reportes/{id}/excel
+     * Descarga Excel del reporte de una rendición
+     */
+    public function descargarExcelRendicion($id = null)
+    {
+        $id = (int)$id;
+        if ($id <= 0) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'success' => false,
+                'message' => 'ID de rendición inválido'
+            ]);
+        }
+
+        try {
+            $model = new \App\Models\AdministradorModel();
+            $participantes = $model->getReporteExcelRendicion($id);
+
+            if (empty($participantes)) {
+                return $this->response->setStatusCode(404)->setJSON([
+                    'success' => false,
+                    'message' => 'No hay datos para esta rendición'
+                ]);
+            }
+
+            // Crear CSV (compatible con Excel)
+            $filename = "reporte_rendicion_{$id}_" . date('Y-m-d') . ".csv";
+            
+            // Headers para descarga
+            $this->response->setHeader('Content-Type', 'text/csv; charset=utf-8');
+            $this->response->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            $this->response->setHeader('Cache-Control', 'no-cache, must-revalidate');
+            
+            // Crear contenido CSV
+            $output = fopen('php://temp', 'w');
+            
+            // BOM para UTF-8 (para que Excel abra correctamente caracteres especiales)
+            fwrite($output, "\xEF\xBB\xBF");
+            
+            // Headers del CSV
+            fputcsv($output, [
+                'DNI',
+                'Nombre',
+                'Sexo', 
+                'Tipo',
+                'RUC',
+                'Organización',
+                'Asistencia',
+                'Eje',
+                'Pregunta'
+            ], ';'); // Usar ';' como separador para mejor compatibilidad con Excel en español
+            
+            // Datos
+            foreach ($participantes as $participante) {
+                fputcsv($output, [
+                    $participante['dni'] ?? '',
+                    $participante['nombre'] ?? '',
+                    $participante['sexo'] ?? '',
+                    $participante['tipo'] ?? '',
+                    $participante['ruc'] ?? '',
+                    $participante['organizacion'] ?? '',
+                    $participante['asistencia'] ?? '',
+                    $participante['eje'] ?? '',
+                    $participante['pregunta'] ?? ''
+                ], ';');
+            }
+            
+            rewind($output);
+            $csvContent = stream_get_contents($output);
+            fclose($output);
+            
+            return $this->response->setBody($csvContent);
+
+        } catch (\Throwable $e) {
+            log_message('error', 'AdministradorController::descargarExcelRendicion error: ' . $e->getMessage());
+            return $this->response->setStatusCode(500)->setJSON([
+                'success' => false,
+                'message' => 'Error al generar archivo Excel'
+            ]);
+        }
+    }
 }
