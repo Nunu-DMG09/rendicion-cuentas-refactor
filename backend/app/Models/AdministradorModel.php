@@ -516,4 +516,152 @@ class AdministradorModel extends Model
             return [];
         }
     }
+
+    /**
+     * Obtiene estadísticas y reporte completo de participantes para una rendición
+     */
+    public function getReporteRendicion(int $idRendicion, int $page = 1, int $perPage = 10): array
+    {
+        try {
+            $db = \Config\Database::connect();
+            
+            // Verificar que la rendición existe
+            $rendicion = $db->table('rendicion')->where('id', $idRendicion)->get()->getRowArray();
+            if (!$rendicion) {
+                return [
+                    'stats' => [],
+                    'participantes' => [],
+                    'pagination' => [
+                        'total' => 0,
+                        'per_page' => $perPage,
+                        'current_page' => $page,
+                        'total_pages' => 0,
+                        'has_next' => false,
+                        'has_prev' => false,
+                        'first_page' => 1,
+                        'last_page' => 1
+                    ]
+                ];
+            }
+
+            // Estadísticas
+            $totalInscritos = (int)$db->query("SELECT COUNT(*) as total FROM usuario WHERE id_rendicion = ?", [$idRendicion])->getRowArray()['total'];
+            $totalAsistentes = (int)$db->query("SELECT COUNT(*) as total FROM usuario WHERE id_rendicion = ? AND asistencia = 'si'", [$idRendicion])->getRowArray()['total'];
+            $totalNoAsistieron = $totalInscritos - $totalAsistentes;
+            $totalOradores = (int)$db->query("SELECT COUNT(*) as total FROM usuario WHERE id_rendicion = ? AND tipo_participacion = 'orador'", [$idRendicion])->getRowArray()['total'];
+            $totalConPregunta = (int)$db->query("
+                SELECT COUNT(DISTINCT u.id) as total 
+                FROM usuario u 
+                INNER JOIN pregunta p ON p.id_usuario = u.id 
+                WHERE u.id_rendicion = ?
+            ", [$idRendicion])->getRowArray()['total'];
+            $totalSinPreguntas = $totalInscritos - $totalConPregunta;
+
+            $stats = [
+                'total_inscritos' => $totalInscritos,
+                'total_asistentes' => $totalAsistentes,
+                'total_no_asistieron' => $totalNoAsistieron,
+                'total_oradores' => $totalOradores,
+                'total_con_pregunta' => $totalConPregunta,
+                'total_sin_preguntas' => $totalSinPreguntas
+            ];
+
+            // Datos paginados
+            $offset = ($page - 1) * $perPage;
+            
+            $participantes = $db->query("
+                SELECT 
+                    u.dni,
+                    u.nombre,
+                    u.sexo,
+                    u.tipo_participacion as tipo,
+                    u.ruc_empresa as ruc,
+                    u.nombre_empresa as organizacion,
+                    u.asistencia,
+                    COALESCE(e.tematica, '') as eje,
+                    COALESCE(p.contenido, '') as pregunta
+                FROM usuario u
+                LEFT JOIN pregunta p ON p.id_usuario = u.id
+                LEFT JOIN eje e ON e.id = p.id_eje
+                WHERE u.id_rendicion = ?
+                ORDER BY u.nombre ASC, p.created_at ASC
+                LIMIT ? OFFSET ?
+            ", [$idRendicion, $perPage, $offset])->getResultArray();
+
+            $totalPages = ceil($totalInscritos / $perPage);
+            
+            $pagination = [
+                'total' => $totalInscritos,
+                'per_page' => $perPage,
+                'current_page' => $page,
+                'total_pages' => $totalPages,
+                'has_next' => $page < $totalPages,
+                'has_prev' => $page > 1,
+                'first_page' => 1,
+                'last_page' => max(1, $totalPages)
+            ];
+
+            return [
+                'rendicion' => $rendicion,
+                'stats' => $stats,
+                'participantes' => $participantes,
+                'pagination' => $pagination
+            ];
+
+        } catch (\Throwable $e) {
+            log_message('error', 'AdministradorModel::getReporteRendicion error: ' . $e->getMessage());
+            return [
+                'stats' => [],
+                'participantes' => [],
+                'pagination' => [
+                    'total' => 0,
+                    'per_page' => $perPage,
+                    'current_page' => $page,
+                    'total_pages' => 0,
+                    'has_next' => false,
+                    'has_prev' => false,
+                    'first_page' => 1,
+                    'last_page' => 1
+                ]
+            ];
+        }
+    }
+
+    /**
+     * Obtiene datos completos para Excel (sin paginación)
+     */
+    public function getReporteExcelRendicion(int $idRendicion): array
+    {
+        try {
+            $db = \Config\Database::connect();
+            
+            $participantes = $db->query("
+                SELECT 
+                    u.dni,
+                    u.nombre,
+                    CASE WHEN u.sexo = 'F' THEN 'Femenino' WHEN u.sexo = 'M' THEN 'Masculino' ELSE u.sexo END as sexo,
+                    CASE 
+                        WHEN u.tipo_participacion = 'asistente' THEN 'Asistente'
+                        WHEN u.tipo_participacion = 'orador' THEN 'Orador'
+                        ELSE u.tipo_participacion 
+                    END as tipo,
+                    COALESCE(u.ruc_empresa, '') as ruc,
+                    COALESCE(u.nombre_empresa, '') as organizacion,
+                    CASE WHEN u.asistencia = 'si' THEN 'Sí' ELSE 'No' END as asistencia,
+                    COALESCE(e.tematica, '') as eje,
+                    COALESCE(p.contenido, '') as pregunta
+                FROM usuario u
+                LEFT JOIN pregunta p ON p.id_usuario = u.id
+                LEFT JOIN eje e ON e.id = p.id_eje
+                WHERE u.id_rendicion = ?
+                ORDER BY u.nombre ASC, p.created_at ASC
+            ", [$idRendicion])->getResultArray();
+
+            return $participantes;
+
+        } catch (\Throwable $e) {
+            log_message('error', 'AdministradorModel::getReporteExcelRendicion error: ' . $e->getMessage());
+            return [];
+        }
+    }
 }
