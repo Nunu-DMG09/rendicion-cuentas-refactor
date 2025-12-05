@@ -84,7 +84,7 @@ export default function ReportesPage() {
 				>
                     <div className="bg-linear-to-r from-primary-dark to-primary rounded-xl p-4 flex items-center justify-between">
                         <div className="text-white">
-                            <h2 className="text-xl font-bold">{reportData?.rendicion.titulo ?? ""}</h2>
+                            <h2 className="text-xl font-bold">{reportData?.rendicion.titulo ?? `Rendición ${selectedRendicion}`}</h2>
                             <p className="text-blue-100 text-sm">{formatDateWithWeekday(reportData?.rendicion.fecha ?? '')}</p>
                         </div>
                     </div>
