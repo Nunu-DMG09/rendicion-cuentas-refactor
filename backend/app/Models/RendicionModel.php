@@ -180,7 +180,6 @@ class RendicionModel extends Model
             $numeroRomano = $this->convertToRoman($numeroRendicion);
             $titulo = "Rendición {$numeroRomano} del año {$year}";
 
-            // Obtener ejes seleccionados para esta rendición
             $ejesSeleccionados = $db->query("
                 SELECT e.id, e.tematica
                 FROM eje_seleccionado es
@@ -346,8 +345,7 @@ class RendicionModel extends Model
                 return [];
             }
 
-            // Si no existe la tabla 'seleccion' no hay selección -> devolvemos vacío
-            $hasSeleccion = !empty($db->query("SHOW TABLES LIKE 'seleccion'")->getResultArray());
+            $hasSeleccion = !empty($db->query("SHOW TABLES LIKE 'pregunta_seleccionada'")->getResultArray());
             if (!$hasSeleccion) {
                 return [];
             }
@@ -356,12 +354,12 @@ class RendicionModel extends Model
 
             foreach ($ejes as $es) {
                 $rows = $db->query("
-                    SELECT p.id, p.contenido, p.created_at, u.id AS usuario_id, u.nombre AS usuario_nombre, p.id_eje, s.orden AS orden_seleccion
-                    FROM seleccion s
-                    JOIN pregunta p ON p.id = s.id_pregunta
+                    SELECT p.id, p.contenido, p.created_at, u.id AS usuario_id, u.nombre AS usuario_nombre, p.id_eje
+                    FROM pregunta_seleccionada ps
+                    JOIN pregunta p ON p.id = ps.id_pregunta
                     LEFT JOIN usuario u ON u.id = p.id_usuario
-                    WHERE s.id_eje_seleccionado = ?
-                    ORDER BY s.orden IS NULL, s.orden ASC, p.created_at ASC
+                    WHERE ps.id_eje_seleccionado = ?
+                    ORDER BY ps.created_at ASC, p.created_at ASC
                 ", [(int)$es['eje_sel_id']])->getResultArray();
 
                 $preguntas = $rows ?: [];
@@ -379,7 +377,7 @@ class RendicionModel extends Model
                             'created_at' => $p['created_at'] ?? null,
                             'id_eje' => isset($p['id_eje']) ? (int)$p['id_eje'] : null,
                             'is_selected' => true,
-                            'orden_seleccion' => isset($p['orden_seleccion']) ? (is_null($p['orden_seleccion']) ? null : (int)$p['orden_seleccion']) : null
+                            'orden_seleccion' => null
                         ];
                     }, $preguntas)
                 ];
