@@ -189,6 +189,10 @@ class AdministradorController extends ResourceController
         }
     }
 
+    /*===========================================
+     BUSCAR ADMINISTRADOR POR DNI
+     ===========================================*/
+
     public function buscarPorDNI($dni = null)
     {
         $admin = $this->authAdmin();
@@ -206,10 +210,9 @@ class AdministradorController extends ResourceController
         }
     }
 
-    /**
-     * DashboardStatistics
-     * Llama al modelo para obtener las estadísticas y responde con success/data.
-     */
+    /*=======================================================
+     OBTIENE ESTADÍSTICAS PARA EL DASHBOARD DEL ADMINISTRADOR
+     =========================================================*/
     public function DashboardStatistics()
     {
         $admin = $this->authAdmin();
@@ -251,10 +254,10 @@ class AdministradorController extends ResourceController
         }
     }
     
-    /**
-     * GET /admin-preguntas/{id}
-     * Devuelve todas las preguntas por eje para la rendición {id} con is_selected y orden_seleccion.
-     */
+    /*==============================================================
+    GET /admin-preguntas/{id}
+    OBTIENE PREGUNTAS CON INFORMACIÓN DE SELECCIÓN POR RENDICIÓN
+     ==========================================================*/
     public function preguntasConSeleccion($id = null)
     {
         $id = (int)$id;
