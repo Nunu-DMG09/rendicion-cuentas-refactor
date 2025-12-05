@@ -20,7 +20,7 @@ export default function PreguntaModal({ modal, onClose }: Props) {
             opacity: 1, 
             scale: 1, 
             y: 0,
-            transition: { type: 'spring', stiffness: 300, damping: 25 }
+            transition: { type: 'spring' as const, stiffness: 300, damping: 25 }
         },
         exit: { opacity: 0, scale: 0.9, y: 20 }
     }
@@ -42,7 +42,7 @@ export default function PreguntaModal({ modal, onClose }: Props) {
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
-                        <div className="bg-gradient-to-r from-[#002f59] to-[#003d73] p-5 flex items-center justify-between">
+                        <div className="bg-linear-to-r from-primary-dark to-primary p-5 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                                     <FaQuestionCircle className="h-5 w-5 text-white" />
@@ -56,10 +56,7 @@ export default function PreguntaModal({ modal, onClose }: Props) {
                                 <FaTimes className="h-5 w-5 text-white" />
                             </button>
                         </div>
-
-                        {/* Content */}
                         <div className="p-6">
-                            {/* Participante */}
                             <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
                                 <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
                                     <FaUser className="h-5 w-5 text-gray-500" />
@@ -69,17 +66,13 @@ export default function PreguntaModal({ modal, onClose }: Props) {
                                     <p className="font-semibold text-gray-900">{modal.participante}</p>
                                 </div>
                             </div>
-
-                            {/* Pregunta */}
                             <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                                 <p className="text-xs text-gray-500 mb-2 font-medium">Pregunta realizada:</p>
                                 <p className="text-gray-900 leading-relaxed">{modal.pregunta}</p>
                             </div>
-
-                            {/* Botón Cerrar */}
                             <motion.button
                                 onClick={onClose}
-                                className="w-full mt-6 py-3 px-4 bg-gradient-to-r from-[#002f59] to-[#003d73] text-white rounded-xl font-semibold hover:from-[#003366] hover:to-[#004080] transition-all cursor-pointer"
+                                className="w-full mt-6 py-3 px-4 bg-primary-dark text-white rounded-xl font-semibold hover:brightness-125 transition-all cursor-pointer"
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                             >
