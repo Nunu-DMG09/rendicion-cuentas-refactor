@@ -101,7 +101,7 @@ export default function PreguntasStats({
                 <motion.div
                     key={stat.label}
                     className={`
-                        bg-white rounded-xl p-4 border-2 ${stat.border} ${stat.bg}/30 
+                        rounded-xl p-4 border-2 ${stat.border} ${stat.bg} 
                         backdrop-blur-sm shadow-sm hover:shadow-md transition-all cursor-default
                     `}
                     initial={{ opacity: 0, scale: 0.95 }}
