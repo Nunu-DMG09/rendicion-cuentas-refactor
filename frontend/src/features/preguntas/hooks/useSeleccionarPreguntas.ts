@@ -11,23 +11,30 @@ import type {
 	PreguntasPorEjeSelector,
 } from "../types/preguntas";
 import type { ApiError } from "@/core/types";
+import { useAuthStore } from "@/features/auth/store/auth.store";
 
 interface UpdateSelectionPayload {
 	pregunta_ids: number[];
 	action: "select" | "unselect";
+	id_eje_seleccionado: number;
+	admin_id: number;
 }
 
 interface UpdateSelectionResponse {
 	success: boolean;
 	message: string;
 	data: {
-		updated_count: number;
-		selected_questions: number[];
+		pregunta_ids: number[];
+		action: "select" | "unselect";
+		id_eje: number;
+		processed_count: number;
 	};
 }
 
 export const useSeleccionarPreguntas = (rendicionId: string) => {
 	const queryClient = useQueryClient();
+	const { user } = useAuthStore();
+	const adminId = user?.id || 1;
 
 	const [modal, setModal] = useState<PreguntasModalState>({
 		isOpen: false,
@@ -35,7 +42,9 @@ export const useSeleccionarPreguntas = (rendicionId: string) => {
 		title: "",
 		message: "",
 	});
-	const [localSelections, setLocalSelections] = useState<Set<string>>(new Set());
+	const [localSelections, setLocalSelections] = useState<Set<string>>(
+		new Set()
+	);
 	const [pendingChanges, setPendingChanges] = useState<{
 		toSelect: Set<string>;
 		toUnselect: Set<string>;
@@ -43,15 +52,18 @@ export const useSeleccionarPreguntas = (rendicionId: string) => {
 		toSelect: new Set(),
 		toUnselect: new Set(),
 	});
-    const [backendSelections, setBackendSelections] = useState<Set<string>>(new Set());
+	const [backendSelections, setBackendSelections] = useState<Set<string>>(
+		new Set()
+	);
 
 	// Fetch preguntas para la rendición
-	const fetchQuestionsForRendicion = async (): Promise<RendicionDataWithSelector> => {
+	const fetchQuestionsForRendicion =
+		async (): Promise<RendicionDataWithSelector> => {
 			const res = await api.get(`admin/preguntas/${rendicionId}`, {
-                withCredentials: true,
-            });
+				withCredentials: true,
+			});
 			return res.data.data;
-	};
+		};
 	const questionsQuery = useQuery({
 		queryKey: ["questionsForRendicion", rendicionId],
 		queryFn: fetchQuestionsForRendicion,
@@ -76,19 +88,19 @@ export const useSeleccionarPreguntas = (rendicionId: string) => {
 				});
 			});
 			setLocalSelections(backendSelectedIds);
-            setBackendSelections(backendSelectedIds);
+			setBackendSelections(backendSelectedIds);
 			setPendingChanges({ toSelect: new Set(), toUnselect: new Set() });
 		}
 	}, [questionsQuery.data, questionsQuery.isSuccess]);
 
-    const updateSelectionQuestions = async (payload: UpdateSelectionPayload): Promise<UpdateSelectionResponse> => {
-        const res = await api.post(
-            `/preguntas/${rendicionId}/update-selection`,
-            payload,
-            { withCredentials: true }
-        );
-        return res.data;
-    }
+	const updateSelectionQuestions = async (
+		payload: UpdateSelectionPayload
+	): Promise<UpdateSelectionResponse> => {
+		const res = await api.post(`/admin/preguntas/seleccionar`, payload, {
+			withCredentials: true,
+		});
+		return res.data;
+	};
 
 	const updateSelectionMutation = useMutation({
 		mutationFn: updateSelectionQuestions,
@@ -135,7 +147,7 @@ export const useSeleccionarPreguntas = (rendicionId: string) => {
 				}
 			});
 			setLocalSelections(updatedSelections);
-            setBackendSelections(updatedSelections);
+			setBackendSelections(updatedSelections);
 			setPendingChanges((prev) => {
 				const newState = { ...prev };
 				variables.pregunta_ids.forEach((id) => {
@@ -152,10 +164,10 @@ export const useSeleccionarPreguntas = (rendicionId: string) => {
 				isOpen: true,
 				type: "success",
 				title: "¡Selección actualizada!",
-				message: `${data.data.updated_count} pregunta${
-					data.data.updated_count !== 1 ? "s" : ""
+				message: `${data.data.processed_count} pregunta${
+					data.data.processed_count !== 1 ? "s" : ""
 				} actualizada${
-					data.data.updated_count !== 1 ? "s" : ""
+					data.data.processed_count !== 1 ? "s" : ""
 				} correctamente.`,
 			});
 		},
@@ -167,36 +179,48 @@ export const useSeleccionarPreguntas = (rendicionId: string) => {
 				return reverted;
 			});
 			setPendingChanges({ toSelect: new Set(), toUnselect: new Set() });
-            let errorMessage = "";
-            if (error.response && error.response.data && error.response.data.message) {
-                errorMessage = error.response.data.message;
-            }
-            if (error.message) errorMessage = error.message;
+			let errorMessage = "";
+			if (
+				error.response &&
+				error.response.data &&
+				error.response.data.message
+			) {
+				errorMessage = error.response.data.message;
+			}
+			if (error.message) errorMessage = error.message;
 			setModal({
 				isOpen: true,
 				type: "error",
 				title: "Error al actualizar",
-				message: errorMessage || "Ocurrió un error al actualizar las selecciones.",
+				message:
+					errorMessage ||
+					"Ocurrió un error al actualizar las selecciones.",
 			});
 		},
 	});
 
-	const normalizedData: NormalizedRendicionDataWithSelector | undefined = useMemo(() => {
-        return questionsQuery.data
-			? {
-				axes: Object.values(questionsQuery.data).sort((a, b) =>
-						a.tematica.localeCompare(b.tematica)
-					),
-				totalQuestions: Object.values(questionsQuery.data).reduce(
-                    (total, axis) => total + axis.preguntas.length,0),
-				}
+	const normalizedData: NormalizedRendicionDataWithSelector | undefined =
+		useMemo(() => {
+			return questionsQuery.data
+				? {
+						axes: Object.values(questionsQuery.data).sort((a, b) =>
+							a.tematica.localeCompare(b.tematica)
+						),
+						totalQuestions: Object.values(
+							questionsQuery.data
+						).reduce(
+							(total, axis) => total + axis.preguntas.length,
+							0
+						),
+				  }
 				: undefined;
-	}, [questionsQuery.data]);
+		}, [questionsQuery.data]);
 
 	const preguntasPorEje = useMemo((): PreguntasPorEjeSelector[] => {
 		if (!normalizedData?.axes) return [];
 		return normalizedData.axes
 			.map((axis) => ({
+                selectedEjeId: axis.id.toString(),
 				ejeId: axis.eje_id.toString(),
 				ejeNombre: axis.tematica,
 				preguntas: axis.preguntas.map((pregunta) => {
@@ -253,7 +277,7 @@ export const useSeleccionarPreguntas = (rendicionId: string) => {
 	const toggleQuestionSelection = useCallback(
 		(preguntaId: string) => {
 			const isCurrentlySelected = localSelections.has(preguntaId);
-            const isSelectedInBackend = backendSelections.has(preguntaId);
+			const isSelectedInBackend = backendSelections.has(preguntaId);
 
 			setLocalSelections((prev) => {
 				const updated = new Set(prev);
@@ -263,14 +287,14 @@ export const useSeleccionarPreguntas = (rendicionId: string) => {
 			});
 			setPendingChanges((prev) => {
 				const updated = { ...prev };
-                const newSelectionState = !isCurrentlySelected;
+				const newSelectionState = !isCurrentlySelected;
 				if (newSelectionState === isSelectedInBackend) {
 					updated.toUnselect.delete(preguntaId);
 					updated.toSelect.delete(preguntaId);
 				} else if (newSelectionState && !isSelectedInBackend) {
-                    updated.toSelect.add(preguntaId);
+					updated.toSelect.add(preguntaId);
 					updated.toUnselect.delete(preguntaId);
-                } else if (!newSelectionState && isSelectedInBackend) {
+				} else if (!newSelectionState && isSelectedInBackend) {
 					updated.toUnselect.add(preguntaId);
 					updated.toSelect.delete(preguntaId);
 				}
@@ -278,6 +302,23 @@ export const useSeleccionarPreguntas = (rendicionId: string) => {
 			});
 		},
 		[localSelections, backendSelections]
+	);
+	const groupQuestionsByEje = useCallback((questionIds: string[]): Map<string, string[]> => {
+			const groups = new Map<string, string[]>();
+			questionIds.forEach((questionId) => {
+				for (const eje of preguntasPorEje) {
+					const pregunta = eje.preguntas.find(p => p.id === questionId);
+					if (pregunta) {
+						const ejeId = eje.selectedEjeId;
+						if (!groups.has(ejeId)) groups.set(ejeId, []);
+						groups.get(ejeId)!.push(questionId);
+						break;
+					}
+				}
+			});
+			return groups;
+		},
+		[preguntasPorEje]
 	);
 	const saveChanges = useCallback(async () => {
 		const { toSelect, toUnselect } = pendingChanges;
@@ -290,23 +331,35 @@ export const useSeleccionarPreguntas = (rendicionId: string) => {
 			});
 			return;
 		}
-		if (toSelect.size > 0) {
-			const selectIds = Array.from(toSelect).map((id) => parseInt(id));
-			await updateSelectionMutation.mutateAsync({
-				pregunta_ids: selectIds,
-				action: "select",
-			});
-		}
-		if (toUnselect.size > 0) {
-			const unselectIds = Array.from(toUnselect).map((id) =>
-				parseInt(id)
-			);
-			await updateSelectionMutation.mutateAsync({
-				pregunta_ids: unselectIds,
-				action: "unselect",
-			});
-		}
-	}, [pendingChanges, updateSelectionMutation]);
+        try {
+            if (toSelect.size > 0) {
+                const selectGroups = groupQuestionsByEje(Array.from(toSelect));
+                for (const [ejeId, questionIds] of selectGroups) {
+                    const selectIds = questionIds.map(id => parseInt(id));
+                    await updateSelectionMutation.mutateAsync({
+                        pregunta_ids: selectIds,
+                        action: "select",
+                        admin_id: adminId,
+                        id_eje_seleccionado: parseInt(ejeId),
+                    });
+                }
+            }
+            if (toUnselect.size > 0) {
+                const unselectGroups = groupQuestionsByEje(Array.from(toUnselect));
+                for (const [ejeId, questionIds] of unselectGroups) {
+                    const unselectIds = questionIds.map(id => parseInt(id));
+                    await updateSelectionMutation.mutateAsync({
+                        pregunta_ids: unselectIds,
+                        action: "unselect",
+                        admin_id: adminId,
+                        id_eje_seleccionado: parseInt(ejeId),
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("Error saving changes:", error);
+        }
+	}, [pendingChanges, updateSelectionMutation, adminId, groupQuestionsByEje]);
 
 	const discardChanges = useCallback(() => {
 		setLocalSelections(backendSelections);
@@ -315,7 +368,8 @@ export const useSeleccionarPreguntas = (rendicionId: string) => {
 
 	const closeModal = () => setModal((prev) => ({ ...prev, isOpen: false }));
 	const hasResults = preguntasPorEje.length > 0;
-	const hasPendingChanges = pendingChanges.toSelect.size > 0 || pendingChanges.toUnselect.size > 0;
+	const hasPendingChanges =
+		pendingChanges.toSelect.size > 0 || pendingChanges.toUnselect.size > 0;
 
 	return {
 		// Data

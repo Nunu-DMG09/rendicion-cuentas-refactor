@@ -13,6 +13,7 @@ export type Pregunta = {
 }
 
 export type PreguntasPorEje = {
+    selectedEjeId: string
     ejeId: string
     ejeNombre: string
     preguntas: Pregunta[]
