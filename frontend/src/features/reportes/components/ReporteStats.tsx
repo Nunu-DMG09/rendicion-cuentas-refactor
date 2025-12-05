@@ -7,67 +7,67 @@ import {
     FaQuestionCircle,
     FaCommentSlash
 } from 'react-icons/fa'
-import type { ReporteStats as ReporteStatsType } from '../types/reportes'
+import type { Stats } from '../types/reportes'
 
-type Props = {
-    stats: ReporteStatsType
+interface Props {
+    stats?: Stats
 }
 
 export default function ReporteStats({ stats }: Props) {
     const statsConfig = [
         {
             label: 'Total Inscritos',
-            value: stats.totalInscritos,
+            value: stats?.total_inscritos || 0,
             icon: FaUsers,
-            bg: 'bg-[#e8f4fc]',
-            border: 'border-[#cce5f5]',
-            iconBg: 'bg-[#3b82f6]',
-            textColor: 'text-[#3b82f6]'
+            bg: 'bg-blue-100',
+            border: 'border-blue-300',
+            iconBg: 'bg-blue-500',
+            textColor: 'text-blue-500'
         },
         {
             label: 'Asistentes',
-            value: stats.asistentes,
+            value: stats?.total_asistentes || 0,
             icon: FaUserCheck,
-            bg: 'bg-[#e6f7ed]',
-            border: 'border-[#c3ecd3]',
-            iconBg: 'bg-[#22c55e]',
-            textColor: 'text-[#22c55e]'
+            bg: 'bg-green-100',
+            border: 'border-green-300',
+            iconBg: 'bg-green-500',
+            textColor: 'text-green-500'
         },
         {
             label: 'No Asistieron',
-            value: stats.noAsistentes,
+            value: stats?.total_no_asistieron || 0,
             icon: FaUserTimes,
-            bg: 'bg-[#fce8e8]',
-            border: 'border-[#f5cccc]',
-            iconBg: 'bg-[#ef4444]',
-            textColor: 'text-[#ef4444]'
+            bg: 'bg-red-100',
+            border: 'border-red-300',
+            iconBg: 'bg-red-500',
+            textColor: 'text-red-500'
         },
         {
             label: 'Oradores',
-            value: stats.oradores,
+            value: stats?.total_oradores || 0,
             icon: FaMicrophone,
-            bg: 'bg-[#f3e8ff]',
-            border: 'border-[#e9d5ff]',
-            iconBg: 'bg-[#a855f7]',
-            textColor: 'text-[#a855f7]'
+            bg: 'bg-purple-100',
+            border: 'border-purple-300',
+            iconBg: 'bg-purple-500',
+            textColor: 'text-purple-500'
         },
         {
             label: 'Con Preguntas',
-            value: stats.conPreguntas,
+            value: stats?.total_con_pregunta || 0,
             icon: FaQuestionCircle,
-            bg: 'bg-[#fef9e6]',
-            border: 'border-[#fcefc3]',
-            iconBg: 'bg-[#f59e0b]',
-            textColor: 'text-[#f59e0b]'
+            bg: 'bg-amber-100',
+            border: 'border-amber-300',
+            iconBg: 'bg-amber-500',
+            textColor: 'text-amber-500'
         },
         {
             label: 'Sin Preguntas',
-            value: stats.sinPreguntas,
+            value: stats?.total_sin_preguntas || 0,
             icon: FaCommentSlash,
-            bg: 'bg-[#f1f5f9]',
-            border: 'border-[#e2e8f0]',
-            iconBg: 'bg-[#64748b]',
-            textColor: 'text-[#64748b]'
+            bg: 'bg-gray-100',
+            border: 'border-gray-300',
+            iconBg: 'bg-gray-500',
+            textColor: 'text-gray-500'
         }
     ]
 
@@ -82,7 +82,7 @@ export default function ReporteStats({ stats }: Props) {
                     transition={{ delay: index * 0.05 }}
                 >
                     <div className="flex items-center gap-2">
-                        <div className={`w-9 h-9 ${stat.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                        <div className={`w-9 h-9 ${stat.iconBg} rounded-lg flex items-center justify-center shrink-0`}>
                             <stat.icon className="h-4 w-4 text-white" />
                         </div>
                         <div className="min-w-0">
