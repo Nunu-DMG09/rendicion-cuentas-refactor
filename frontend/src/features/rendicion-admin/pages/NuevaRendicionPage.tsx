@@ -27,8 +27,8 @@ export default function NuevaRendicionPage() {
             transition={{ duration: 0.5 }}
         >
             <header className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Nueva Rendición</h1>
-                <p className="text-gray-600 mt-1">Programe una nueva audiencia de rendición de cuentas</p>
+                <h1 className="text-4xl font-titles font-bold text-gray-900">Nueva Rendición</h1>
+                <p className="text-gray-600 font-body text-lg mt-1">Programe una nueva audiencia de rendición de cuentas</p>
             </header>
             <RendicionForm
                 onSubmit={handleSubmit}
