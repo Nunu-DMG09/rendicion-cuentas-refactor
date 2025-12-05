@@ -517,18 +517,19 @@ class AdministradorModel extends Model
         }
     }
 
-    /**
-     * Obtiene estadísticas y reporte completo de participantes para una rendición
-     */
+    /*====================================================
+    OBTIENE REPORTE DETALLADO DE UNA RENDICIÓN
+    CON ESTADÍSTICAS Y DATOS PAGINADOS DE PARTICIPANTES
+     ==========================================*/
     public function getReporteRendicion(int $idRendicion, int $page = 1, int $perPage = 10): array
     {
         try {
             $db = \Config\Database::connect();
             
-            // Verificar que la rendición existe
             $rendicion = $db->table('rendicion')->where('id', $idRendicion)->get()->getRowArray();
             if (!$rendicion) {
                 return [
+                    'rendicion' => null,
                     'stats' => [],
                     'participantes' => [],
                     'pagination' => [
@@ -543,6 +544,15 @@ class AdministradorModel extends Model
                     ]
                 ];
             }
+
+            $year = isset($rendicion['fecha']) ? date('Y', strtotime($rendicion['fecha'])) : date('Y');
+            $posicion = $this->getPosicionRendicionEnAno($idRendicion, (int)$year, $db);
+            $numeroRomano = $this->convertToRoman($posicion);
+            $titulo = "Rendición {$numeroRomano} del año {$year}";
+
+            $rendicion['titulo'] = $titulo;
+            $rendicion['posicion'] = $posicion;
+            $rendicion['year'] = $year;
 
             // Estadísticas
             $totalInscritos = (int)$db->query("SELECT COUNT(*) as total FROM usuario WHERE id_rendicion = ?", [$idRendicion])->getRowArray()['total'];
@@ -611,6 +621,7 @@ class AdministradorModel extends Model
         } catch (\Throwable $e) {
             log_message('error', 'AdministradorModel::getReporteRendicion error: ' . $e->getMessage());
             return [
+                'rendicion' => null,
                 'stats' => [],
                 'participantes' => [],
                 'pagination' => [
@@ -627,13 +638,36 @@ class AdministradorModel extends Model
         }
     }
 
-    /**
-     * Obtiene datos completos para Excel (sin paginación)
-     */
+    /*====================================================
+    OBTIENE REPORTE PARA EXPORTAR A EXCEL DE UNA RENDICIÓN
+    CON TODOS LOS PARTICIPANTES Y SUS DATOS
+     =================================================*/
     public function getReporteExcelRendicion(int $idRendicion): array
     {
         try {
             $db = \Config\Database::connect();
+            
+            $rendicion = $db->table('rendicion')
+                ->select('id, fecha, hora')
+                ->where('id', $idRendicion)
+                ->get()
+                ->getRowArray();
+                
+            if (!$rendicion) {
+                return [
+                    'rendicion' => null,
+                    'participantes' => []
+                ];
+            }
+            
+            $year = date('Y', strtotime($rendicion['fecha']));
+            $posicion = $this->getPosicionRendicionEnAno($idRendicion, (int)$year);
+            $numeroRomano = $this->convertToRoman($posicion);
+            $titulo = "Rendición {$numeroRomano} del año {$year}";
+            
+            $rendicion['titulo'] = $titulo;
+            $rendicion['posicion'] = $posicion;
+            $rendicion['year'] = $year;
             
             $participantes = $db->query("
                 SELECT 
@@ -657,11 +691,17 @@ class AdministradorModel extends Model
                 ORDER BY u.nombre ASC, p.created_at ASC
             ", [$idRendicion])->getResultArray();
 
-            return $participantes;
+            return [
+                'rendicion' => $rendicion,
+                'participantes' => $participantes
+            ];
 
         } catch (\Throwable $e) {
             log_message('error', 'AdministradorModel::getReporteExcelRendicion error: ' . $e->getMessage());
-            return [];
+            return [
+                'rendicion' => null,
+                'participantes' => []
+            ];
         }
     }
 }
