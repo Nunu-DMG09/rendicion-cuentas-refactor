@@ -4,6 +4,11 @@ namespace App\Controllers;
 use CodeIgniter\RESTful\ResourceController;
 use App\Models\AdministradorModel;
 use App\Models\HistorialAdminModel;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 
 helper('cookie');
 helper('jwt');
@@ -411,10 +416,10 @@ class AdministradorController extends ResourceController
         }
     }
 
-    /**
-     * GET /admin/reportes/{id}?page=1&per_page=10
-     * Reporte general de una rendición con stats y participantes paginados
-     */
+    /*========================================================
+    GET /admin/reportes/{id}?page=1&per_page=10
+    REPORTE DETALLADO DE RENDICIÓN CON PAGINACIÓN
+     =================================================================*/
     public function reporteRendicion($id = null)
     {
         $id = (int)$id;
@@ -431,7 +436,7 @@ class AdministradorController extends ResourceController
         
         // Validar rangos
         $page = max(1, $page);
-        $perPage = max(1, min(100, $perPage)); // Máximo 100 por página
+        $perPage = max(1, min(100, $perPage)); 
 
         try {
             $model = new \App\Models\AdministradorModel();
@@ -452,10 +457,11 @@ class AdministradorController extends ResourceController
         }
     }
 
-    /**
-     * GET /admin/reportes/{id}/excel
-     * Descarga Excel del reporte de una rendición
-     */
+    /*========================================================
+    GET /admin/reportes/{id}/excel
+    DESCARGA REPORTE DE RENDICIÓN EN FORMATO EXCEL
+    y lo guarda en public/rendicion_excel/{id}/
+     ======================================================*/
     public function descargarExcelRendicion($id = null)
     {
         $id = (int)$id;
@@ -468,68 +474,104 @@ class AdministradorController extends ResourceController
 
         try {
             $model = new \App\Models\AdministradorModel();
-            $participantes = $model->getReporteExcelRendicion($id);
+            $data = $model->getReporteExcelRendicion($id);
 
-            if (empty($participantes)) {
+            if (empty($data['participantes']) || !$data['rendicion']) {
                 return $this->response->setStatusCode(404)->setJSON([
                     'success' => false,
                     'message' => 'No hay datos para esta rendición'
                 ]);
             }
 
-            // Crear CSV (compatible con Excel)
-            $filename = "reporte_rendicion_{$id}_" . date('Y-m-d') . ".csv";
-            
-            // Headers para descarga
-            $this->response->setHeader('Content-Type', 'text/csv; charset=utf-8');
-            $this->response->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"');
-            $this->response->setHeader('Cache-Control', 'no-cache, must-revalidate');
-            
-            // Crear contenido CSV
-            $output = fopen('php://temp', 'w');
-            
-            // BOM para UTF-8 (para que Excel abra correctamente caracteres especiales)
-            fwrite($output, "\xEF\xBB\xBF");
-            
-            // Headers del CSV
-            fputcsv($output, [
-                'DNI',
-                'Nombre',
-                'Sexo', 
-                'Tipo',
-                'RUC',
-                'Organización',
-                'Asistencia',
-                'Eje',
-                'Pregunta'
-            ], ';'); // Usar ';' como separador para mejor compatibilidad con Excel en español
-            
-            // Datos
-            foreach ($participantes as $participante) {
-                fputcsv($output, [
-                    $participante['dni'] ?? '',
-                    $participante['nombre'] ?? '',
-                    $participante['sexo'] ?? '',
-                    $participante['tipo'] ?? '',
-                    $participante['ruc'] ?? '',
-                    $participante['organizacion'] ?? '',
-                    $participante['asistencia'] ?? '',
-                    $participante['eje'] ?? '',
-                    $participante['pregunta'] ?? ''
-                ], ';');
+            $rendicion = $data['rendicion'];
+            $participantes = $data['participantes'];
+            $titulo = $rendicion['titulo'] ?? "Rendición {$id}";
+
+            $dir = FCPATH . 'rendicion_excel' . DIRECTORY_SEPARATOR . $id . DIRECTORY_SEPARATOR;
+            if (!is_dir($dir)) {
+                if (!mkdir($dir, 0755, true) && !is_dir($dir)) {
+                    throw new \RuntimeException('No se pudo crear el directorio para Excel');
+                }
             }
+
+            // Nombre del archivo
+            $filename = "reporte_rendicion_{$id}_" . date('Y-m-d_His') . ".xlsx";
+            $filePath = $dir . $filename;
+
+            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
             
-            rewind($output);
-            $csvContent = stream_get_contents($output);
-            fclose($output);
+            $sheet->setCellValue('A1', $titulo);
+            $sheet->mergeCells('A1:I1');
+            $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+            $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             
-            return $this->response->setBody($csvContent);
+            $sheet->setCellValue('A2', 'Fecha: ' . ($rendicion['fecha'] ?? ''));
+            $sheet->setCellValue('D2', 'Hora: ' . ($rendicion['hora'] ?? ''));
+            $sheet->mergeCells('A2:C2');
+            $sheet->mergeCells('D2:F2');
+            
+            $headers = ['DNI', 'Nombre', 'Sexo', 'Tipo', 'RUC', 'Organización', 'Asistencia', 'Eje', 'Pregunta'];
+            $col = 'A';
+            foreach ($headers as $header) {
+                $sheet->setCellValue($col . '4', $header);
+                $sheet->getStyle($col . '4')->getFont()->setBold(true);
+                $sheet->getStyle($col . '4')->getFill()
+                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->getStartColor()->setARGB('FFE0E0E0');
+                $col++;
+            }
+
+            $row = 5;
+            foreach ($participantes as $participante) {
+                $sheet->setCellValue('A' . $row, $participante['dni'] ?? '');
+                $sheet->setCellValue('B' . $row, $participante['nombre'] ?? '');
+                $sheet->setCellValue('C' . $row, $participante['sexo'] ?? '');
+                $sheet->setCellValue('D' . $row, $participante['tipo'] ?? '');
+                $sheet->setCellValue('E' . $row, $participante['ruc'] ?? '');
+                $sheet->setCellValue('F' . $row, $participante['organizacion'] ?? '');
+                $sheet->setCellValue('G' . $row, $participante['asistencia'] ?? '');
+                $sheet->setCellValue('H' . $row, $participante['eje'] ?? '');
+                $sheet->setCellValue('I' . $row, $participante['pregunta'] ?? '');
+                $row++;
+            }
+
+            foreach (range('A', 'I') as $col) {
+                $sheet->getColumnDimension($col)->setAutoSize(true);
+            }
+
+            $styleArray = [
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['argb' => 'FF000000'],
+                    ],
+                ],
+            ];
+            $sheet->getStyle('A4:I' . ($row - 1))->applyFromArray($styleArray);
+
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+            $writer->save($filePath);
+
+            $fileContent = file_get_contents($filePath);
+            
+            if ($fileContent === false) {
+                throw new \RuntimeException('No se pudo leer el archivo generado');
+            }
+
+            $this->response->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            $this->response->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            $this->response->setHeader('Content-Length', (string)strlen($fileContent));
+            $this->response->setHeader('Cache-Control', 'max-age=0');
+            $this->response->setHeader('Pragma', 'public');
+
+            return $this->response->setBody($fileContent);
 
         } catch (\Throwable $e) {
             log_message('error', 'AdministradorController::descargarExcelRendicion error: ' . $e->getMessage());
             return $this->response->setStatusCode(500)->setJSON([
                 'success' => false,
-                'message' => 'Error al generar archivo Excel'
+                'message' => 'Error al generar archivo Excel: ' . $e->getMessage()
             ]);
         }
     }
