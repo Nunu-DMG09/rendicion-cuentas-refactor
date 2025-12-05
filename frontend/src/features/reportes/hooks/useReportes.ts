@@ -25,7 +25,7 @@ export const useReportes = () => {
         return res.data.data
     }
     const reportQuery = useQuery({
-        queryKey: ['reporte', selectedRendicion],
+        queryKey: ['reporte', selectedRendicion, currentPage],
         queryFn: fetchReport,
         enabled: !!selectedRendicion,
         staleTime: 5 * 60 * 1000,
