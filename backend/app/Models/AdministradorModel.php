@@ -174,7 +174,6 @@ class AdministradorModel extends Model
             $today = date('Y-m-d');
             $currentYear = date('Y');
 
-            // Rendiciones del año (estadísticas por año)
             $totalRendiciones = (int) $db->table('rendicion')
                 ->where("YEAR(fecha) = {$currentYear}", null, false)
                 ->countAllResults();
@@ -184,7 +183,6 @@ class AdministradorModel extends Model
                 ->where('fecha <=', $today)
                 ->countAllResults();
 
-            // Usuarios del año
             $totalAsistentes = (int) $db->table('usuario')
                 ->where("YEAR(created_at) = {$currentYear}", null, false)
                 ->where('tipo_participacion', 'asistente')
@@ -195,12 +193,10 @@ class AdministradorModel extends Model
                 ->where('tipo_participacion', 'orador')
                 ->countAllResults();
 
-            // Preguntas del año
             $preguntasRecibidas = (int) $db->table('pregunta')
                 ->where("YEAR(created_at) = {$currentYear}", null, false)
                 ->countAllResults();
 
-            // Verificar existencia de columna 'respondida' y contar sólo del año
             $hasRespondidaCol = !empty($db->query("SHOW COLUMNS FROM `pregunta` LIKE 'respondida'")->getResultArray());
             $preguntasRespondidas = 0;
             if ($hasRespondidaCol) {
@@ -211,7 +207,6 @@ class AdministradorModel extends Model
             }
             $preguntasPendientes = max(0, $preguntasRecibidas - $preguntasRespondidas);
 
-            // Asistentes por mes (año actual)
             $asistentesPorMes = $db->query("
                 SELECT DATE_FORMAT(created_at, '%Y-%m') AS mes, COUNT(*) AS total
                 FROM usuario
@@ -221,7 +216,6 @@ class AdministradorModel extends Model
                 ORDER BY mes DESC
             ", [$currentYear])->getResultArray();
 
-            // Preguntas por mes (año actual)
             $preguntasPorMes = $db->query("
                 SELECT DATE_FORMAT(created_at, '%Y-%m') AS mes, COUNT(*) AS total
                 FROM pregunta
@@ -230,7 +224,6 @@ class AdministradorModel extends Model
                 ORDER BY mes DESC
             ", [$currentYear])->getResultArray();
 
-            // Preguntas por eje (filtro por año)
             $preguntasPorEje = $db->query("
                 SELECT e.id, e.tematica, COUNT(p.id) AS total_preguntas
                 FROM eje e
@@ -239,7 +232,6 @@ class AdministradorModel extends Model
                 ORDER BY total_preguntas DESC
             ", [$currentYear])->getResultArray();
 
-            // Próximas rendiciones (cualquier año, pero título se genera por año de la rendición)
             $proximasRows = $db->query("
                 SELECT
                     r.*,
@@ -446,10 +438,10 @@ class AdministradorModel extends Model
         }
     }
 
-    /**
-     * Devuelve todas las preguntas por eje (seleccionadas o no) con indicador `is_selected`
-     * y `orden_seleccion` si aplica, para una rendición dada.
-     */
+    /*======================================================
+    OBTIENE TODAS LAS PREGUNTAS YA SEAN SELECCIONADAS Y SIN SELECCIONAR
+    AGRUPADAS POR EJE SELECCIONADO DE LA RENDICIÓN
+     =========================================================*/
     public function getPreguntasConSeleccionPorRendicion(int $idRendicion): array
     {
         try {
@@ -469,46 +461,39 @@ class AdministradorModel extends Model
 
             $result = [];
 
-            $hasSeleccion = !empty($db->query("SHOW TABLES LIKE 'seleccion'")->getResultArray());
-
             foreach ($ejes as $es) {
-                $preguntas = [];
+                $ejeSelId = (int)$es['eje_sel_id'];
+                $ejeId = (int)$es['eje_id'];
 
-                if ($hasSeleccion) {
-                    $rows = $db->query("
-                        SELECT DISTINCT
-                            p.id,
-                            p.contenido,
-                            p.created_at,
-                            u.id AS usuario_id,
-                            u.nombre AS usuario_nombre,
-                            p.id_eje,
-                            CASE WHEN s.id IS NULL THEN 0 ELSE 1 END AS is_selected,
-                            s.orden AS orden_seleccion
-                        FROM pregunta p
-                        JOIN usuario u ON u.id = p.id_usuario
-                        LEFT JOIN seleccion s ON s.id_pregunta = p.id AND s.id_eje_seleccionado = ?
-                        WHERE u.id_rendicion = ? AND (p.id_eje = ? OR s.id IS NOT NULL)
-                        ORDER BY s.orden IS NULL, s.orden ASC, p.created_at ASC
-                    ", [(int)$es['eje_sel_id'], $idRendicion, (int)$es['eje_id']])->getResultArray();
+                $rows = $db->query("
+                    SELECT
+                        p.id,
+                        p.contenido,
+                        p.created_at,
+                        u.id AS usuario_id,
+                        u.nombre AS usuario_nombre,
+                        p.id_eje,
+                        -- 1 si existe una fila en pregunta_seleccionada (no borrada), 0 si no
+                        (SELECT COUNT(*) FROM pregunta_seleccionada ps WHERE ps.id_pregunta = p.id AND ps.id_eje_seleccionado = ? AND ps.deleted_at IS NULL) AS is_selected,
+                        -- fecha de selección (si existe) para ordenar por selección primero
+                        (SELECT ps2.created_at FROM pregunta_seleccionada ps2 WHERE ps2.id_pregunta = p.id AND ps2.id_eje_seleccionado = ? AND ps2.deleted_at IS NULL LIMIT 1) AS fecha_seleccion
+                    FROM pregunta p
+                    LEFT JOIN usuario u ON u.id = p.id_usuario
+                    WHERE u.id_rendicion = ?
+                      AND (p.id_eje = ? OR EXISTS(
+                          SELECT 1 FROM pregunta_seleccionada psx
+                          WHERE psx.id_pregunta = p.id
+                            AND psx.id_eje_seleccionado = ?
+                            AND psx.deleted_at IS NULL
+                      ))
+                    ORDER BY fecha_seleccion IS NULL, fecha_seleccion ASC, p.created_at ASC
+                ", [$ejeSelId, $ejeSelId, $idRendicion, $ejeId, $ejeSelId])->getResultArray();
 
-                    $preguntas = $rows ?: [];
-                } else {
-                    $rows = $db->query("
-                        SELECT p.id, p.contenido, p.created_at, u.id AS usuario_id, u.nombre AS usuario_nombre, p.id_eje,
-                               0 AS is_selected, NULL AS orden_seleccion
-                        FROM pregunta p
-                        JOIN usuario u ON u.id = p.id_usuario
-                        WHERE u.id_rendicion = ? AND p.id_eje = ?
-                        ORDER BY p.created_at ASC
-                    ", [$idRendicion, (int)$es['eje_id']])->getResultArray();
+                $preguntas = $rows ?: [];
 
-                    $preguntas = $rows ?: [];
-                }
-
-                $result['eje_' . $es['eje_sel_id']] = [
-                    'id' => (int)$es['eje_sel_id'],
-                    'eje_id' => (int)$es['eje_id'],
+                $result['eje_' . $ejeSelId] = [
+                    'id' => $ejeSelId,
+                    'eje_id' => $ejeId,
                     'tematica' => $es['tematica'],
                     'preguntas' => array_map(function($p){
                         return [
@@ -518,8 +503,8 @@ class AdministradorModel extends Model
                             'usuario_id' => isset($p['usuario_id']) ? (int)$p['usuario_id'] : null,
                             'created_at' => $p['created_at'] ?? null,
                             'id_eje' => isset($p['id_eje']) ? (int)$p['id_eje'] : null,
-                            'is_selected' => !empty($p['is_selected']) ? true : false,
-                            'orden_seleccion' => isset($p['orden_seleccion']) ? (is_null($p['orden_seleccion']) ? null : (int)$p['orden_seleccion']) : null
+                            'is_selected' => !empty($p['is_selected']) && (int)$p['is_selected'] > 0,
+                            'fecha_seleccion' => $p['fecha_seleccion'] ?? null
                         ];
                     }, $preguntas)
                 ];
