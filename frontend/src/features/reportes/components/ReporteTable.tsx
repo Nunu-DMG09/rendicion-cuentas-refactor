@@ -1,13 +1,12 @@
 import { motion } from 'motion/react'
 import { FaEye, FaTable, FaFileExcel } from 'react-icons/fa'
-import type { Participante } from '../types/reportes'
+import type { Pagination, Participante } from '../types/reportes'
 import ReportePagination from './ReportePagination'
 
 type Props = {
     participantes: Participante[]
     totalParticipantes: number
-    currentPage: number
-    totalPages: number
+    pagination: Pagination
     onPageChange: (page: number) => void
     onVerPregunta: (participante: Participante) => void
     onDownloadExcel: () => void
@@ -17,8 +16,7 @@ type Props = {
 export default function ReporteTable({
     participantes,
     totalParticipantes,
-    currentPage,
-    totalPages,
+    pagination,
     onPageChange,
     onVerPregunta,
     onDownloadExcel,
@@ -86,7 +84,7 @@ export default function ReporteTable({
                         ) : (
                             participantes.map((p, index) => (
                                 <motion.tr
-                                    key={p.dni}
+                                    key={`${p.dni}-${index}-${p.pregunta}`}
                                     className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
@@ -172,9 +170,7 @@ export default function ReporteTable({
             </div>
             {!isLoading && participantes.length > 0 && (
                 <ReportePagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalParticipantes}
+                    pagination={pagination}
                     onPageChange={onPageChange}
                 />
             )}
