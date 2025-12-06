@@ -53,6 +53,10 @@ class AdministradorController extends ResourceController
         try {
             $model = new AdministradorModel();
             $data = $model->findAll();
+            // No devolver password
+            foreach ($data as &$item) {
+                if (isset($item['password'])) unset($item['password']);
+            }
             $has = !empty($data);
             return $this->respond(['success' => $has, 'message' => $has ? 'Administradores obtenidos' : 'No se encontraron administradores', 'data' => $has ? $data : []], 200);
         } catch (\Throwable $e) {
@@ -91,6 +95,7 @@ class AdministradorController extends ResourceController
             }
 
             $created = $model->find($id);
+            if (isset($created['password'])) unset($created['password']);
 
             try {
                 $hist = new HistorialAdminModel();
@@ -118,38 +123,52 @@ class AdministradorController extends ResourceController
         if (is_object($admin)) return $admin;
 
         if (!$id) return $this->respond(['success' => false, 'message' => 'ID requerido', 'data' => []], 400);
+
         $input = $this->request->getJSON(true);
-        if (!$input || empty($input['password'])) return $this->respond(['success' => false, 'message' => 'password requerido', 'data' => []], 400);
+        if (!is_array($input)) {
+            return $this->respond(['success' => false, 'message' => 'Payload inválido', 'data' => []], 400);
+        }
+
+        $action = isset($input['action']) ? trim($input['action']) : null;
+        if (!$action || !in_array($action, ['change_password', 'edit_role'], true)) {
+            return $this->respond(['success' => false, 'message' => 'Action inválida. use "change_password" o "edit_role"', 'data' => []], 400);
+        }
 
         $model = new \App\Models\AdministradorModel();
+
         try {
-            $newCategoria = $input['categoria'] ?? null;
-            $res = $model->updateAdministrador((int)$id, $input['password'], $newCategoria);
+            $performedBy = isset($input['realizado_por']) ? (int)$input['realizado_por'] : (int)$admin['id'];
+            $motivo = isset($input['motivo']) && trim($input['motivo']) !== '' ? $input['motivo'] : ($action === 'change_password' ? 'Actualización de contraseña' : 'Actualización de categoría');
+
+            if ($action === 'change_password') {
+                if (empty($input['password'])) {
+                    return $this->respond(['success' => false, 'message' => 'password requerido para action change_password', 'data' => []], 400);
+                }
+                $res = $model->updateAdministrador((int)$id, (string)$input['password'], null);
+            } else { // edit_role
+                if (empty($input['categoria'])) {
+                    return $this->respond(['success' => false, 'message' => 'categoria requerida para action edit_role', 'data' => []], 400);
+                }
+                $res = $model->update((int)$id, ['categoria' => $input['categoria']]);
+            }
+
             if ($res === false) {
                 $errors = $model->errors();
                 return $this->respond(['success' => false, 'message' => 'No se pudo actualizar administrador', 'data' => $errors], 422);
             }
+
             $updated = $model->find($id);
+            if (is_array($updated) && isset($updated['password'])) unset($updated['password']);
 
             try {
                 $hist = new HistorialAdminModel();
-                $performedBy = isset($input['realizado_por']) ? (int)$input['realizado_por'] : (int)$admin['id'];
-
                 $hist->insert([
-                    'id_admin'     => (int)$id,
-                    'accion'       => 'actualizar',
-                    'motivo'       => 'Actualización de contraseña',
-                    'realizado_por'=> $performedBy
+                    'id_admin' => (int)$id,
+                    'accion' => $action,
+                    'motivo' => $motivo,
+                    'realizado_por' => $performedBy,
+                    'created_at' => date('Y-m-d H:i:s')
                 ]);
-
-                if ($newCategoria !== null) {
-                    $hist->insert([
-                        'id_admin'     => (int)$id,
-                        'accion'       => 'actualizar',
-                        'motivo'       => 'Actualizacion de categoria',
-                        'realizado_por'=> $performedBy
-                    ]);
-                }
             } catch (\Throwable $h) {
                 log_message('error', 'Historial actualizar administrador falló: ' . $h->getMessage());
             }
@@ -168,29 +187,54 @@ class AdministradorController extends ResourceController
 
         if (!$id) return $this->respond(['success' => false, 'message' => 'ID requerido', 'data' => []], 400);
 
+        $input = $this->request->getJSON(true);
+        $action = isset($input['action']) ? trim($input['action']) : 'deshabilitar'; // default deshabilitar
+        if (!in_array($action, ['habilitar', 'deshabilitar'], true)) {
+            return $this->respond(['success' => false, 'message' => 'Action inválida. use "habilitar" o "deshabilitar"', 'data' => []], 400);
+        }
+
+        $performedBy = isset($input['realizado_por']) ? (int)$input['realizado_por'] : (int)$admin['id'];
+        $motivo = isset($input['motivo']) && trim($input['motivo']) !== '' ? $input['motivo'] : ($action === 'habilitar' ? 'Habilitación de administrador' : 'Deshabilitación de administrador');
+
         $model = new AdministradorModel();
         try {
-            $res = $model->eliminarAdministrador((int)$id);
-            if ($res === false) return $this->respond(['success' => false, 'message' => 'No se pudo eliminar administrador', 'data' => []], 500);
+            
+            $item = $model->withDeleted()->find($id);
+            if (!$item) {
+                return $this->respondNotFound(['success' => false, 'message' => 'Administrador no encontrado', 'data' => []]);
+            }
+
+            if ($action === 'deshabilitar') {
+                $res = $model->delete((int)$id); 
+            } else { 
+                
+                $res = $model->update((int)$id, ['deleted_at' => null, 'estado' => 1]);
+            }
+
+            if ($res === false) {
+                $errors = $model->errors();
+                return $this->respond(['success' => false, 'message' => 'No se pudo procesar la acción', 'data' => $errors], 422);
+            }
 
             try {
                 $hist = new HistorialAdminModel();
-                $body = $this->request->getJSON(true) ?: [];
-                $performedBy = isset($body['realizado_por']) ? (int) $body['realizado_por'] : (int)$admin['id'];
                 $hist->insert([
-                    'id_admin'     => (int)$id,
-                    'accion'       => 'eliminar',
-                    'motivo'       => 'Administrador eliminado',
-                    'realizado_por'=> $performedBy
+                    'id_admin' => (int)$id,
+                    'accion' => $action,
+                    'motivo' => $motivo,
+                    'realizado_por' => $performedBy,
+                    'created_at' => date('Y-m-d H:i:s')
                 ]);
             } catch (\Throwable $h) {
-                log_message('error', 'Historial eliminar administrador falló: ' . $h->getMessage());
+                log_message('error', 'Historial eliminar/habilitar administrador falló: ' . $h->getMessage());
             }
 
-            return $this->respondDeleted(['success' => true, 'message' => 'Administrador eliminado', 'data' => []]);
+            $msg = $action === 'deshabilitar' ? 'Administrador deshabilitado' : 'Administrador habilitado';
+            return $this->respond(['success' => true, 'message' => $msg, 'data' => []], 200);
+
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
-            return $this->respond(['success' => false, 'message' => 'Error eliminando administrador', 'data' => []], 500);
+            return $this->respond(['success' => false, 'message' => 'Error procesando la solicitud', 'data' => []], 500);
         }
     }
 
