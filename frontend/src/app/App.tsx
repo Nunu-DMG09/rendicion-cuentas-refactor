@@ -19,6 +19,8 @@ import { Toaster } from "sonner";
 import { LoginForm } from "@/features/login/pages/Login";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { SeleccionarPreguntas } from "@/features/preguntas/pages/SeleccionarPreguntas";
+import { NewUser } from "@/features/users/pages/NewUser";
+import { ListUsers } from "@/features/users/pages/ListUsers";
 
 function App() {
 	return (
@@ -98,6 +100,22 @@ function App() {
 								element={
 									<ProtectedRoute>
 										<SeleccionarPreguntas />
+									</ProtectedRoute>
+								}
+							/>
+							<Route
+								path="usuarios/agregar-usuario"
+								element={
+									<ProtectedRoute>
+										<NewUser />
+									</ProtectedRoute>
+								}
+							/>
+							<Route
+								path="usuarios/ver-usuarios"
+								element={
+									<ProtectedRoute>
+										<ListUsers />
 									</ProtectedRoute>
 								}
 							/>
