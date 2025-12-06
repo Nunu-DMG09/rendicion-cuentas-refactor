@@ -70,11 +70,10 @@ class AdministradorModel extends Model
     // Helper methods
     // -----------------------
 
-    /**
-     * Crea un administrador. Recibe array con keys: dni,nombre,password,categoria,estado
-     * Hashea la contraseña antes de guardar.
-     * Retorna insert id o false.
-     */
+    /*===============================
+    CREA ADMINISTRADOR
+    ===============================*/
+    
     public function createAdministrador(array $data)
     {
         if (empty($data['password'])) {
@@ -85,6 +84,9 @@ class AdministradorModel extends Model
         return $this->insert($data);
     }
 
+    /*===============================
+    ACTUALIZA CONTRASEÑA Y/O CATEGORÍA DE ADMINISTRADOR
+    ===============================*/
     public function updateAdministrador(int $id, string $newPassword, ?string $newCategoria = null)
     {
         $data = [
@@ -98,10 +100,9 @@ class AdministradorModel extends Model
         return $this->update($id, $data);
     }
 
-    /**
-     * Elimina (soft delete) administrador por id.
-     * Retorna boolean/int según Model::delete
-     */
+    /*===============================
+    DESABILITA/HABILITA ADMINISTRADOR
+    ===============================*/
     public function eliminarAdministrador(int $id)
     {
         return $this->delete($id);
@@ -166,7 +167,9 @@ class AdministradorModel extends Model
     }
 
 
-    // ESTADISTICAS PARA EL DASHBOARD DEL ADMINISTRADOR
+    /*==============================
+    OBTIENE ESTADÍSTICAS PARA DASHBOARD
+    ==============================*/
     public function getDashboardStatistics(int $adminId = null): array
     {
         try {
@@ -261,7 +264,6 @@ class AdministradorModel extends Model
                 ];
             }, $proximasRows);
 
-            // Rendiciones programadas para hoy (título en romano según su año)
             $hoyRows = $db->query("
                 SELECT
                     r.*,
