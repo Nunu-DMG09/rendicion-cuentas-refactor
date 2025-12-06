@@ -494,23 +494,22 @@ class AdministradorController extends ResourceController
                 }
             }
 
-            // Nombre del archivo
             $filename = "reporte_rendicion_{$id}_" . date('Y-m-d_His') . ".xlsx";
             $filePath = $dir . $filename;
 
             $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
-            
+
             $sheet->setCellValue('A1', $titulo);
             $sheet->mergeCells('A1:I1');
             $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
             $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-            
+
             $sheet->setCellValue('A2', 'Fecha: ' . ($rendicion['fecha'] ?? ''));
             $sheet->setCellValue('D2', 'Hora: ' . ($rendicion['hora'] ?? ''));
             $sheet->mergeCells('A2:C2');
             $sheet->mergeCells('D2:F2');
-            
+
             $headers = ['DNI', 'Nombre', 'Sexo', 'Tipo', 'RUC', 'Organización', 'Asistencia', 'Eje', 'Pregunta'];
             $col = 'A';
             foreach ($headers as $header) {
@@ -536,8 +535,8 @@ class AdministradorController extends ResourceController
                 $row++;
             }
 
-            foreach (range('A', 'I') as $col) {
-                $sheet->getColumnDimension($col)->setAutoSize(true);
+            foreach (range('A', 'I') as $c) {
+                $sheet->getColumnDimension($c)->setAutoSize(true);
             }
 
             $styleArray = [
@@ -553,19 +552,34 @@ class AdministradorController extends ResourceController
             $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
             $writer->save($filePath);
 
-            $fileContent = file_get_contents($filePath);
-            
-            if ($fileContent === false) {
-                throw new \RuntimeException('No se pudo leer el archivo generado');
+            if (!is_file($filePath) || filesize($filePath) === 0) {
+                throw new \RuntimeException('El archivo generado no existe o está vacío');
+            }
+            $handle = fopen($filePath, 'rb');
+            $sig = fread($handle, 4);
+            fclose($handle);
+            if ($sig !== "PK\x03\x04") {
+                throw new \RuntimeException('El archivo generado no tiene formato .xlsx válido (cabecera ZIP inválida).');
             }
 
+            while (ob_get_level()) {
+                ob_end_clean();
+            }
+
+            $filesize = filesize($filePath);
+            $body = file_get_contents($filePath);
+
+            // Establecer cabeceras correctas
+            $this->response->setHeader('Content-Description', 'File Transfer');
             $this->response->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             $this->response->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"');
-            $this->response->setHeader('Content-Length', (string)strlen($fileContent));
-            $this->response->setHeader('Cache-Control', 'max-age=0');
+            $this->response->setHeader('Content-Transfer-Encoding', 'binary');
+            $this->response->setHeader('Expires', '0');
+            $this->response->setHeader('Cache-Control', 'must-revalidate, post-check=0, pre-check=0');
             $this->response->setHeader('Pragma', 'public');
+            $this->response->setHeader('Content-Length', (string)$filesize);
 
-            return $this->response->setBody($fileContent);
+            return $this->response->setBody($body);
 
         } catch (\Throwable $e) {
             log_message('error', 'AdministradorController::descargarExcelRendicion error: ' . $e->getMessage());
