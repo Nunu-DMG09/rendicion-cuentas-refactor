@@ -33,7 +33,7 @@ class Cors extends BaseConfig
         'allowedHeaders' => ['Content-Type', 'Authorization', 'X-Requested-With'], // Encabezados permitidos
         'allowedMethods' => ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos
         'supportsCredentials' => true, // Permite credenciales (cookies, headers de autorización, etc.)
-        'exposedHeaders' => ['Content-Type', 'Authorization'], // Encabezados expuestos
+        'exposedHeaders' => ['Content-Type','Content-Disposition','Content-Length','Authorization'], // Encabezados expuestos
         'maxAge' => 7200, // Tiempo de caché para preflight
     ];
 }
