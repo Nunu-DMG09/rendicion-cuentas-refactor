@@ -71,7 +71,11 @@ function App() {
 							/>
 							<Route
 								path="ejes"
-								element={<EjesTematicosPage />}
+								element={
+									<ProtectedRoute>
+										<EjesTematicosPage />
+									</ProtectedRoute>
+								}
 							/>
 							<Route
 								path="reportes"

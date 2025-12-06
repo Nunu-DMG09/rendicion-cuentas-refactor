@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../store/auth.store";
 import { api } from "@/core/config";
-import { useEffect, createContext, useContext } from "react";
+import { useEffect, createContext, useContext, useState } from "react";
 import type { User } from "@/core/types/auth";
 
 interface Props {
@@ -21,6 +21,7 @@ export const useAuthContext = () => {
 };
 
 export const AuthProvider = ({ children }: Props) => {
+    const [isInitialized, setIsInitialized] = useState(false);
     const refresh = async () => {
         const res = await api.get("/auth/refresh", {
             withCredentials: true,
@@ -39,6 +40,7 @@ export const AuthProvider = ({ children }: Props) => {
     });
 
     useEffect(() => {
+        if (!refreshQuery.isSuccess && !refreshQuery.isError) return;
         if (refreshQuery.isSuccess && refreshQuery.data) {
             const data: {
                 forceLogout?: boolean;
@@ -50,21 +52,15 @@ export const AuthProvider = ({ children }: Props) => {
                 useAuthStore.getState().clearAuth();
                 return;
             }
-            if (data.user) {
-                useAuthStore.getState().setUser(data.user);
-            }
-            if (data.roleChanged) {
-                useAuthStore.getState().setUser(data.user!);
-            }
+            if (data.user) useAuthStore.getState().setUser(data.user);
+            if (data.roleChanged) useAuthStore.getState().setUser(data.user!);
         }
-
-        if (refreshQuery.isError) {
-            useAuthStore.getState().clearAuth();
-        }
+        if (refreshQuery.isError) useAuthStore.getState().clearAuth();
+        setIsInitialized(true);
     }, [refreshQuery.isSuccess, refreshQuery.data, refreshQuery.isError]);
 
     const authContextValue: AuthContextType = {
-        isInitializing: refreshQuery.isLoading || refreshQuery.isFetching,
+        isInitializing: !isInitialized,
         isRefreshing: refreshQuery.isFetching && !refreshQuery.isLoading,
     };
 
