@@ -3,9 +3,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { User, UserModalState } from "../types/user";
 import { useState, useMemo } from "react";
 import type { ApiError } from "@/core/types/api";
+import { useAuthStore } from "@/features/auth/store/auth.store";
 
 export const useListUsers = () => {
 	const queryClient = useQueryClient();
+	const { user } = useAuthStore();
+	const adminId = user?.id;
 
 	const [currentTab, setCurrentTab] = useState<"list" | "search">("list");
 	const [roleFilter, setRoleFilter] = useState<
@@ -56,7 +59,8 @@ export const useListUsers = () => {
 			{
 				action: "change_password",
 				password: data.newPassword,
-                motivo: data.motivo
+                motivo: data.motivo,
+				realizado_por: adminId,
 			},
 			{ withCredentials: true }
 		);
@@ -103,9 +107,10 @@ export const useListUsers = () => {
 		const res = await api.put(
 			`/admin/${data.userId}`,
 			{
-				action: "update_role",
+				action: "edit_role",
 				categoria: data.newRole,
-                motivo: data.motivo
+                motivo: data.motivo,
+				realizado_por: adminId,
 			},
 			{ withCredentials: true }
 		);
@@ -154,10 +159,11 @@ export const useListUsers = () => {
     }
 	): Promise<User> => {
 		const res = await api.post(
-			`/admin/${data.userId}/toggle-status`,
+			`/admin/${data.userId}/cambiar-estado`,
 			{
 				action: data.action,
-                motivo: data.motivo
+                motivo: data.motivo,
+				realizado_por: adminId,
 			},
 			{ withCredentials: true }
 		);
