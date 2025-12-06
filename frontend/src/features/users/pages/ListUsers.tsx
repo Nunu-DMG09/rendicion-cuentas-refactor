@@ -6,6 +6,8 @@ import { UsersErrorState } from '../components/ErrorState';
 import { UsersFilters } from '../components/Filter';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { UserModal } from '../components/UserModal';
+import { Button } from 'dialca-ui';
+import { LuRefreshCw } from 'react-icons/lu';
 
 export const ListUsers = () => {
     const {
@@ -81,6 +83,21 @@ export const ListUsers = () => {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3 }}
                 >
+                    <div className="flex justify-end">
+                        <Button
+                            onClick={() => refetch()}
+                            loading={isLoading}
+                            loadingText='Refrescando...'
+                            loadingIcon={<LuRefreshCw className="size-5 text-white animate-spin" />}
+                            className={`${isLoading && 'cursor-not-allowed! opacity-60!'}`}
+                            classes={{
+                                content: 'flex items-center gap-2',
+                            }}
+                        >
+                            <LuRefreshCw className={`size-5 text-white`} />
+                            Refrescar Lista 
+                        </Button>
+                    </div>
                     <UsersFilters
                         roleFilter={roleFilter}
                         onRoleFilterChange={handleRoleFilterChange}
