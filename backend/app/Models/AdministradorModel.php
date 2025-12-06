@@ -114,7 +114,7 @@ class AdministradorModel extends Model
      */
     public function findByDni(string $dni)
     {
-        return $this->where('dni', $dni)->first();
+        return $this->where('dni', $dni)->withDeleted()->first();
     }
 
     /**
