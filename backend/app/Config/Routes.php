@@ -64,6 +64,7 @@ $routes->group('rendicion',  ['namespace' => 'App\Controllers', 'filter' => 'cor
     $routes->post('admin', 'AdministradorController::crearAdministrador'); // Crear administrador
     $routes->put('admin/(:num)', 'AdministradorController::ActualizarAdministrador/$1'); // Actualizar administrador
     $routes->delete('admin/(:num)', 'AdministradorController::eliminarAdministrador/$1'); // Eliminar administrador
+    $routes->post('admin/(:num)/cambiar-estado', 'AdministradorController::cambiarEstado/$1'); // Cambiar estado de administrador
     $routes->get('admin/dashboard', 'AdministradorController::DashboardStatistics');
     $routes->get('admin/rendiciones', 'AdministradorController::rendicionesList'); // lista rendiciones (id + titulo) con ?query=
     $routes->get('admin/preguntas/(:num)', 'AdministradorController::preguntasConSeleccion/$1');
