@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers;
 
 use CodeIgniter\RESTful\ResourceController;
@@ -60,7 +61,7 @@ class AdministradorController extends ResourceController
 
         try {
             $model = new AdministradorModel();
-            $data = $model->findAll();
+            $data = $model->withDeleted()->findAll();
             // No devolver password
             foreach ($data as &$item) {
                 if (isset($item['password'])) unset($item['password']);
@@ -96,7 +97,7 @@ class AdministradorController extends ResourceController
                 'dni'      => $input['dni'],
                 'nombre'   => $input['nombre'],
                 'password' => $input['password'],
-                'categoria'=> $input['categoria'],
+                'categoria' => $input['categoria'],
                 'estado'   => isset($input['estado']) ? (int)$input['estado'] : 1
             ];
 
@@ -116,7 +117,7 @@ class AdministradorController extends ResourceController
                     'id_admin'     => (int)$id,
                     'accion'       => 'crear',
                     'motivo'       => 'Nuevo Administrador registrado',
-                    'realizado_por'=> $performedBy
+                    'realizado_por' => $performedBy
                 ]);
             } catch (\Throwable $h) {
                 log_message('error', 'Historial crear administrador falló: ' . $h->getMessage());
@@ -155,6 +156,7 @@ class AdministradorController extends ResourceController
         try {
             $performedBy = isset($input['realizado_por']) ? (int)$input['realizado_por'] : (int)$admin['id'];
             $motivo = isset($input['motivo']) && trim($input['motivo']) !== '' ? $input['motivo'] : ($action === 'change_password' ? 'Actualización de contraseña' : 'Actualización de categoría');
+            $accionHistorial = $action === 'change_password' ? 'editar_password' : 'editar_categoria';
 
             if ($action === 'change_password') {
                 if (empty($input['password'])) {
@@ -180,7 +182,7 @@ class AdministradorController extends ResourceController
                 $hist = new HistorialAdminModel();
                 $hist->insert([
                     'id_admin' => (int)$id,
-                    'accion' => $action,
+                    'accion' => $accionHistorial,
                     'motivo' => $motivo,
                     'realizado_por' => $performedBy,
                     'created_at' => date('Y-m-d H:i:s')
@@ -218,16 +220,16 @@ class AdministradorController extends ResourceController
 
         $model = new AdministradorModel();
         try {
-            
+
             $item = $model->withDeleted()->find($id);
             if (!$item) {
                 return $this->respondNotFound(['success' => false, 'message' => 'Administrador no encontrado', 'data' => []]);
             }
 
             if ($action === 'deshabilitar') {
-                $res = $model->delete((int)$id); 
-            } else { 
-                
+                $res = $model->delete((int)$id);
+            } else {
+
                 $res = $model->update((int)$id, ['deleted_at' => null, 'estado' => 1]);
             }
 
@@ -251,7 +253,61 @@ class AdministradorController extends ResourceController
 
             $msg = $action === 'deshabilitar' ? 'Administrador deshabilitado' : 'Administrador habilitado';
             return $this->respond(['success' => true, 'message' => $msg, 'data' => []], 200);
-
+        } catch (\Throwable $e) {
+            log_message('error', $e->getMessage());
+            return $this->respond(['success' => false, 'message' => 'Error procesando la solicitud', 'data' => []], 500);
+        }
+    }
+    public function cambiarEstado($id = null)
+    {
+        $admin = $this->authAdmin();
+        if (is_object($admin)) return $admin;
+        if (!$id) return $this->respond(['success' => false, 'message' => 'ID requerido', 'data' => []], 400);
+        $input = $this->request->getJSON(true);
+        $action = isset($input['action']) ? trim($input['action']) : null;
+        if (!$action || !in_array($action, ['habilitar', 'deshabilitar'], true)) {
+            return $this->respond(['success' => false, 'message' => 'Action inválida. use "habilitar" o "deshabilitar"', 'data' => []], 400);
+        }
+        $model = new AdministradorModel();
+        try {
+            $performedBy = isset($input['realizado_por']) ? (int)$input['realizado_por'] : (int)$admin['id'];
+            $motivo = isset($input['motivo']) && trim($input['motivo']) !== '' ? $input['motivo'] : ($action === 'habilitar' ? 'Habilitación de administrador' : 'Deshabilitación de administrador');
+            $usuario = $model->withDeleted()->find($id);
+            if (!$usuario) {
+                return $this->respondNotFound(['success' => false, 'message' => 'Administrador no encontrado', 'data' => []]);
+            }
+            if ($action === 'deshabilitar') {
+                $res = $model->update((int)$id, ['deleted_at' => date('Y-m-d H:i:s'), 'estado' => 0]);
+            } else {
+                $res = $model->update((int)$id, ['deleted_at' => null, 'estado' => 1]);
+            }
+            if ($res === false) {
+                $errors = $model->errors();
+                return $this->respond(['success' => false, 'message' => 'No se pudo procesar la acción', 'data' => $errors], 422);
+            }
+            if ($action === 'deshabilitar') {
+                $updated = $model->withDeleted()->find($id);
+            } else {
+                $updated = $model->find($id);
+            }
+            if (!$updated) {
+                log_message('error', "No se pudo obtener usuario actualizado con ID: {$id} después de {$action}");
+                return $this->respond(['success' => false, 'message' => 'Error al obtener usuario actualizado', 'data' => []], 500);
+            }
+            if (is_array($updated) && isset($updated['password'])) unset($updated['password']);
+            try {
+                $hist = new HistorialAdminModel();
+                $hist->insert([
+                    'id_admin' => (int)$id,
+                    'accion' => $action,
+                    'motivo' => $motivo,
+                    'realizado_por' => $performedBy,
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+            } catch (\Throwable $h) {
+                log_message('error', 'Historial cambiar estado administrador falló: ' . $h->getMessage());
+            }
+            return $this->respond(['success' => true, 'message' => 'Estado actualizado', 'data' => $updated], 200);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
             return $this->respond(['success' => false, 'message' => 'Error procesando la solicitud', 'data' => []], 500);
@@ -322,7 +378,7 @@ class AdministradorController extends ResourceController
             return $this->respond(['success' => false, 'message' => 'Error listando rendiciones', 'data' => []], 500);
         }
     }
-    
+
     /*==============================================================
     GET /admin-preguntas/{id}
     OBTIENE PREGUNTAS CON INFORMACIÓN DE SELECCIÓN POR RENDICIÓN
@@ -434,10 +490,10 @@ class AdministradorController extends ResourceController
                         }
                     }
                 }
-            } else { 
+            } else {
                 $table->where('id_eje_seleccionado', $idEjeSel)
-                      ->whereIn('id_pregunta', array_map('intval', $ids))
-                      ->delete();
+                    ->whereIn('id_pregunta', array_map('intval', $ids))
+                    ->delete();
 
                 $processed = $db->affectedRows();
                 $processedIds = array_map('intval', $ids);
@@ -497,10 +553,10 @@ class AdministradorController extends ResourceController
 
         $page = (int)($this->request->getGet('page') ?? 1);
         $perPage = (int)($this->request->getGet('per_page') ?? 10);
-        
+
         // Validar rangos
         $page = max(1, $page);
-        $perPage = max(1, min(100, $perPage)); 
+        $perPage = max(1, min(100, $perPage));
 
         try {
             $model = new \App\Models\AdministradorModel();
@@ -644,7 +700,6 @@ class AdministradorController extends ResourceController
             $this->response->setHeader('Content-Length', (string)$filesize);
 
             return $this->response->setBody($body);
-
         } catch (\Throwable $e) {
             log_message('error', 'AdministradorController::descargarExcelRendicion error: ' . $e->getMessage());
             return $this->response->setStatusCode(500)->setJSON([
