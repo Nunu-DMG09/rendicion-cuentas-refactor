@@ -17,6 +17,10 @@ class AdministradorController extends ResourceController
 {
     protected $format = 'json';
 
+    /*========================================================
+     AUTENTICAR ADMINISTRADOR POR TOKEN JWT EN COOKIE
+     ========================================================*/
+
     private function authAdmin()
     {
         $token = get_cookie('access_token');
@@ -45,6 +49,10 @@ class AdministradorController extends ResourceController
         }
     }
 
+    /*========================================================
+     LISTAR ADMINISTRADORES
+     ========================================================*/
+
     public function listarAdministradores()
     {
         $admin = $this->authAdmin();
@@ -64,6 +72,10 @@ class AdministradorController extends ResourceController
             return $this->respond(['success' => false, 'message' => 'Error obteniendo administradores', 'data' => []], 500);
         }
     }
+
+    /*========================================================
+     CREAR ADMINISTRADOR
+     ========================================================*/
 
     public function crearAdministrador()
     {
@@ -116,6 +128,10 @@ class AdministradorController extends ResourceController
             return $this->respond(['success' => false, 'message' => 'Error creando administrador', 'data' => []], 500);
         }
     }
+
+    /*========================================================
+     ACTUALIZAR ADMINISTRADOR (CON CAMBIO DE CONTRASEÑA O CATEGORÍA)
+     ========================================================*/
 
     public function ActualizarAdministrador($id = null)
     {
@@ -179,6 +195,10 @@ class AdministradorController extends ResourceController
             return $this->respond(['success' => false, 'message' => 'Error actualizando administrador', 'data' => []], 500);
         }
     }
+
+    /*========================================================
+     DESABILITAR O HABILITAR ADMINISTRADOR
+     ========================================================*/
 
     public function eliminarAdministrador($id = null)
     {
