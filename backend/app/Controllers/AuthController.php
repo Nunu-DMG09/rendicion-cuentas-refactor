@@ -18,10 +18,18 @@ class AuthController extends ResourceController
         $this->adminModel = new AdministradorModel();
     }
 
+    /*========================================================
+     TEST CORS FILTER
+     ========================================================*/
+
     public function testFilter()
     {
         return $this->respond(['message' => 'Filter valid'], 200);
     }
+
+    /*========================================================
+     INICIAR SESIÓN
+     ========================================================*/
 
     public function login()
     {
@@ -77,6 +85,10 @@ class AuthController extends ResourceController
         ])->setStatusCode(200);
     }
 
+    /*========================================================
+     CERRAR SESIÓN
+     ========================================================*/
+
     public function logout()
     {
         $cookie = new Cookie(
@@ -93,6 +105,10 @@ class AuthController extends ResourceController
         service('response')->setCookie($cookie);
         return $this->respond(['message' => 'Sesion cerrada.'], 200);
     }
+
+    /*========================================================
+     REFRESCAR TOKEN Y VERIFICAR CAMBIO DE ROL
+     ========================================================*/
 
     public function refresh()
     {
