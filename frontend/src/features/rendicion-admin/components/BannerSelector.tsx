@@ -137,7 +137,7 @@ export default function BannerSelector({
 										{formatFileSize(banner.file.size)}
 									</p>
 								</div>
-								<div className="absolute top-2 left-2 w-6 h-6 bg-[#002f59] text-white text-xs font-bold rounded-full flex items-center justify-center">
+								<div className="absolute top-2 left-2 w-6 h-6 bg-primary-dark text-white text-xs font-bold rounded-full flex items-center justify-center">
 									{index + 1}
 								</div>
 							</motion.div>

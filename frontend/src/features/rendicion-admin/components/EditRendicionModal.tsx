@@ -221,7 +221,7 @@ export default function EditRendicionModal({
 										htmlFor="edit-fecha"
 										className="block text-sm font-semibold text-gray-900 mb-3"
 									>
-										<FaCalendarAlt className="inline-block mr-2 text-[#002f59]" />
+										<FaCalendarAlt className="inline-block mr-2 text-primary-dark" />
 										Nueva Fecha
                                         <span className="text-red-400">*</span>
 									</label>
@@ -233,13 +233,13 @@ export default function EditRendicionModal({
 											setFecha(e.target.value)
 										}
 										min={today}
-										className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-[#002f59]/20 focus:border-[#002f59] transition-all"
+										className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark/60 outline-none focus:border-primary-dark/60 transition-all"
 										required
 									/>
 								</div>
 								<div>
 									<label className="block text-sm font-semibold text-gray-900 mb-3">
-										<FaClock className="inline-block mr-2 text-[#002f59]" />
+										<FaClock className="inline-block mr-2 text-primary-dark" />
 										Nueva Hora
                                         <span className="text-red-400">*</span>
 									</label>
@@ -251,7 +251,7 @@ export default function EditRendicionModal({
 							</div>
 							<div>
 								<label className="block text-sm font-semibold text-gray-900 mb-3">
-									<FaImage className="inline-block mr-2 text-[#002f59]" />
+									<FaImage className="inline-block mr-2 text-primary-dark" />
 									Cambiar Banners
 									<span className="text-gray-500 font-normal ml-2">
 										(Opcional)

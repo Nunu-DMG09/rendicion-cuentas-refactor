@@ -5,8 +5,8 @@ import { FaArrowUp, FaArrowDown } from 'react-icons/fa'
 const colorClasses = {
     blue: {
         bg: 'bg-blue-50',
-        icon: 'bg-[#002f59] text-white',
-        text: 'text-[#002f59]'
+        icon: 'bg-primary-dark text-white',
+        text: 'text-primary-dark'
     },
     green: {
         bg: 'bg-green-50',

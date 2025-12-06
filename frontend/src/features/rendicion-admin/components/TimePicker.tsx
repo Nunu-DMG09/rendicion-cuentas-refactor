@@ -145,7 +145,7 @@ export default function TimePicker({
 							<span className="text-sm text-gray-500">
 								Seleccionado:
 							</span>
-							<span className="font-semibold text-[#002f59]">
+							<span className="font-semibold text-primary-dark">
 								{selectedHour || "--"}:{selectedMinute || "--"}
 							</span>
 						</footer>

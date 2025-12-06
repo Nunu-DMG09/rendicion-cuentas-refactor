@@ -65,9 +65,9 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
                                 <motion.button
                                     onClick={() => onPageChange(page as number)}
                                     className={`
-                                        min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-all cursor-pointer
+                                        min-w-9 h-9 px-3 rounded-lg text-sm font-medium transition-all cursor-pointer
                                         ${currentPage === page
-                                            ? 'bg-[#002f59] text-white'
+                                            ? 'bg-primary-dark text-white'
                                             : 'text-gray-600 hover:bg-gray-100'
                                         }
                                     `}

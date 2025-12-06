@@ -15,7 +15,7 @@ export default function Card({ data }: Props) {
                     {data.icon}
                 </div>
                 <div className="text-center">
-                    <h3 id={`card-title-${data.id}`} className="text-xl lg:text-2xl font-bold text-gray-900 mb-4 font-titles group-hover:text-[#002f59] transition-colors duration-300">
+                    <h3 id={`card-title-${data.id}`} className="text-xl lg:text-2xl font-bold text-gray-900 mb-4 font-titles group-hover:text-primary-dark transition-colors duration-300">
                         {data.title}
                     </h3>
                     <p className="text-gray-600 leading-relaxed mb-6 text-base lg:text-lg font-body">
