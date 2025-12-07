@@ -21,6 +21,7 @@ import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { SeleccionarPreguntas } from "@/features/preguntas/pages/SeleccionarPreguntas";
 import { NewUser } from "@/features/users/pages/NewUser";
 import { ListUsers } from "@/features/users/pages/ListUsers";
+import { HistorialAdmin } from "@/features/historial/pages/HistorialAdmin";
 
 function App() {
 	return (
@@ -116,6 +117,14 @@ function App() {
 								element={
 									<ProtectedRoute>
 										<ListUsers />
+									</ProtectedRoute>
+								}
+							/>
+							<Route
+								path="usuarios/historial-acciones"
+								element={
+									<ProtectedRoute>
+										<HistorialAdmin />
 									</ProtectedRoute>
 								}
 							/>
