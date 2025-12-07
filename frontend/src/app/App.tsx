@@ -6,22 +6,24 @@ import {
 } from "react-router-dom";
 import { Layout, AdminLayout } from "./layouts";
 import { SidebarProvider, AuthProvider } from "./providers";
-import HomePage from "../features/home/pages/HomePage";
-import RendicionPage from "../features/rendicion/pages/RendicionPage";
-import RegistrationPage from "../features/registration/pages/RegistrationPage";
-import DashboardPage from "../features/dashboard/pages/DashboardPage";
-import NuevaRendicionPage from "../features/rendicion-admin/pages/NuevaRendicionPage";
-import VerRendicionesPage from "../features/rendicion-admin/pages/VerRendicionesPage";
-import EjesTematicosPage from "../features/ejes-tematicos/pages/EjesTematicosPage";
-import ReportesPage from "../features/reportes/pages/ReportesPage";
+import {
+	HomePage,
+	RendicionPage,
+	RegistrationPage,
+	DashboardPage,
+	NuevaRendicionPage,
+	VerRendicionesPage,
+	EjesTematicosPage,
+	ReportesPage,
+	LoginPage,
+	SeleccionarPreguntasPage,
+	NewUserPage,
+	ListUsersPage,
+	HistorialAdminPage,
+} from "./routes"
 import VerPreguntasPage from "../features/preguntas/pages/VerPreguntasPage";
 import { Toaster } from "sonner";
-import { LoginForm } from "@/features/login/pages/Login";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
-import { SeleccionarPreguntas } from "@/features/preguntas/pages/SeleccionarPreguntas";
-import { NewUser } from "@/features/users/pages/NewUser";
-import { ListUsers } from "@/features/users/pages/ListUsers";
-import { HistorialAdmin } from "@/features/historial/pages/HistorialAdmin";
 
 function App() {
 	return (
@@ -40,7 +42,7 @@ function App() {
 								element={<RegistrationPage />}
 							/>
 						</Route>
-						<Route path="/auth/login" element={<LoginForm />} />
+						<Route path="/auth/login" element={<LoginPage />} />
 						<Route path="/admin" element={<AdminLayout />}>
 							<Route
 								index
@@ -100,7 +102,7 @@ function App() {
 								path="preguntas/seleccionar"
 								element={
 									<ProtectedRoute>
-										<SeleccionarPreguntas />
+										<SeleccionarPreguntasPage />
 									</ProtectedRoute>
 								}
 							/>
@@ -108,7 +110,7 @@ function App() {
 								path="usuarios/agregar-usuario"
 								element={
 									<ProtectedRoute>
-										<NewUser />
+										<NewUserPage />
 									</ProtectedRoute>
 								}
 							/>
@@ -116,7 +118,7 @@ function App() {
 								path="usuarios/ver-usuarios"
 								element={
 									<ProtectedRoute>
-										<ListUsers />
+										<ListUsersPage />
 									</ProtectedRoute>
 								}
 							/>
@@ -124,7 +126,7 @@ function App() {
 								path="usuarios/historial-acciones"
 								element={
 									<ProtectedRoute>
-										<HistorialAdmin />
+										<HistorialAdminPage />
 									</ProtectedRoute>
 								}
 							/>
