@@ -66,6 +66,7 @@ class AdministradorController extends ResourceController
             foreach ($data as &$item) {
                 if (isset($item['password'])) unset($item['password']);
             }
+            unset($item);
             $has = !empty($data);
             return $this->respond(['success' => $has, 'message' => $has ? 'Administradores obtenidos' : 'No se encontraron administradores', 'data' => $has ? $data : []], 200);
         } catch (\Throwable $e) {
@@ -156,7 +157,7 @@ class AdministradorController extends ResourceController
         try {
             $performedBy = isset($input['realizado_por']) ? (int)$input['realizado_por'] : (int)$admin['id'];
             $motivo = isset($input['motivo']) && trim($input['motivo']) !== '' ? $input['motivo'] : ($action === 'change_password' ? 'Actualización de contraseña' : 'Actualización de categoría');
-            $accionHistorial = $action === 'change_password' ? 'editar_password' : 'editar_categoria';
+            $accionHistorial = $action === 'change_password' ? 'editar_password' : 'edit_categoria';
 
             if ($action === 'change_password') {
                 if (empty($input['password'])) {
@@ -328,6 +329,12 @@ class AdministradorController extends ResourceController
         try {
             $item = $model->findByDni($dni);
             if (!$item) return $this->respondNotFound(['success' => false, 'message' => 'Administrador no encontrado', 'data' => []]);
+
+            // Nunca devolver la contraseña
+            if (is_array($item) && isset($item['password'])) {
+                unset($item['password']);
+            }
+
             return $this->respond(['success' => true, 'message' => 'Administrador encontrado', 'data' => $item], 200);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
