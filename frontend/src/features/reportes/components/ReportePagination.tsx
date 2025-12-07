@@ -1,6 +1,6 @@
 import { motion } from 'motion/react'
 import { FaChevronLeft, FaChevronRight, FaAngleDoubleLeft, FaAngleDoubleRight } from 'react-icons/fa'
-import type { Pagination } from '../types/reportes'
+import type { Pagination } from '@/core/types'
 
 type Props = {
     pagination: Pagination

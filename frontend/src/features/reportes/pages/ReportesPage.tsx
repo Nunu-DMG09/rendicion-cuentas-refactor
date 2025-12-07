@@ -9,7 +9,7 @@ import ErrorState from "@/features/preguntas/components/ErrorState";
 import { formatDateWithWeekday } from "@/shared/utils";
 import { ReportSkeleton } from "../components/ReportSkleleton";
 import { PiFolderOpenFill } from "react-icons/pi";
-import type { Pagination } from "../types/reportes";
+import type { Pagination } from "@/core/types";
 
 export default function ReportesPage() {
 	const {
