@@ -4,6 +4,7 @@ import { lazyPage } from "./lazyFactory";
 export const HomePage = lazyPage(() => import('@/features/home/pages/HomePage'), 'HomePage');
 export const RendicionPage = lazyPage(() => import('@/features/rendicion/pages/RendicionPage'), 'RendicionPage');
 export const RegistrationPage = lazyPage(() => import('@/features/registration/pages/RegistrationPage'), 'RegistrationPage');
+export const AsistenciaPage = lazyPage(() => import('@/features/asistencia/pages/Asistencia'), 'AsistenciaPage');
 // Admin Pages
 export const DashboardPage = lazyPage(() => import('@/features/dashboard/pages/DashboardPage'), 'DashboardPage');
 export const NuevaRendicionPage = lazyPage(() => import('@/features/rendicion-admin/pages/NuevaRendicionPage'), 'NuevaRendicionPage');

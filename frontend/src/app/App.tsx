@@ -20,6 +20,7 @@ import {
 	NewUserPage,
 	ListUsersPage,
 	HistorialAdminPage,
+	AsistenciaPage,
 } from "./routes"
 import VerPreguntasPage from "../features/preguntas/pages/VerPreguntasPage";
 import { Toaster } from "sonner";
@@ -40,6 +41,10 @@ function App() {
 							<Route
 								path="/register/:rendicionId"
 								element={<RegistrationPage />}
+							/>
+							<Route
+								path="/asistencia"
+								element={<AsistenciaPage />}
 							/>
 						</Route>
 						<Route path="/auth/login" element={<LoginPage />} />
