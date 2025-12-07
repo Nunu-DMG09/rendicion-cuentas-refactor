@@ -11,7 +11,7 @@ class CreateHistorialAdminTable extends Migration
         $this->forge->addField([
             'id'           => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true, 'auto_increment' => true],
             'id_admin'     => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true, 'null' => false],
-            'accion'       => ['type' => "ENUM('habilitar','deshabilitar','crear','editar_password')", 'null' => false],
+            'accion'       => ['type' => "ENUM('habilitar','deshabilitar','crear','editar_password', 'edit_categoria')", 'null' => false],
             'motivo'       => ['type' => 'TEXT', 'null' => true],
             'realizado_por'=> ['type' => 'INT', 'constraint' => 11, 'unsigned' => true, 'null' => false],
             'created_at'   => ['type' => 'DATETIME', 'null' => true],
