@@ -193,7 +193,7 @@ class UsuarioController extends ResourceController
      * Actualiza el campo asistencia de un usuario.
      * Payload JSON: { asistencia: 'si'|'no' }
      */
-    public function marcarAsistencia($id = null)
+    public function marcarAsistencia($dni = null)
     {
         $input = $this->request->getJSON(true);
         if (!$input || !isset($input['asistencia'])) {
@@ -202,10 +202,13 @@ class UsuarioController extends ResourceController
 
         $model = new UsuarioModel();
         try {
-            $user = $model->find($id);
+            $user = $model->where('dni', $dni)->first();
             if (!$user) return $this->respond(['success' => false, 'message' => 'Usuario no encontrado', 'data' => []], 404);
-            $model->update($id, ['asistencia' => $input['asistencia']]);
-            $updated = $model->find($id);
+            if ($user['asistencia'] === 'si') {
+                return $this->respond(['success' => false, 'message' => 'Asistencia ya marcada', 'data' => $user], 400);
+            }
+            $model->update($user['id'], ['asistencia' => $input['asistencia']]);
+            $updated = $model->find($user['id']);
             return $this->respond(['success' => true, 'message' => 'Asistencia actualizada', 'data' => $updated], 200);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
