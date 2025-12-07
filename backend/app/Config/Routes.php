@@ -72,6 +72,11 @@ $routes->group('rendicion',  ['namespace' => 'App\Controllers', 'filter' => 'cor
     $routes->get('admin/reportes/(:num)', 'AdministradorController::reporteRendicion/$1');
     $routes->get('admin/reportes/(:num)/excel', 'AdministradorController::descargarExcelRendicion/$1');
     
+    //NUEVAS RUTAS PARA EL HISTORIAL @DIEGAZO
+    $routes->get('admin/historial', 'HistorialAdminController::listarHistorial');
+    $routes->get('admin/historial/administrador/(:num)', 'HistorialAdminController::historialPorAdministrador/$1'); // Historial por administrador
+
+
     // Autenticación
     $routes->post('auth/login', 'AuthController::login'); // Login (obtener token)
     $routes->post('auth/logout', 'AuthController::logout'); // Logout (invalidar token)
