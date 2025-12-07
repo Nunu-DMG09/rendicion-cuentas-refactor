@@ -28,7 +28,7 @@ export const AsistenciaPage = () => {
         handleSubmit,
         modalState,
         closeModal,
-    } = useAsistencia(rendicionData?.id || "");
+    } = useAsistencia();
 
 
 	const { containerVariants, itemVariants } = useFormAnimations();

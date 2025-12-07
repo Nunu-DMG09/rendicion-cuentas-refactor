@@ -5,7 +5,7 @@ import { formatName } from "@/shared/utils";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 
-export const useAsistencia = (rendicionId: string) => {
+export const useAsistencia = () => {
     const [dni, setDni] = useState("");
     const [fullName, setFullName] = useState("");
     const [modalState, setModalState] = useState<ModalState>({
@@ -70,8 +70,8 @@ export const useAsistencia = (rendicionId: string) => {
         setModalState(prev => ({ ...prev, isOpen: false }))
     }, [])
     const asistencia = async () => {
-        const res = await api.post(`/${rendicionId}/asistencia`, {
-            dni,
+        const res = await api.put(`/usuarios/${dni}/asistencia`, {
+            asistencia: 'si',
         });
         return res.data;
     }
