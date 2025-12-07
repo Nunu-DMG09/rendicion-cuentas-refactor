@@ -5,7 +5,7 @@ import EjesModal from '../components/EjesModal'
 import EjesStats from '../components/EjesStats'
 import { useEjesTematicos } from '../hooks/useEjesTematicos'
 
-export default function EjesTematicosPage() {
+export const EjesTematicosPage = () => {
     const {
         createEje,
         showConfirmToggle,

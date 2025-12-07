@@ -11,7 +11,7 @@ import { ReportSkeleton } from "../components/ReportSkleleton";
 import { PiFolderOpenFill } from "react-icons/pi";
 import type { Pagination } from "@/core/types";
 
-export default function ReportesPage() {
+export const ReportesPage = () => {
 	const {
 		selectedRendicion,
 		handleRendicionChange,

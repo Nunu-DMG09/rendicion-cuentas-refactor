@@ -4,7 +4,7 @@ import { useHomeData } from "../hooks/useHomeData";
 import { HeroCarouselSection } from "../components/carousel/HeroCarouselSection";
 import { useRegistrationData } from "@/core/hooks";
 
-export default function HomePage() {
+export const HomePage = () => {
 	const { slides, isLoadingBanners, bannersError, recentRendicionesQuery } = useHomeData();
 	const {
 		hasActiveRegistration,

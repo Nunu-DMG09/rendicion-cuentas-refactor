@@ -7,7 +7,7 @@ import ViewRendicionModal from '../components/ViewRendicionModal'
 import RendicionesSkeleton from '../components/RendicionesSkeleton'
 import { useVerRendiciones } from '../hooks/useVerRendiciones'
 
-export default function VerRendicionesPage() {
+export const VerRendicionesPage = () => {
     const {
         selectedYear,
         setSelectedYear,

@@ -4,7 +4,7 @@ import RendicionForm from '../components/RendicionForm'
 import RendicionAdminModal from '../components/RendicionAdminModal'
 import { useRendicionForm } from '../hooks/useRendicionForm'
 
-export default function NuevaRendicionPage() {
+export const NuevaRendicionPage = () => {
     const navigate = useNavigate()
     const { isLoading, modalState, submitRendicion, closeModal } = useRendicionForm()
 

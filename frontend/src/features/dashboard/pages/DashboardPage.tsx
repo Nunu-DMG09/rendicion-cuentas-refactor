@@ -12,7 +12,7 @@ import type { DashboardStats } from "../types/dashboard";
 import { PiWarningCircleDuotone } from "react-icons/pi";
 import { Button } from "dialca-ui";
 
-export default function DashboardPage() {
+export const DashboardPage = () => {
 	const {
 		stats,
 		chartData,
