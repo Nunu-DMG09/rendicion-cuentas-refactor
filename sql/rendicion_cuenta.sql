@@ -154,7 +154,7 @@ DROP TABLE IF EXISTS `historial_admin`;
 CREATE TABLE `historial_admin` (
   `id` int NOT NULL AUTO_INCREMENT,
   `id_admin` int NOT NULL,
-  `accion` enum('habilitar','deshabilitar','crear','editar_password') NOT NULL,
+  `accion` enum('habilitar','deshabilitar','crear','editar_password', 'edit_categoria') NOT NULL,
   `motivo` text,
   `realizado_por` int NOT NULL,
   `created_at` datetime DEFAULT NULL,
