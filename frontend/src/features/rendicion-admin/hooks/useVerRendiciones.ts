@@ -7,7 +7,6 @@ import type {
 	RendicionEditData,
 	EditRendicionResponse,
 } from "../types/rendicionAdmin";
-import { AVAILABLE_YEARS } from "../constants/rendicionAdminData";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/core/config";
 import { toast } from "sonner";
@@ -192,7 +191,6 @@ export const useVerRendiciones = () => {
 		setSelectedYear,
 		rendicionesQuery,
         editRendicionMutation,
-		availableYears: AVAILABLE_YEARS,
 		// Edit modal
 		editModal,
 		openEditModal,
