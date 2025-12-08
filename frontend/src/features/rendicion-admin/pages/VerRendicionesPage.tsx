@@ -11,7 +11,6 @@ export const VerRendicionesPage = () => {
     const {
         selectedYear,
         setSelectedYear,
-        availableYears,
         editModal,
         openEditModal,
         closeEditModal,
@@ -39,7 +38,6 @@ export const VerRendicionesPage = () => {
                 </div>
                 <YearSelector
                     selectedYear={selectedYear}
-                    years={availableYears}
                     onChange={setSelectedYear}
                 />
             </header>
