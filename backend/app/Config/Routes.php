@@ -21,10 +21,9 @@ $routes->group('rendicion',  ['namespace' => 'App\Controllers', 'filter' => 'cor
     $routes->get('(:num)/participantes', 'RendicionController::participantes/$1'); // Participantes de una rendición
     $routes->get('rendiciones', 'RendicionController::recientes');
     $routes->post('(:num)', 'RendicionController::editarRendicion/$1'); // Actualiza rendición (acepta archivos)
-   
+
     $routes->get('preguntas-seleccionadas/(:num)', 'RendicionController::preguntasSeleccionadas/$1'); // preguntas seleccionadas por rendición (home/admin)
 
-    // RUTAS ACTUALES LO QUE ME PEDISTE QUE AGREGUE @DIEGAZO OÑO
     $routes->get('home/banners', 'RendicionController::banners'); // Obtiene los banners de la rendición más reciente
     $routes->get('home/datos-registro', 'RendicionController::datosRegistro');  // Obtiene datos de la rendición actual para el formulario de registro
     $routes->get('home/rendiciones', 'RendicionController::rendiciones'); // Obtiene todas las rendiciones del año actual con sus preguntas para mostrar en home
@@ -71,8 +70,7 @@ $routes->group('rendicion',  ['namespace' => 'App\Controllers', 'filter' => 'cor
     $routes->post('admin/preguntas/seleccionar', 'AdministradorController::seleccionarPreguntas'); // Seleccionar/deseleccionar preguntas
     $routes->get('admin/reportes/(:num)', 'AdministradorController::reporteRendicion/$1');
     $routes->get('admin/reportes/(:num)/excel', 'AdministradorController::descargarExcelRendicion/$1');
-    
-    //NUEVAS RUTAS PARA EL HISTORIAL @DIEGAZO
+
     $routes->get('admin/historial', 'HistorialAdminController::listarHistorial');
     $routes->get('admin/historial/administrador/(:num)', 'HistorialAdminController::historialPorAdministrador/$1'); // Historial por administrador
 

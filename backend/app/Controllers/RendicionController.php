@@ -90,27 +90,35 @@ class RendicionController extends ResourceController
     private function getRendicionStats($rendicionId)
     {
         try {
-            $userModel = new \App\Models\UsuarioModel();
-            $preguntaModel = new \App\Models\PreguntaModel();
-            $preguntaSelModel = new \App\Models\PreguntaSeleccionadaModel();
-            $usuarios = $userModel->where('id_rendicion', $rendicionId)->findAll() ?: [];
-            $totalInscritos = count($usuarios);
-            $asistentes = $userModel->where('id_rendicion', $rendicionId)->where('asistencia', 'si')->countAllResults();
+            $db = \Config\Database::connect();
+            $totalInscritos = $db->table('usuario')
+                ->where('id_rendicion', $rendicionId)
+                ->countAllResults();
+            $asistentes = $db->table('usuario')
+                ->where('id_rendicion', $rendicionId)
+                ->where('asistencia', 'si')
+                ->countAllResults();
             $noAsistentes = $totalInscritos - $asistentes;
-            $totalPreguntas = $preguntaModel->where('id_rendicion', $rendicionId)->countAllResults();
-            // TODO: Esto no esta bien, se debe hacer joins para contar solo las preguntas seleccionadas para la rendición y hacer calculos
-            $preguntasRespondidas = $preguntaModel->where('id_rendicion', $rendicionId)->where('estado', 'respondida')->countAllResults();
-            $preguntasPendientes = $totalPreguntas - $preguntasRespondidas;
+            $totalPreguntas = $db->table('pregunta p')
+                ->join('eje e', 'e.id = p.id_eje')
+                ->join('eje_seleccionado es', 'es.id_eje = e.id')
+                ->where('es.id_rendicion', $rendicionId)
+                ->countAllResults();
+            $preguntasSeleccionadas = $db->table('pregunta_seleccionada ps')
+                ->join('eje_seleccionado es', 'es.id = ps.id_eje_seleccionado')
+                ->where('es.id_rendicion', $rendicionId)
+                ->countAllResults();
+            $preguntasPendientes = $totalPreguntas - $preguntasSeleccionadas;
             return [
                 'total_inscritos' => $totalInscritos,
                 'asistentes' => $asistentes,
                 'no_asistentes' => $noAsistentes,
                 'total_preguntas' => $totalPreguntas,
-                'preguntas_respondidas' => $preguntasRespondidas,
+                'preguntas_respondidas' => $preguntasSeleccionadas,
                 'preguntas_pendientes' => $preguntasPendientes
             ];
         } catch (\Throwable $e) {
-            log_message('error', 'Error obteniendo stats de rendición ' . $rendicionId . ': ' . $e->getMessage());
+            log_message('error', 'Error obteniendo stats de rendición ' . $rendicionId . ': ' . $e->getMessage() . ' | Archivo: ' . $e->getFile() . ' | Línea: ' . $e->getLine() . ' | Trace: ' . $e->getTraceAsString());
             return [
                 'total_inscritos' => 0,
                 'asistentes' => 0,
@@ -205,7 +213,7 @@ class RendicionController extends ResourceController
         }
     }
 
-    // Todo esto es para crear una nueva rendición xd
+    // Todo esto es para crear una nueva rendición
 
     public function crearRendicion()
     {
@@ -251,7 +259,7 @@ class RendicionController extends ResourceController
         }
     }
 
-    
+
     private function getJsonData()
     {
         $input = $this->request->getPost("data");
