@@ -9,7 +9,7 @@ Frontend desarrollado con Vite, React y TypeScript para la aplicación de rendic
 - Descarga de reportes (Excel) generados por el backend
 - Páginas de login/registro y gestión de usuarios
 
-El proyecto está organizado por "features" y usa hooks, providers y una capa `core` para la configuración compartida (API, env, tipos).
+El proyecto está organizado por "features" usando la Screaming Architecture y usa hooks, providers y una capa `core` para la configuración de negocio compartida (API, env, tipos).
 
 ---
 
@@ -28,7 +28,7 @@ El proyecto está organizado por "features" y usa hooks, providers y una capa `c
 - React
 - TypeScript
 - Axios (configurada en `src/core/config/api.ts`)
-- Estructura basada en "feature folders" (cada funcionalidad en `src/features/*`)
+- Estructura basada en "Screaming Architecture" (cada funcionalidad en `src/features/*`)
 
 ---
 
@@ -55,7 +55,7 @@ Verifica package.json para confirmar los nombres de scripts. Comandos típicos:
 
 Desarrollo (dev server con hot-reload):
 
-mpm run dev o npm run start
+npm run dev o npm run start
 
 
 Construir para producción:
@@ -81,7 +81,7 @@ frontend/
 ├─ public/                      # Archivos públicos
 ├─ src/
 │  ├─ main.tsx                  # Entrypoint
-│  ├─ app/                      # Root app + layouts
+│  ├─ app/                      # Root app + layouts + routes + providers
 │  ├─ core/                     # Config global (api, env, types)
 │  │  ├─ config/api.ts          # Axios instance + interceptors
 │  │  └─ config/env.ts          # Variables de entorno consolidadas
@@ -90,7 +90,7 @@ frontend/
 │  │  ├─ rendicion/
 │  │  ├─ dashboard/
 │  │  └─ ...
-│  ├─ shared/                   # Utilidades compartidas
+│  ├─ shared/                   # Utilidades compartidas reutilizables
 │  └─ assets/
 ├─ index.html
 └─ package.json
@@ -116,12 +116,8 @@ Recuerda reiniciar el dev server si cambias .env.
 
 # Despliegue
 1. Construir:
-mpm run build
+npm run build
 2. Servir la carpeta dist/ con un servidor estático (Nginx, Apache, Netlify, Vercel, Surge):
-- Ejemplo rápido con serve:
-
-npm i -g serve
-serve -s dist
 
 3. Configurar VITE_BACKEND_URL en las variables de entorno del hosting (o inyectar en tiempo de construcción).
 

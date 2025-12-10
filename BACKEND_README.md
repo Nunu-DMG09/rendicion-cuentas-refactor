@@ -45,7 +45,7 @@ Cada módulo mantiene su propia lógica de negocio mientras comparte recursos co
    ```bash
    composer install
    ```
-3. Configura el archivo `.env`:
+3. Configura el archivo `.env`, copia el archivo `.env.example` y renombralo a `.env`. Modifica las siguientes líneas según tu configuración:
    ```ini
    database.default.hostname = localhost
    database.default.database = rendicion_cuenta
@@ -59,11 +59,15 @@ Cada módulo mantiene su propia lógica de negocio mientras comparte recursos co
    JWT_SECRET = TU_SECRET_JWT
    JWT_EXP = 3600
    ```
-4. Crea la base de datos y importa el esquema:
+4. Crea la base de datos e importa el esquema:
    ```bash
    php spark migrate
    ```
-5. Prueba el servidor:
+5. (Opcional) Si deseas poblar la base de datos con datos iniciales:
+   ```bash
+   php spark db:seed RendicionSeeder
+   ```
+6. Prueba el servidor:
    ```bash
    php spark serve
    ```
@@ -138,7 +142,6 @@ curl -X GET http://localhost:8080/reportes -H "Authorization: Bearer TU_TOKEN_JW
 
 ## Notas Adicionales
 
-- Asegúrate de configurar correctamente el envío de correos en el archivo `.env` si tu aplicación lo requiere.
 - Para entornos de producción, revisa y ajusta las configuraciones de seguridad, rendimiento y conexión a la base de datos.
 - Consulta la documentación oficial de CodeIgniter 4 y PhpSpreadsheet para personalizaciones y optimizaciones avanzadas.
 
