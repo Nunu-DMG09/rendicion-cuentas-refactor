@@ -1,7 +1,8 @@
 import { motion } from 'motion/react'
 import { FaEye, FaTable, FaFileExcel } from 'react-icons/fa'
-import type { Pagination, Participante } from '../types/reportes'
+import type { Participante } from '../types/reportes'
 import ReportePagination from './ReportePagination'
+import type { Pagination } from '@/core/types'
 
 type Props = {
     participantes: Participante[]

@@ -5,6 +5,7 @@ export default function useSlides(count = 3, src = "/banners/bannerstatic.png") 
   const slides = useMemo<Slide[]>(
     () =>
       Array.from({ length: count }).map((_, i) => ({
+        id: i,
         src,
         alt: `Banner Municipalidad ${i + 1}`,
       })),
