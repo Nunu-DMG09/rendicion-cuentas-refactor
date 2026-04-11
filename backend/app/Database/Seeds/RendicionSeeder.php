@@ -15,7 +15,7 @@ class RendicionSeeder extends Seeder
         $admin = [
             'dni'        => '40346175',
             'nombre'     => 'MARTHA LUZ TUÑOQUE JULCAS',
-            'password'   => password_hash('Otic@2025', PASSWORD_BCRYPT),
+            'password'   => password_hash('SUB@#16DERS@', PASSWORD_BCRYPT),
             'categoria'  => 'super_admin',
             'estado'     => 1,
             'created_at' => $now,
