@@ -14,7 +14,7 @@ type Props = {
 export default function HeroCarousel({
 	slides,
 	className = "",
-	height = "h-[720px] md:h-[640px] lg:h-[700px]",
+	height = "h-[220px] sm:h-[400px] md:h-[640px] lg:h-[700px]",
 }: Props) {
 	const defaultSlides = useSlides(3, "/banners/bannerstatic.png");
 	const realSlides = slides && slides.length > 0 ? slides : defaultSlides;

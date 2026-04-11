@@ -116,7 +116,7 @@ export default function RegistrationForm({
               <label className="block text-sm font-semibold text-gray-900 mb-4">
                 Sexo
               </label>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {GENDER_OPTIONS.map((genderOption) => (
                   <motion.label 
                     key={genderOption.value}

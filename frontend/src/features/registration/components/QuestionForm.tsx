@@ -97,7 +97,7 @@ export default function QuestionForm({
 							<label className="block text-sm font-semibold text-gray-900 mb-4">
 								Su participación será a título...
 							</label>
-							<div className="grid grid-cols-2 gap-4">
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								{PARTICIPATION_TYPES.map((type) => (
 									<motion.label
 										key={type.value}
@@ -243,7 +243,7 @@ export default function QuestionForm({
 						</motion.div>
 						<motion.div
 							variants={itemVariants}
-							className="flex space-x-4 pt-4"
+							className="flex flex-col gap-2 md:flex-row space-x-4 pt-4"
 						>
 							<Button
 								onClick={onBack}

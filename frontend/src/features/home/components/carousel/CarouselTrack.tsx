@@ -36,13 +36,10 @@ export default function CarouselTrack({
           role="group"
           aria-roledescription="slide"
           aria-label={s.alt ?? `Slide ${i}`}
-          className="relative shrink-0 h-full"
+          className="relative shrink-0 h-full bg-center bg-no-repeat bg-contain md:bg-cover"
           style={{
             width: `100vw`,
             backgroundImage: `url("${s.src}")`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
             backgroundColor: "#f3f4f6",
           }}
         >
