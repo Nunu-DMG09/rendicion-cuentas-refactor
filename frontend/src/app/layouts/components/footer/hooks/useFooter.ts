@@ -39,12 +39,12 @@ export function useFooter(): FooterData {
             {
                 title: 'Horario de Atención',
                 days: 'Lunes a Viernes',
-                hours: '8:00 a.m - 4:00 p.m'
+                hours: '8:00 a.m - 2:30 p.m'
             },
             {
                 title: 'Mesa de Partes',
                 days: 'Lunes a Viernes',
-                hours: '8:00 a.m - 4:00 p.m'
+                hours: '8:00 a.m - 2:30 p.m'
             }
         ],
         companyName: 'Municipalidad Distrital de José Leonardo Ortiz',
